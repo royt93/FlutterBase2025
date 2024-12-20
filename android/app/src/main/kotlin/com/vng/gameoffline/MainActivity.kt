@@ -1,4 +1,4 @@
-package com.mckimquyen.devicemockup
+package com.vng.devicemockup
 
 import io.flutter.embedding.android.FlutterActivity
 
