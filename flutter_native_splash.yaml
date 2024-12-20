@@ -1,0 +1,26 @@
+# Please note that the splash screen will be clipped to a circle on the center of the screen.
+# App icon with an icon background: This should be 960×960 pixels, and fit within a circle
+# 640 pixels in diameter.
+# App icon without an icon background: This should be 1152×1152 pixels, and fit within a circle
+# 768 pixels in diameter.
+
+#ic_launcher_960 => size 960x960 nhung nen de background trong suot nhieu vao
+
+#dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#FF1E63"
+  image: assets/images/ic_launcher_circle.png
+#  branding: assets/images/ic_launcher_circle.png
+  color_dark: "#FF1E63"
+  image_dark: assets/images/ic_launcher_circle.png
+#  branding_dark: assets/images/ic_launcher_circle.png
+  fullscreen: true
+#  android_gravity: fill
+  ios_content_mode: scaleAspectFill
+  android_12:
+    image: assets/images/ic_launcher_960.png
+    icon_background_color: "#FF1E63"
+    image_dark: assets/images/ic_launcher_960.png
+    icon_background_color_dark: "#FF1E63"
+
+  web: false

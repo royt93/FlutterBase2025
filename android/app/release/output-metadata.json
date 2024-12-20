@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.mckimquyen.devicemockup",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 20240721,
+      "versionName": "2024.07.21",
+      "outputFile": "app-release.apk"
+    }
+  ],
+  "elementType": "File"
+}
