@@ -67,7 +67,7 @@ class UrlLauncherUtils {
       );
 
   static void moreApp() {
-    UrlLauncherUtils.launchInBrowser("https://play.google.com/store/apps/developer?id=McKimQuyen");
+    UrlLauncherUtils.launchInBrowser("https://play.google.com/store/apps/developer?id=SAIGON PHANTOM LABS");
   }
 
   static void launchPolicy() {
