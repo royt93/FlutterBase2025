@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
-import 'package:gameoffline/mckimquyen/util/duration_util.dart';
-import 'package:gameoffline/mckimquyen/widget/main/main_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
+import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 
 import '../../core/base_stateful_state.dart';
 import '../controller_main.dart';

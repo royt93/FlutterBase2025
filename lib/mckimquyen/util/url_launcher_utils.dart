@@ -1,4 +1,4 @@
-import 'package:gameoffline/mckimquyen/util/shared_preferences_util.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/shared_preferences_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';

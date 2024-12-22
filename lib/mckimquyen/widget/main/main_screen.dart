@@ -1,4 +1,4 @@
-import 'package:gameoffline/mckimquyen/common/const/color_constants.dart';
+import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';

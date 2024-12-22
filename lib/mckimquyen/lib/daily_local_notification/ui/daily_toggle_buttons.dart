@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/providers/reminder_settings_provider.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/providers/reminder_settings_provider.dart';
 import 'package:provider/provider.dart';
 
 class DailyToggleButtons extends StatelessWidget {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/providers/reminder_settings_provider.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/repositories/reminder_repository.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/repositories/shared_prefs_repository.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/ui/daily_local_notification_widget.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/utils/daily_local_notifications_config.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/utils/notification_config.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/utils/styling_config.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/providers/reminder_settings_provider.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/repositories/reminder_repository.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/repositories/shared_prefs_repository.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/ui/daily_local_notification_widget.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/daily_local_notifications_config.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/notification_config.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/styling_config.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

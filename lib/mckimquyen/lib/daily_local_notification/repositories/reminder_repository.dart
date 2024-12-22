@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/models/week_day.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/utils/notification_config.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/models/week_day.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/notification_config.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 

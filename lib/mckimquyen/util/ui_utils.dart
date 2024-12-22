@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:app_settings/app_settings.dart';
-import 'package:gameoffline/mckimquyen/common/circle_button.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/daily_local_notifications.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/utils/daily_local_notifications_config.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/utils/notification_config.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/utils/styling_config.dart';
+import 'package:saigonphantomlabs/mckimquyen/common/circle_button.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/daily_local_notifications.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/daily_local_notifications_config.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/notification_config.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/styling_config.dart';
 import 'package:bottom_sheet/bottom_sheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
