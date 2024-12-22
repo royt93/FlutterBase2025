@@ -46,9 +46,9 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
-    namespace("com.saigonphantomlabs.tracuuphatnguoi")
+    namespace("com.saigonphantomlabs.base")
     defaultConfig {
-        applicationId "com.saigonphantomlabs.tracuuphatnguoi"
+        applicationId "com.saigonphantomlabs.base"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 24

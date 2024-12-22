@@ -1,4 +1,4 @@
-package com.saigonphantomlabs.tracuuphatnguoi
+package com.saigonphantomlabs.base
 
 import io.flutter.embedding.android.FlutterActivity
 

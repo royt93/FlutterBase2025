@@ -39,13 +39,13 @@
         android:fullBackupOnly="true"
         android:hasFragileUserData="true"
         android:icon="@mipmap/launcher_icon"
-        android:label="Tra Cuu Phat Nguoi"
+        android:label="Flutter Base 2024"
         tools:ignore="DiscouragedApi,LockedOrientationActivity,UnusedAttribute">
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_bell" />
         <activity
-            android:name="com.saigonphantomlabs.tracuuphatnguoi.MainActivity"
+            android:name="com.saigonphantomlabs.base.MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:exported="true"
             android:hardwareAccelerated="true"

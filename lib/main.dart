@@ -12,13 +12,6 @@ import 'mckimquyen/widget/splash/splash_screen.dart';
 
 //TODO roy93~ multi language
 //TODO roy93~ ad applovin
-//TODO roy93~ add more device frame, maybe custom the library
-
-//TODO roy93~ save template
-//TODO roy93~ update more device
-//TODO roy93~ watermark
-//https://developer.apple.com/design/resources/#product-bezels
-//https://mockuphone.com/type/all/
 
 //screenOrientation
 //review in app
