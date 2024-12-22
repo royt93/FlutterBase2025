@@ -1,5 +1,5 @@
-import 'package:gameoffline/mckimquyen/common/const/string_constants.dart';
-import 'package:gameoffline/mckimquyen/widget/controller_main.dart';
+import 'package:tracuuphatnguoi/mckimquyen/common/const/string_constants.dart';
+import 'package:tracuuphatnguoi/mckimquyen/widget/controller_main.dart';
 import 'package:flutter/services.dart';
 
 class ExitApp {

@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/providers/reminder_settings_provider.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/ui/daily_toggle_buttons.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/ui/timer_picker.dart';
+import 'package:tracuuphatnguoi/mckimquyen/lib/daily_local_notification/providers/reminder_settings_provider.dart';
+import 'package:tracuuphatnguoi/mckimquyen/lib/daily_local_notification/ui/daily_toggle_buttons.dart';
+import 'package:tracuuphatnguoi/mckimquyen/lib/daily_local_notification/ui/timer_picker.dart';
 import 'package:provider/provider.dart';
 
 class DailyLocalNotificationWidget extends StatelessWidget {

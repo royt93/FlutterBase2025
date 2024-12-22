@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:gameoffline/mckimquyen/lib/daily_local_notification/models/week_day.dart';
+import 'package:tracuuphatnguoi/mckimquyen/lib/daily_local_notification/models/week_day.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const SP_REMINDER_TIME_key = 'reminder_time';

@@ -1,4 +1,4 @@
-package com.vng.devicemockup
+package com.saigonphantomlabs.tracuuphatnguoi
 
 import io.flutter.embedding.android.FlutterActivity
 

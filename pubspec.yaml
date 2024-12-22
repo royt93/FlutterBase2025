@@ -1,4 +1,4 @@
-name: gameoffline
+name: tracuuphatnguoi
 description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 2024.12.19+20241219
@@ -53,7 +53,7 @@ dependencies:
   flutter_timezone:
   provider: ^6.1.2
   timezone:
-#  app_settings: ^5.1.1
+  app_settings: ^5.1.1
   #end zone daily_local_notification
   flutter_easyloading: ^3.0.5
   flutter_keyboard_visibility: ^6.0.0
@@ -63,7 +63,7 @@ dependencies:
   wakelock_plus: ^1.2.9
   #  timeago: ^3.7.0
   #  bottom_bar_with_sheet: ^2.4.0
-#  bottom_sheet: ^4.0.4
+  bottom_sheet: ^4.0.4
   #  toggle_switch: ^2.3.0
   #  grouped_list: ^6.0.0
 #  wheel_slider: ^1.2.2
