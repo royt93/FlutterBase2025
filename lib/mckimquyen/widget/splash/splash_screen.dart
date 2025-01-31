@@ -6,6 +6,7 @@ import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:saigonphantomlabs/mckimquyen/common/v/pulse_container.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 
@@ -147,23 +148,19 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                     AvatarGlow(
                       glowColor: Colors.white,
                       child: SizedBox(
-                        width: 168,
-                        height: 168,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.8),
-                            minimumSize: const Size(168, 168),
-                          ),
-                          onPressed: () {
+                        width: 150,
+                        height: 150,
+                        child: PulseContainer(
+                          onTapRoot: () {
                             _goToMainScreen();
                           },
-                          child: const Text(
-                            'Touch\nme',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
+                          color: Colors.white,
+                          alignment: Alignment.center,
+                          child: Image.asset(
+                            "assets/images/ic_go.png",
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ),
