@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:app_settings/app_settings.dart';
+import 'package:lottie/lottie.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/circle_button.dart';
 import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/daily_local_notifications.dart';
 import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/daily_local_notifications_config.dart';
@@ -777,6 +778,165 @@ class UIUtils {
         topRight: Radius.circular(16),
       ),
     ).then((value) {
+      onDismiss.call();
+    });
+  }
+
+  static void showDialogSuccess(
+      BuildContext context,
+      Widget textCenter,
+      String confirmText,
+      String cancelText,
+      String lottiePath,
+      bool barrierDismissible,
+      Function onClickConfirm,
+      Function onClickCancel,
+      Function onDismiss,
+      ) {
+    showGeneralDialog(
+      barrierLabel: "",
+      barrierDismissible: barrierDismissible,
+      barrierColor: Colors.black.withOpacity(0.7),
+      context: context,
+      pageBuilder: (_, __, ___) {
+        return Center(
+          child: Container(
+            width: Get.width,
+            margin: const EdgeInsets.all(DimenConstants.marginPaddingMedium),
+            padding: const EdgeInsets.fromLTRB(
+              DimenConstants.marginPaddingMedium,
+              DimenConstants.marginPaddingMedium,
+              DimenConstants.marginPaddingMedium,
+              0,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(DimenConstants.radiusMedium),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: 25,
+                    height: 25,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.grey,
+                      radius: 45,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.close),
+                        color: Colors.white,
+                        onPressed: () {
+                          Get.back();
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                Lottie.asset(
+                  lottiePath,
+                  width: 155,
+                  height: 155,
+                ),
+                const SizedBox(height: DimenConstants.marginPaddingMedium),
+                textCenter,
+                const SizedBox(height: DimenConstants.marginPaddingMedium),
+                Row(
+                  children: [
+                    if (cancelText.isNotEmpty) ...[
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(0xff2B67F6),
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                0,
+                                16,
+                                0,
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(15)),
+                                side: BorderSide(color: Color(0xffDEE1EB), width: 1.0),
+                              ),
+                            ),
+                            onPressed: () {
+                              Get.back();
+                              onClickCancel.call();
+                            },
+                            child: Text(
+                              cancelText,
+                              style: TextStyle(
+                                color: ColorConstants.red,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xff2B67F6),
+                            padding: const EdgeInsets.fromLTRB(
+                              16,
+                              0,
+                              16,
+                              0,
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(15)),
+                              side: BorderSide(color: Color(0xffDEE1EB), width: 1.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            Get.back();
+                            onClickConfirm.call();
+                          },
+                          child: Text(
+                            confirmText,
+                            style: TextStyle(
+                              color: ColorConstants.green,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DimenConstants.marginPaddingMedium),
+              ],
+            ),
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 500),
+      transitionBuilder: (_, anim, __, child) {
+        return ScaleTransition(
+          scale: CurvedAnimation(
+            parent: anim,
+            curve: Curves.bounceIn,
+            reverseCurve: Curves.bounceIn,
+          ),
+          child: child,
+        );
+      },
+    ).then((value) {
+      // debugPrint("then $value");
       onDismiss.call();
     });
   }
