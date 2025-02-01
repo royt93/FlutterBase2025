@@ -9,11 +9,11 @@
 #dart run flutter_native_splash:create
 flutter_native_splash:
   color: "#FF1E63"
-  image: assets/images/ic_launcher_circle.png
-#  branding: assets/images/ic_launcher_circle.png
+  image: assets/images/ic_launcher_960.png
+#  branding: assets/images/ic_launcher_960.png
   color_dark: "#FF1E63"
-  image_dark: assets/images/ic_launcher_circle.png
-#  branding_dark: assets/images/ic_launcher_circle.png
+  image_dark: assets/images/ic_launcher_960.png
+#  branding_dark: assets/images/ic_launcher_960.png
   fullscreen: true
 #  android_gravity: fill
   ios_content_mode: scaleAspectFill

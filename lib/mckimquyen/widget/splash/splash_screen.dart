@@ -156,11 +156,14 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                           },
                           color: Colors.white,
                           alignment: Alignment.center,
-                          child: Image.asset(
-                            "assets/images/ic_go.png",
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.contain,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Image.asset(
+                              "assets/images/ic_go.png",
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ),
