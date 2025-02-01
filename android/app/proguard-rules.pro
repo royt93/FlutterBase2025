@@ -84,3 +84,10 @@
 -keep class finos.mobile.android.ekyc_v4** { *; }
 -keep class com.finos.mobile.android.ekyc_v4.liveness { *; }
 -keep class org.json.* { *; }
+
+# Giữ lại generic type của Gson
+-keepattributes Signature
+-keep class com.google.gson.reflect.TypeToken { *; }
+
+# Giữ lại tất cả các class và phương thức của FlutterLocalNotifications
+-keep class com.dexterous.flutterlocalnotifications.** { *; }
