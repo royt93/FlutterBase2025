@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:toastification/toastification.dart';
 
 import '../common/const/color_constants.dart';
 import '../common/const/dimen_constants.dart';
@@ -939,6 +940,58 @@ class UIUtils {
       // debugPrint("then $value");
       onDismiss.call();
     });
+  }
+
+  static void showToast(
+      String title,
+      String message, {
+        int durationInS = 2,
+        ToastificationType type = ToastificationType.success,
+        ToastificationStyle style = ToastificationStyle.minimal,
+        bool showIcon: true,
+        bool showProgressBar: false,
+      }) {
+    toastification.dismissAll();
+    toastification.show(
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+        maxLines: 10,
+        overflow: TextOverflow.ellipsis,
+      ),
+      description: Text(
+        message,
+        style: const TextStyle(
+          color: Colors.grey,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+        maxLines: 10,
+        overflow: TextOverflow.ellipsis,
+      ),
+      autoCloseDuration: Duration(seconds: durationInS),
+      type: type,
+      style: style,
+      showIcon: showIcon,
+      showProgressBar: showProgressBar,
+      // padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      // margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+      closeButtonShowType: CloseButtonShowType.none,
+      closeOnClick: true,
+      pauseOnHover: true,
+      dragToClose: true,
+      applyBlurEffect: false,
+      // callbacks: ToastificationCallbacks(
+      //   onTap: (toastItem) => print('Toast ${toastItem.id} tapped'),
+      //   onCloseButtonTap: (toastItem) => print('Toast ${toastItem.id} close button tapped'),
+      //   onAutoCompleteCompleted: (toastItem) => print('Toast ${toastItem.id} auto complete completed'),
+      //   onDismissed: (toastItem) => print('Toast ${toastItem.id} dismissed'),
+      // ),
+    );
   }
 }
 

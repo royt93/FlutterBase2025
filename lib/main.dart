@@ -1,11 +1,13 @@
 import 'dart:io';
 
-import 'package:saigonphantomlabs/mckimquyen/core/base_stateful_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:saigonphantomlabs/mckimquyen/core/base_stateful_state.dart';
+import 'package:toastification/toastification.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+
 import 'mckimquyen/common/const/color_constants.dart';
 import 'mckimquyen/widget/controller_main.dart';
 import 'mckimquyen/widget/splash/splash_screen.dart';
@@ -39,38 +41,40 @@ Future<void> main() async {
   }
   await initializePlugin();
   runApp(
-    GetMaterialApp(
-      enableLog: true,
-      debugShowCheckedModeBanner: true,
-      // defaultTransition: Transition.noTransition,
-      defaultTransition: Transition.cupertino,
-      // defaultTransition: Transition.circularReveal,
-      // defaultTransition: Transition.size,
-      // transitionDuration: const Duration(milliseconds: 1000),
-      transitionDuration: const Duration(milliseconds: 700),
-      home: const MyApp(),
-      // builder: EasyLoading.init(),
+    ToastificationWrapper(
+      child: GetMaterialApp(
+        enableLog: true,
+        debugShowCheckedModeBanner: true,
+        // defaultTransition: Transition.noTransition,
+        defaultTransition: Transition.cupertino,
+        // defaultTransition: Transition.circularReveal,
+        // defaultTransition: Transition.size,
+        // transitionDuration: const Duration(milliseconds: 1000),
+        transitionDuration: const Duration(milliseconds: 700),
+        home: const MyApp(),
+        // builder: EasyLoading.init(),
 
-      //prevent breaking UI when change device font settings
-      builder: (context, child) {
-        return EasyLoading.init()(
-          context,
-          MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
-            child: child!,
-          ),
-        );
-      },
+        //prevent breaking UI when change device font settings
+        builder: (context, child) {
+          return EasyLoading.init()(
+            context,
+            MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
+              child: child!,
+            ),
+          );
+        },
 
-      navigatorKey: navigatorKey,
-      theme: ThemeData.light().copyWith(
-        primaryColor: ColorConstants.appColor,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        splashColor: ColorConstants.appColor,
-        highlightColor: ColorConstants.appColor,
+        navigatorKey: navigatorKey,
+        theme: ThemeData.light().copyWith(
+          primaryColor: ColorConstants.appColor,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          splashColor: ColorConstants.appColor,
+          highlightColor: ColorConstants.appColor,
+        ),
+        darkTheme: ThemeData.dark(),
+        themeMode: ThemeMode.light,
       ),
-      darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.light,
     ),
   );
   // _configLoading();
