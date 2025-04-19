@@ -16,7 +16,7 @@ flutter_native_splash:
 #  branding_dark: assets/images/ic_launcher_960.png
   fullscreen: true
 #  android_gravity: fill
-  ios_content_mode: scaleAspectFill
+  ios_content_mode: center
   android_12:
     image: assets/images/ic_launcher_960.png
     icon_background_color: "#FF1E63"
