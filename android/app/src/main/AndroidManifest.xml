@@ -40,7 +40,7 @@
         android:fullBackupOnly="true"
         android:hasFragileUserData="true"
         android:icon="@mipmap/launcher_icon"
-        android:label="Flutter Base 2024"
+        android:label="Flutter Base 2025"
         tools:ignore="DiscouragedApi,LockedOrientationActivity,UnusedAttribute">
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

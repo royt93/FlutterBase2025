@@ -32,7 +32,7 @@ dependencies:
   share_plus: ^10.1.4
   marquee: ^2.3.0
   #  kenburns_nullsafety: ^1.0.1
-  permission_handler: ^11.3.1
+  permission_handler: ^12.0.0+1
   #  toggle_switch: ^2.3.0
   #  highlight_text: ^1.8.0
   flutter_udid: ^4.0.0
@@ -41,7 +41,7 @@ dependencies:
   #  scrollable_positioned_list:
   circular_countdown_timer: ^0.2.4
   path:
-  flutter_email_sender: ^6.0.3
+  flutter_email_sender: ^7.0.0
   modal_bottom_sheet: ^3.0.0
   #  html:
 #  device_frame: ^1.2.0
@@ -51,16 +51,16 @@ dependencies:
   flutter_time_picker_spinner:
     git: https://github.com/novas1r1/flutter_time_picker_spinner.git
   flutter_timezone:
-  provider: ^6.1.2
+  provider: ^6.1.4
   timezone:
-  app_settings: ^5.1.1
+  app_settings: ^6.1.1
   #end zone daily_local_notification
   flutter_easyloading: ^3.0.5
   flutter_keyboard_visibility: ^6.0.0
 
   image_picker: ^1.1.2
   mime: ^2.0.0
-  wakelock_plus: ^1.2.10
+  wakelock_plus: ^1.3.1
   #  timeago: ^3.7.0
   #  bottom_bar_with_sheet: ^2.4.0
   bottom_sheet: ^4.0.4
@@ -73,7 +73,7 @@ dependencies:
 #  flutter_colorpicker: ^1.1.0
 #  holding_gesture: ^1.2.0
   #  stepper_counter_swipe: ^1.0.2
-  vibration: ^3.1.2
+  vibration: ^3.1.3
   #  group_button: ^5.3.4
 #  google_fonts: ^6.2.1
   #  screenshot:
@@ -81,7 +81,8 @@ dependencies:
   #  image:
 #  image_gallery_saver:
   focus_detector_v2: ^3.1.0+1
-  toastification: ^2.3.0
+  toastification: ^3.0.2
+  hugeicons: ^0.0.10
 
 dev_dependencies:
   flutter_test:
