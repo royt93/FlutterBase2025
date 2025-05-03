@@ -13,7 +13,6 @@ import 'mckimquyen/widget/controller_main.dart';
 import 'mckimquyen/widget/splash/splash_screen.dart';
 
 //TODO roy93~ multi language
-//TODO roy93~ ad applovin
 
 //screenOrientation
 //review in app
