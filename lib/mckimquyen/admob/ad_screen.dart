@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
 
-import 'event_bus.dart';
-
 abstract class AdScreen extends StatefulWidget {
   const AdScreen({super.key});
 }
@@ -20,10 +18,6 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
   @override
   void initState() {
     super.initState();
-    _subscription = SimpleEventBus().onBoolEvent.listen((event) {
-      debugPrint("roy93~ AppOpenAd.load value: ${event.value}");
-      showAppOpenAd();
-    });
   }
 
   Future<void> initializeAds() async {

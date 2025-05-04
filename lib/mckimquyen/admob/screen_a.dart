@@ -25,7 +25,6 @@ class _ScreenAState extends AdScreenState<ScreenA> {
       loadRewardedAd(),
     ]);
     loadBannerAd();
-    showAppOpenAd();
   }
 
   @override
