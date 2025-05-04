@@ -1,16 +1,13 @@
 import 'dart:async';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:avatar_glow/avatar_glow.dart';
-import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:saigonphantomlabs/mckimquyen/common/v/pulse_container.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/event_bus.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 
-import '../../common/const/color_constants.dart';
 import '../../core/base_stateful_state.dart';
 import '../controller_main.dart';
 
@@ -29,10 +26,15 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   final ControllerMain _controllerMain = Get.find();
   int _durationCountdown = 10;
   Color _containerColor = const Color(0xffFF1E63);
+  StreamSubscription? _subscription;
 
   @override
   void initState() {
     super.initState();
+    _subscription = SimpleEventBus().onBoolEvent.listen((event) {
+      debugPrint("roy93~ onBoolEvent listen event ${event.value}");
+      _goToMainScreen();
+    });
     if (kDebugMode) {
       _durationCountdown = 1;
     }
@@ -284,6 +286,6 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   }
 
   Future<void> _goToMainScreen() async {
-    // Get.offAll(() => const MainScreen());
+    Get.offAll(() => const MainScreen());
   }
 }

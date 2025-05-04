@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'event_bus.dart';
+
 class AdMobManager {
   static final AdMobManager _instance = AdMobManager._internal();
 
@@ -69,7 +71,7 @@ class AdMobManager {
         adUnitId: appOpenAdUnitId(),
         request: const AdRequest(),
         adLoadCallback: AppOpenAdLoadCallback(
-          onAdLoaded: (ad) {
+          onAdLoaded: (ad) async {
             debugPrint('roy93~ AppOpenAd onAdLoaded');
             _appOpenAd = ad;
             _appOpenAdLoadTime = DateTime.now();
@@ -86,16 +88,22 @@ class AdMobManager {
               },
             );
             showAppOpenAd();
+            await Future.delayed(const Duration(milliseconds: 500));
+            SimpleEventBus().fire(BoolEvent(true));
           },
-          onAdFailedToLoad: (error) {
+          onAdFailedToLoad: (error) async {
             debugPrint('roy93~ AppOpenAd failed to load: $error');
             _appOpenAd = null;
             // Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
+            await Future.delayed(const Duration(milliseconds: 1000));
+            SimpleEventBus().fire(BoolEvent(false));
           },
         ),
       );
     } catch (e) {
       debugPrint("roy93~ e _loadAppOpenAd $e");
+      await Future.delayed(const Duration(milliseconds: 1000));
+      SimpleEventBus().fire(BoolEvent(false));
     }
   }
 
