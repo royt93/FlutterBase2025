@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'event_bus.dart';
+
 class AdMobManager {
   static final AdMobManager _instance = AdMobManager._internal();
 
@@ -62,6 +64,8 @@ class AdMobManager {
   }
 
   // region App Open Ad (Global management)
+  var hasFireEvent = false;
+
   Future<void> _loadAppOpenAd() async {
     try {
       await AppOpenAd.load(
@@ -69,6 +73,7 @@ class AdMobManager {
         request: const AdRequest(),
         adLoadCallback: AppOpenAdLoadCallback(
           onAdLoaded: (ad) {
+            debugPrint('roy93~ AppOpenAd onAdLoaded');
             _appOpenAd = ad;
             _appOpenAdLoadTime = DateTime.now();
             ad.fullScreenContentCallback = FullScreenContentCallback(
@@ -83,9 +88,13 @@ class AdMobManager {
                 _loadAppOpenAd();
               },
             );
+            if (!hasFireEvent) {
+              SimpleEventBus().fire(BoolEvent(true));
+              hasFireEvent = true;
+            }
           },
           onAdFailedToLoad: (error) {
-            debugPrint('AppOpenAd failed to load: $error');
+            debugPrint('roy93~ AppOpenAd failed to load: $error');
             _appOpenAd = null;
             // Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
           },
