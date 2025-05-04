@@ -12,8 +12,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
   final ValueNotifier<BannerAd?> bannerNotifier = ValueNotifier(null);
   final ValueNotifier<InterstitialAd?> interstitialNotifier = ValueNotifier(null);
   final ValueNotifier<RewardedAd?> rewardedNotifier = ValueNotifier(null);
-
-  StreamSubscription? _subscription;
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -30,56 +29,82 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
 
   @override
   void dispose() {
-    _subscription?.cancel();
+    _isDisposed = true;
+
+    // Dispose ads
     bannerNotifier.value?.dispose();
     interstitialNotifier.value?.dispose();
     rewardedNotifier.value?.dispose();
+
+    // Dispose notifiers
     bannerNotifier.dispose();
     interstitialNotifier.dispose();
     rewardedNotifier.dispose();
+
     super.dispose();
   }
 
   Future<void> loadBannerAd() async {
+    if (_isDisposed) return;
+
     bannerNotifier.value?.dispose();
     final size = await AdMobManager.getAdaptiveBannerSize(context);
-    // debugPrint("roy93~ _loadBannerAd ${size?.width}x${size?.height}");
-    if (size != null) {
+
+    if (size != null && !_isDisposed) {
       final newAd = AdMobManager.createBannerAd(
         size: size,
         listener: BannerAdListener(
           onAdFailedToLoad: (ad, error) => ad.dispose(),
         ),
       );
+
+      if (_isDisposed) {
+        newAd.dispose();
+        return;
+      }
+
       bannerNotifier.value = newAd;
     }
   }
 
   Future<void> loadInterstitialAd() async {
+    if (_isDisposed) return;
+
     interstitialNotifier.value?.dispose();
-    interstitialNotifier.value = await AdMobManager.createInterstitialAd();
+    final newAd = await AdMobManager.createInterstitialAd();
+
+    if (_isDisposed) {
+      newAd?.dispose();
+      return;
+    }
+
+    interstitialNotifier.value = newAd;
   }
 
   Future<void> loadRewardedAd() async {
+    if (_isDisposed) return;
+
     rewardedNotifier.value?.dispose();
-    rewardedNotifier.value = await AdMobManager.createRewardedAd();
+    final newAd = await AdMobManager.createRewardedAd();
+
+    if (_isDisposed) {
+      newAd?.dispose();
+      return;
+    }
+
+    rewardedNotifier.value = newAd;
   }
 
   Widget buildBanner() {
     return ValueListenableBuilder<BannerAd?>(
       valueListenable: bannerNotifier,
       builder: (context, ad, _) {
-        if (ad == null) {
-          // debugPrint("roy93~ buildBanner #1");
-          return const SizedBox();
-        } else {
-          // debugPrint("roy93~ buildBanner #2");
-          return SizedBox(
-            width: ad.size.width.toDouble(),
-            height: ad.size.height.toDouble(),
-            child: AdWidget(ad: ad),
-          );
-        }
+        if (ad == null) return const SizedBox();
+        return SizedBox(
+          width: ad.size.width.toDouble(),
+          height: ad.size.height.toDouble(),
+          child: AdWidget(ad: ad),
+        );
       },
     );
   }
@@ -90,16 +115,16 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
 
   void showInterstitialAd() {
     final ad = interstitialNotifier.value;
-    if (ad == null) return;
+    if (ad == null || _isDisposed) return;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        loadInterstitialAd();
+        if (!_isDisposed) loadInterstitialAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
-        loadInterstitialAd();
+        if (!_isDisposed) loadInterstitialAd();
       },
     );
     ad.show();
@@ -107,16 +132,16 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
 
   void showRewardedAd({required VoidCallback onReward}) {
     final ad = rewardedNotifier.value;
-    if (ad == null) return;
+    if (ad == null || _isDisposed) return;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        loadRewardedAd();
+        if (!_isDisposed) loadRewardedAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
-        loadRewardedAd();
+        if (!_isDisposed) loadRewardedAd();
       },
     );
 
