@@ -36,14 +36,15 @@ class _ScreenAState extends AdScreenState<ScreenA> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            alignment: Alignment.center,
             child: Column(
               children: [
                 Text('Coins: $_coins', style: const TextStyle(fontSize: 24)),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 _buildControlButtons(),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => Navigator.pushNamed(context, '/screenB'),
                   child: const Text('Go to Screen B'),
@@ -65,7 +66,7 @@ class _ScreenAState extends AdScreenState<ScreenA> {
           onPressed: showInterstitialAd,
           child: const Text('Show Interstitial Ad'),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         ElevatedButton(
           onPressed: () => showRewardedAd(
             onReward: () => setState(() => _coins += 10),
