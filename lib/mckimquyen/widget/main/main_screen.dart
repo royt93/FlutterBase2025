@@ -1,7 +1,9 @@
+import 'package:saigonphantomlabs/mckimquyen/admob/screen_a.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 import '../../core/base_stateful_state.dart';
 import '../controller_main.dart';
@@ -50,6 +52,18 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
   }
 
   Widget _buildBodyView(BuildContext context) {
-    return Container();
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      children: [
+        UIUtils.getButton(
+          "Admob demo",
+          Icons.card_giftcard,
+          () {
+            Get.to(const ScreenA());
+          },
+        ),
+      ],
+    );
   }
 }
