@@ -36,6 +36,7 @@ class _ScreenAState extends AdScreenState<ScreenA> {
       ),
       body: Column(
         children: [
+          buildBanner(),
           Container(
             padding: const EdgeInsets.all(16),
             alignment: Alignment.center,
@@ -52,8 +53,6 @@ class _ScreenAState extends AdScreenState<ScreenA> {
               ],
             ),
           ),
-          const Spacer(),
-          buildBanner(),
         ],
       ),
     );

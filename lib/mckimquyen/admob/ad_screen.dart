@@ -64,13 +64,17 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     return ValueListenableBuilder<BannerAd?>(
       valueListenable: bannerNotifier,
       builder: (context, ad, _) {
-        return ad != null
-            ? SizedBox(
-                width: ad.size.width.toDouble(),
-                height: ad.size.height.toDouble(),
-                child: AdWidget(ad: ad),
-              )
-            : const SizedBox();
+        if (ad == null) {
+          debugPrint("roy93~ buildBanner #1");
+          return const SizedBox();
+        } else {
+          debugPrint("roy93~ buildBanner #2");
+          return SizedBox(
+            width: ad.size.width.toDouble(),
+            height: ad.size.height.toDouble(),
+            child: AdWidget(ad: ad),
+          );
+        }
       },
     );
   }
