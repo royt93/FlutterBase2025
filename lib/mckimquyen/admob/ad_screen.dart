@@ -7,9 +7,10 @@ abstract class AdScreen extends StatefulWidget {
 }
 
 abstract class AdScreenState<T extends AdScreen> extends State<T> with WidgetsBindingObserver {
-  BannerAd? bannerAd;
-  InterstitialAd? interstitialAd;
-  RewardedAd? rewardedAd;
+  final ValueNotifier<BannerAd?> bannerNotifier = ValueNotifier(null);
+  final ValueNotifier<InterstitialAd?> interstitialNotifier = ValueNotifier(null);
+  final ValueNotifier<RewardedAd?> rewardedNotifier = ValueNotifier(null);
+  static bool _appResumedHandled = false;
 
   @override
   void initState() {
@@ -21,16 +22,25 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> with WidgetsBi
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    bannerAd?.dispose();
-    interstitialAd?.dispose();
-    rewardedAd?.dispose();
+    bannerNotifier.value?.dispose();
+    interstitialNotifier.value?.dispose();
+    rewardedNotifier.value?.dispose();
+    bannerNotifier.dispose();
+    interstitialNotifier.dispose();
+    rewardedNotifier.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      AdMobManager().showAppOpenAd();
+      if (!AdScreenState._appResumedHandled) {
+        AdScreenState._appResumedHandled = true;
+        AdMobManager().showAppOpenAd();
+        Future.delayed(const Duration(seconds: 2), () {
+          AdScreenState._appResumedHandled = false;
+        });
+      }
     }
   }
 
@@ -41,68 +51,76 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> with WidgetsBi
   }
 
   Future<void> _loadBannerAd() async {
-    bannerAd?.dispose();
+    bannerNotifier.value?.dispose();
     final size = await AdMobManager.getAdaptiveBannerSize(context);
     if (size != null) {
-      bannerAd = AdMobManager.createBannerAd(
+      final newAd = AdMobManager.createBannerAd(
         size: size,
         listener: BannerAdListener(
           onAdFailedToLoad: (ad, error) => ad.dispose(),
         ),
       );
+      bannerNotifier.value = newAd;
     }
-    setState(() {});
   }
 
   Future<void> _loadInterstitialAd() async {
-    interstitialAd?.dispose();
-    interstitialAd = await AdMobManager.createInterstitialAd();
-    setState(() {});
+    interstitialNotifier.value?.dispose();
+    interstitialNotifier.value = await AdMobManager.createInterstitialAd();
   }
 
   Future<void> _loadRewardedAd() async {
-    rewardedAd?.dispose();
-    rewardedAd = await AdMobManager.createRewardedAd();
-    setState(() {});
+    rewardedNotifier.value?.dispose();
+    rewardedNotifier.value = await AdMobManager.createRewardedAd();
   }
 
   Widget buildBanner() {
-    return bannerAd != null
-        ? SizedBox(
-            width: bannerAd!.size.width.toDouble(),
-            height: bannerAd!.size.height.toDouble(),
-            child: AdWidget(ad: bannerAd!),
-          )
-        : const SizedBox();
+    return ValueListenableBuilder<BannerAd?>(
+      valueListenable: bannerNotifier,
+      builder: (context, ad, _) {
+        return ad != null
+            ? SizedBox(
+                width: ad.size.width.toDouble(),
+                height: ad.size.height.toDouble(),
+                child: AdWidget(ad: ad),
+              )
+            : const SizedBox();
+      },
+    );
   }
 
   void showInterstitialAd() {
-    if (interstitialAd == null) return;
+    final ad = interstitialNotifier.value;
+    if (ad == null) return;
 
-    interstitialAd?.fullScreenContentCallback = FullScreenContentCallback(
+    ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
         _loadInterstitialAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
         _loadInterstitialAd();
       },
     );
-
-    interstitialAd?.show();
+    ad.show();
   }
 
   void showRewardedAd({required VoidCallback onReward}) {
-    if (rewardedAd == null) return;
+    final ad = rewardedNotifier.value;
+    if (ad == null) return;
 
-    rewardedAd?.fullScreenContentCallback = FullScreenContentCallback(
+    ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
         _loadRewardedAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
         _loadRewardedAd();
       },
     );
 
-    rewardedAd?.show(onUserEarnedReward: (_, __) => onReward());
+    ad.show(onUserEarnedReward: (_, __) => onReward());
   }
 }

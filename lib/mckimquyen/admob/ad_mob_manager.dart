@@ -176,7 +176,7 @@ class AdMobManager {
 
   // endregion
 
-  static Future<AnchoredAdaptiveBannerAdSize?> getAdaptiveBannerSize(BuildContext context) {
+  static Future<AdSize?> getAdaptiveBannerSize(BuildContext context) {
     return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
   }
 }
