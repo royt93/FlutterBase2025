@@ -63,33 +63,37 @@ class AdMobManager {
 
   // region App Open Ad (Global management)
   Future<void> _loadAppOpenAd() async {
-    await AppOpenAd.load(
-      adUnitId: appOpenAdUnitId(),
-      request: const AdRequest(),
-      adLoadCallback: AppOpenAdLoadCallback(
-        onAdLoaded: (ad) {
-          _appOpenAd = ad;
-          _appOpenAdLoadTime = DateTime.now();
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              ad.dispose();
-              _appOpenAd = null;
-              _loadAppOpenAd();
-            },
-            onAdFailedToShowFullScreenContent: (ad, error) {
-              ad.dispose();
-              _appOpenAd = null;
-              _loadAppOpenAd();
-            },
-          );
-        },
-        onAdFailedToLoad: (error) {
-          debugPrint('AppOpenAd failed to load: $error');
-          _appOpenAd = null;
-          Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
-        },
-      ),
-    );
+    try {
+      await AppOpenAd.load(
+        adUnitId: appOpenAdUnitId(),
+        request: const AdRequest(),
+        adLoadCallback: AppOpenAdLoadCallback(
+          onAdLoaded: (ad) {
+            _appOpenAd = ad;
+            _appOpenAdLoadTime = DateTime.now();
+            ad.fullScreenContentCallback = FullScreenContentCallback(
+              onAdDismissedFullScreenContent: (ad) {
+                ad.dispose();
+                _appOpenAd = null;
+                _loadAppOpenAd();
+              },
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                ad.dispose();
+                _appOpenAd = null;
+                _loadAppOpenAd();
+              },
+            );
+          },
+          onAdFailedToLoad: (error) {
+            debugPrint('AppOpenAd failed to load: $error');
+            _appOpenAd = null;
+            Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
+          },
+        ),
+      );
+    } catch (e) {
+      debugPrint("roy93~ e _loadAppOpenAd $e");
+    }
   }
 
   void showAppOpenAd() {
