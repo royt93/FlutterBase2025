@@ -6,7 +6,7 @@ abstract class AdScreen extends StatefulWidget {
   const AdScreen({super.key});
 }
 
-abstract class AdScreenState<T extends AdScreen> extends State<T> with WidgetsBindingObserver {
+abstract class AdScreenState<T extends AdScreen> extends State<T> {
   final ValueNotifier<BannerAd?> bannerNotifier = ValueNotifier(null);
   final ValueNotifier<InterstitialAd?> interstitialNotifier = ValueNotifier(null);
   final ValueNotifier<RewardedAd?> rewardedNotifier = ValueNotifier(null);
@@ -14,13 +14,11 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> with WidgetsBi
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _initializeAds();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     bannerNotifier.value?.dispose();
     interstitialNotifier.value?.dispose();
     rewardedNotifier.value?.dispose();
@@ -31,9 +29,11 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> with WidgetsBi
   }
 
   Future<void> _initializeAds() async {
-    await _loadBannerAd();
-    await _loadInterstitialAd();
-    await _loadRewardedAd();
+    await Future.wait([
+      _loadBannerAd(),
+      _loadInterstitialAd(),
+      _loadRewardedAd(),
+    ]);
   }
 
   Future<void> _loadBannerAd() async {
