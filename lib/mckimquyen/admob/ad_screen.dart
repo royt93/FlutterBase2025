@@ -10,7 +10,6 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> with WidgetsBi
   final ValueNotifier<BannerAd?> bannerNotifier = ValueNotifier(null);
   final ValueNotifier<InterstitialAd?> interstitialNotifier = ValueNotifier(null);
   final ValueNotifier<RewardedAd?> rewardedNotifier = ValueNotifier(null);
-  static bool _appResumedHandled = false;
 
   @override
   void initState() {
@@ -29,19 +28,6 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> with WidgetsBi
     interstitialNotifier.dispose();
     rewardedNotifier.dispose();
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      if (!AdScreenState._appResumedHandled) {
-        AdScreenState._appResumedHandled = true;
-        AdMobManager().showAppOpenAd();
-        Future.delayed(const Duration(seconds: 2), () {
-          AdScreenState._appResumedHandled = false;
-        });
-      }
-    }
   }
 
   Future<void> _initializeAds() async {
@@ -87,6 +73,10 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> with WidgetsBi
             : const SizedBox();
       },
     );
+  }
+
+  void showAppOpenAd() {
+    AdMobManager().showAppOpenAd();
   }
 
   void showInterstitialAd() {
