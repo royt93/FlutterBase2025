@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_screen.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/screen_b.dart';
 
 class ScreenA extends AdScreen {
   const ScreenA({super.key});
@@ -47,7 +49,9 @@ class _ScreenAState extends AdScreenState<ScreenA> {
                   _buildControlButtons(),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => Navigator.pushNamed(context, '/screenB'),
+                    onPressed: () {
+                      Get.to(const ScreenB());
+                    },
                     child: const Text('Go to Screen B'),
                   ),
                 ],

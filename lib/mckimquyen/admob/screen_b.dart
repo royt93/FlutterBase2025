@@ -21,15 +21,16 @@ class _ScreenBState extends AdScreenState<ScreenB> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
+          Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 ElevatedButton(
                   onPressed: showInterstitialAd,
                   child: const Text('Show Interstitial Ad'),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => showRewardedAd(onReward: () {}),
                   child: const Text('Show Rewarded Ad'),
