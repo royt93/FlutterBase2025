@@ -36,23 +36,25 @@ class _ScreenAState extends AdScreenState<ScreenA> {
       ),
       body: Column(
         children: [
-          buildBanner(),
-          Container(
-            padding: const EdgeInsets.all(16),
-            alignment: Alignment.center,
-            child: Column(
-              children: [
-                Text('Coins: $_coins', style: const TextStyle(fontSize: 24)),
-                const SizedBox(height: 16),
-                _buildControlButtons(),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/screenB'),
-                  child: const Text('Go to Screen B'),
-                ),
-              ],
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              alignment: Alignment.center,
+              child: Column(
+                children: [
+                  Text('Coins: $_coins', style: const TextStyle(fontSize: 24)),
+                  const SizedBox(height: 16),
+                  _buildControlButtons(),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '/screenB'),
+                    child: const Text('Go to Screen B'),
+                  ),
+                ],
+              ),
             ),
           ),
+          buildBanner(),
         ],
       ),
     );

@@ -39,7 +39,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
   Future<void> _loadBannerAd() async {
     bannerNotifier.value?.dispose();
     final size = await AdMobManager.getAdaptiveBannerSize(context);
-    debugPrint("roy93~ _loadBannerAd ${size?.width}x${size?.height}");
+    // debugPrint("roy93~ _loadBannerAd ${size?.width}x${size?.height}");
     if (size != null) {
       final newAd = AdMobManager.createBannerAd(
         size: size,
@@ -66,10 +66,10 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
       valueListenable: bannerNotifier,
       builder: (context, ad, _) {
         if (ad == null) {
-          debugPrint("roy93~ buildBanner #1");
+          // debugPrint("roy93~ buildBanner #1");
           return const SizedBox();
         } else {
-          debugPrint("roy93~ buildBanner #2");
+          // debugPrint("roy93~ buildBanner #2");
           return SizedBox(
             width: ad.size.width.toDouble(),
             height: ad.size.height.toDouble(),
