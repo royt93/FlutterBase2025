@@ -264,6 +264,14 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                         ],
                       ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                      child: LinearProgressIndicator(
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(45),
+                      ),
+                    ),
                     const SizedBox(height: 16),
                   ],
                 ),
