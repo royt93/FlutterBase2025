@@ -30,15 +30,16 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
 
   Future<void> _initializeAds() async {
     await Future.wait([
-      _loadBannerAd(),
       _loadInterstitialAd(),
       _loadRewardedAd(),
     ]);
+    _loadBannerAd();
   }
 
   Future<void> _loadBannerAd() async {
     bannerNotifier.value?.dispose();
     final size = await AdMobManager.getAdaptiveBannerSize(context);
+    debugPrint("roy93~ _loadBannerAd ${size?.width}x${size?.height}");
     if (size != null) {
       final newAd = AdMobManager.createBannerAd(
         size: size,
