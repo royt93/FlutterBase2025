@@ -100,7 +100,8 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
       valueListenable: bannerNotifier,
       builder: (context, ad, _) {
         if (ad == null) return const SizedBox();
-        return SizedBox(
+        return Container(
+          alignment: Alignment.center,
           width: ad.size.width.toDouble(),
           height: ad.size.height.toDouble(),
           child: AdWidget(ad: ad),
