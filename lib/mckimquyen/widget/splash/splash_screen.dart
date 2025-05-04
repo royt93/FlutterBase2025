@@ -146,108 +146,108 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Spacer(),
-                    AvatarGlow(
-                      glowColor: Colors.white,
-                      child: SizedBox(
-                        width: 120,
-                        height: 120,
-                        child: PulseContainer(
-                          onTapRoot: () {
-                            _goToMainScreen();
-                          },
-                          color: Colors.white,
-                          alignment: Alignment.center,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Image.asset(
-                              "assets/images/ic_go.png",
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Auto go to homepage after ",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 5.0,
-                                color: Colors.black,
-                                offset: Offset(1.0, 1.0),
-                              ),
-                            ],
-                          ),
-                        ),
-                        CircularCountDownTimer(
-                          duration: _durationCountdown,
-                          initialDuration: 0,
-                          controller: CountDownController(),
-                          width: 38,
-                          height: 38,
-                          ringColor: Colors.transparent,
-                          ringGradient: null,
-                          fillColor: Colors.white,
-                          fillGradient: null,
-                          backgroundColor: Colors.white.withOpacity(0.8),
-                          backgroundGradient: null,
-                          strokeWidth: 2.0,
-                          strokeCap: StrokeCap.round,
-                          textStyle: const TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textFormat: CountdownTextFormat.S,
-                          isReverse: true,
-                          isReverseAnimation: false,
-                          isTimerTextShown: true,
-                          autoStart: true,
-                          onStart: () {
-                            // debugPrint('Countdown Started');
-                          },
-                          onComplete: () {
-                            // debugPrint('Countdown Ended');
-                            _goToMainScreen();
-                          },
-                          onChange: (String timeStamp) {
-                            // debugPrint('Countdown Changed $timeStamp');
-                          },
-                          timeFormatterFunction: (defaultFormatterFunction, duration) {
-                            return Function.apply(defaultFormatterFunction, [duration]);
-                            // if (duration.inSeconds == 0) {
-                            //   return "0";
-                            // } else {
-                            //   return Function.apply(defaultFormatterFunction, [duration]);
-                            // }
-                          },
-                        ),
-                        const Text(
-                          " s.",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 5.0,
-                                color: Colors.black,
-                                offset: Offset(1.0, 1.0),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    // AvatarGlow(
+                    //   glowColor: Colors.white,
+                    //   child: SizedBox(
+                    //     width: 120,
+                    //     height: 120,
+                    //     child: PulseContainer(
+                    //       onTapRoot: () {
+                    //         _goToMainScreen();
+                    //       },
+                    //       color: Colors.white,
+                    //       alignment: Alignment.center,
+                    //       child: Padding(
+                    //         padding: const EdgeInsets.all(16),
+                    //         child: Image.asset(
+                    //           "assets/images/ic_go.png",
+                    //           width: double.infinity,
+                    //           height: double.infinity,
+                    //           fit: BoxFit.contain,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 8),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     const Text(
+                    //       "Auto go to homepage after ",
+                    //       style: TextStyle(
+                    //         fontWeight: FontWeight.bold,
+                    //         fontSize: 16,
+                    //         color: Colors.white,
+                    //         shadows: [
+                    //           Shadow(
+                    //             blurRadius: 5.0,
+                    //             color: Colors.black,
+                    //             offset: Offset(1.0, 1.0),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ),
+                    //     CircularCountDownTimer(
+                    //       duration: _durationCountdown,
+                    //       initialDuration: 0,
+                    //       controller: CountDownController(),
+                    //       width: 38,
+                    //       height: 38,
+                    //       ringColor: Colors.transparent,
+                    //       ringGradient: null,
+                    //       fillColor: Colors.white,
+                    //       fillGradient: null,
+                    //       backgroundColor: Colors.white.withOpacity(0.8),
+                    //       backgroundGradient: null,
+                    //       strokeWidth: 2.0,
+                    //       strokeCap: StrokeCap.round,
+                    //       textStyle: const TextStyle(
+                    //         fontSize: 16.0,
+                    //         color: Colors.black,
+                    //         fontWeight: FontWeight.bold,
+                    //       ),
+                    //       textFormat: CountdownTextFormat.S,
+                    //       isReverse: true,
+                    //       isReverseAnimation: false,
+                    //       isTimerTextShown: true,
+                    //       autoStart: true,
+                    //       onStart: () {
+                    //         // debugPrint('Countdown Started');
+                    //       },
+                    //       onComplete: () {
+                    //         // debugPrint('Countdown Ended');
+                    //         _goToMainScreen();
+                    //       },
+                    //       onChange: (String timeStamp) {
+                    //         // debugPrint('Countdown Changed $timeStamp');
+                    //       },
+                    //       timeFormatterFunction: (defaultFormatterFunction, duration) {
+                    //         return Function.apply(defaultFormatterFunction, [duration]);
+                    //         // if (duration.inSeconds == 0) {
+                    //         //   return "0";
+                    //         // } else {
+                    //         //   return Function.apply(defaultFormatterFunction, [duration]);
+                    //         // }
+                    //       },
+                    //     ),
+                    //     const Text(
+                    //       " s.",
+                    //       style: TextStyle(
+                    //         fontWeight: FontWeight.bold,
+                    //         fontSize: 16,
+                    //         color: Colors.white,
+                    //         shadows: [
+                    //           Shadow(
+                    //             blurRadius: 5.0,
+                    //             color: Colors.black,
+                    //             offset: Offset(1.0, 1.0),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
                     const SizedBox(height: 32),
                     const Text(
                       "Please note: this action may show ads",
@@ -284,6 +284,6 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   }
 
   Future<void> _goToMainScreen() async {
-    Get.offAll(() => const MainScreen());
+    // Get.offAll(() => const MainScreen());
   }
 }
