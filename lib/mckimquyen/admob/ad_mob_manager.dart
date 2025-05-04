@@ -87,7 +87,7 @@ class AdMobManager {
           onAdFailedToLoad: (error) {
             debugPrint('AppOpenAd failed to load: $error');
             _appOpenAd = null;
-            Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
+            // Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
           },
         ),
       );
