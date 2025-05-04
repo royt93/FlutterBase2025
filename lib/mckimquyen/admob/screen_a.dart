@@ -16,6 +16,15 @@ class _ScreenAState extends AdScreenState<ScreenA> {
   @override
   void initState() {
     super.initState();
+    _initAd();
+  }
+
+  Future<void> _initAd() async {
+    await Future.wait([
+      loadInterstitialAd(),
+      loadRewardedAd(),
+    ]);
+    loadBannerAd();
     showAppOpenAd();
   }
 

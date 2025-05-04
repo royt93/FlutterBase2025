@@ -14,7 +14,15 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
   @override
   void initState() {
     super.initState();
-    _initializeAds();
+  }
+
+  Future<void> initializeAds() async {
+    await Future.wait([
+      loadInterstitialAd(),
+      loadRewardedAd(),
+    ]);
+    loadBannerAd();
+    // showAppOpenAd();
   }
 
   @override
@@ -28,15 +36,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     super.dispose();
   }
 
-  Future<void> _initializeAds() async {
-    await Future.wait([
-      _loadInterstitialAd(),
-      _loadRewardedAd(),
-    ]);
-    _loadBannerAd();
-  }
-
-  Future<void> _loadBannerAd() async {
+  Future<void> loadBannerAd() async {
     bannerNotifier.value?.dispose();
     final size = await AdMobManager.getAdaptiveBannerSize(context);
     // debugPrint("roy93~ _loadBannerAd ${size?.width}x${size?.height}");
@@ -51,12 +51,12 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     }
   }
 
-  Future<void> _loadInterstitialAd() async {
+  Future<void> loadInterstitialAd() async {
     interstitialNotifier.value?.dispose();
     interstitialNotifier.value = await AdMobManager.createInterstitialAd();
   }
 
-  Future<void> _loadRewardedAd() async {
+  Future<void> loadRewardedAd() async {
     rewardedNotifier.value?.dispose();
     rewardedNotifier.value = await AdMobManager.createRewardedAd();
   }
@@ -91,11 +91,11 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        _loadInterstitialAd();
+        loadInterstitialAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
-        _loadInterstitialAd();
+        loadInterstitialAd();
       },
     );
     ad.show();
@@ -108,11 +108,11 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        _loadRewardedAd();
+        loadRewardedAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
-        _loadRewardedAd();
+        loadRewardedAd();
       },
     );
 

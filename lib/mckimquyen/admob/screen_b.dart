@@ -10,6 +10,20 @@ class ScreenB extends AdScreen {
 
 class _ScreenBState extends AdScreenState<ScreenB> {
   @override
+  void initState() {
+    super.initState();
+    _initAd();
+  }
+
+  Future<void> _initAd() async {
+    await Future.wait([
+      loadInterstitialAd(),
+      loadRewardedAd(),
+    ]);
+    loadBannerAd();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
