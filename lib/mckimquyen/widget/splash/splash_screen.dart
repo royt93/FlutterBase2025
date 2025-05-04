@@ -10,6 +10,7 @@ import 'package:saigonphantomlabs/mckimquyen/common/v/pulse_container.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 
+import '../../common/const/color_constants.dart';
 import '../../core/base_stateful_state.dart';
 import '../controller_main.dart';
 
@@ -118,8 +119,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                           // shadows: [
                           //   Shadow(
                           //     blurRadius: 5.0,
-                          //     color: ColorConstants.disabledColor,
-                          //     offset: const Offset(2.0, 2.0),
+                          //     color: Colors.black,
+                          //     offset: Offset(1.0, 1.0),
                           //   ),
                           // ],
                         ),
@@ -148,8 +149,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                     AvatarGlow(
                       glowColor: Colors.white,
                       child: SizedBox(
-                        width: 150,
-                        height: 150,
+                        width: 120,
+                        height: 120,
                         child: PulseContainer(
                           onTapRoot: () {
                             _goToMainScreen();
@@ -178,6 +179,13 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                             color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 5.0,
+                                color: Colors.black,
+                                offset: Offset(1.0, 1.0),
+                              ),
+                            ],
                           ),
                         ),
                         CircularCountDownTimer(
@@ -229,11 +237,34 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                             color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 5.0,
+                                color: Colors.black,
+                                offset: Offset(1.0, 1.0),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 32),
+                    const Text(
+                      "Please note: this action may show ads",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 5.0,
+                            color: Colors.black,
+                            offset: Offset(1.0, 1.0),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -245,6 +276,6 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   }
 
   Future<void> _goToMainScreen() async {
-    Get.offAll(() => const MainScreen());
+    // Get.offAll(() => const MainScreen());
   }
 }

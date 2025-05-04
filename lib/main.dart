@@ -15,6 +15,8 @@ import 'mckimquyen/widget/splash/splash_screen.dart';
 
 //TODO roy93~ multi language
 
+//done
+//Please note: this action may show ads
 //screenOrientation
 //review in app
 //120hz
