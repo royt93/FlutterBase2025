@@ -16,7 +16,9 @@ class _ScreenAState extends AdScreenState<ScreenA> {
   @override
   void initState() {
     super.initState();
-    _initAd();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initAd();
+    });
   }
 
   Future<void> _initAd() async {
