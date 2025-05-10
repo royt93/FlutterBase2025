@@ -77,19 +77,23 @@ class AdMobManager {
             _appOpenAdLoadTime = DateTime.now();
             ad.fullScreenContentCallback = FullScreenContentCallback(
               onAdDismissedFullScreenContent: (ad) {
+                debugPrint("roy93~ onAdDismissedFullScreenContent");
                 ad.dispose();
                 _appOpenAd = null;
                 // _loadAppOpenAd();
+                // await Future.delayed(const Duration(milliseconds: 500));
+                SimpleEventBus().fire(BoolEvent(true));
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
+                debugPrint("roy93~ onAdFailedToShowFullScreenContent");
                 ad.dispose();
                 _appOpenAd = null;
                 // _loadAppOpenAd();
+                // await Future.delayed(const Duration(milliseconds: 500));
+                SimpleEventBus().fire(BoolEvent(true));
               },
             );
             showAppOpenAd();
-            await Future.delayed(const Duration(milliseconds: 500));
-            SimpleEventBus().fire(BoolEvent(true));
           },
           onAdFailedToLoad: (error) async {
             debugPrint('roy93~ AppOpenAd failed to load: $error');
