@@ -68,7 +68,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
   }
 
   Future<void> loadInterstitialAd() async {
-    if (_isDisposed) return;
+    if (_isDisposed || !AdMobManager().canLoadInterstitial()) return;
 
     interstitialNotifier.value?.dispose();
     final newAd = await AdMobManager.createInterstitialAd();
@@ -82,7 +82,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
   }
 
   Future<void> loadRewardedAd() async {
-    if (_isDisposed) return;
+    if (_isDisposed || !AdMobManager().canLoadRewarded()) return;
 
     rewardedNotifier.value?.dispose();
     final newAd = await AdMobManager.createRewardedAd();
@@ -119,6 +119,8 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     final ad = interstitialNotifier.value;
     if (ad == null || _isDisposed) return;
 
+    AdMobManager().setLastInterstitialShowTime();
+
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
@@ -135,6 +137,8 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
   void showRewardedAd({required VoidCallback onReward}) {
     final ad = rewardedNotifier.value;
     if (ad == null || _isDisposed) return;
+
+    AdMobManager().setLastRewardedShowTime();
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {

@@ -56,6 +56,10 @@ class AdMobManager {
   AppOpenAd? _appOpenAd;
   DateTime _appOpenAdLoadTime = DateTime(0);
 
+  // Thêm biến quản lý thời gian
+  DateTime _lastInterstitialShowTime = DateTime(0);
+  DateTime _lastRewardedShowTime = DateTime(0);
+
   Future<void> initialize() async {
     if (_isInitialized) return;
     await MobileAds.instance.initialize();
@@ -64,7 +68,6 @@ class AdMobManager {
   }
 
   // region App Open Ad (Global management)
-
   Future<void> _loadAppOpenAd() async {
     try {
       await AppOpenAd.load(
@@ -117,6 +120,29 @@ class AdMobManager {
       return;
     }
     _appOpenAd?.show();
+  }
+
+  // endregion
+
+  // region Timing control methods
+  void setLastInterstitialShowTime() {
+    _lastInterstitialShowTime = DateTime.now();
+  }
+
+  void setLastRewardedShowTime() {
+    _lastRewardedShowTime = DateTime.now();
+  }
+
+  bool canLoadInterstitial() {
+    var isValid = DateTime.now().difference(_lastInterstitialShowTime).inMinutes >= 15;
+    debugPrint("roy93~ canLoadInterstitial isValid $isValid");
+    return isValid;
+  }
+
+  bool canLoadRewarded() {
+    var isValid = DateTime.now().difference(_lastRewardedShowTime).inMinutes >= 15;
+    debugPrint("roy93~ canLoadRewarded isValid $isValid");
+    return isValid;
   }
 
   // endregion
