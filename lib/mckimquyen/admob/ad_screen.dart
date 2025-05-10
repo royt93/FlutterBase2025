@@ -102,6 +102,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
         if (ad == null) return const SizedBox();
         return Container(
           alignment: Alignment.center,
+          margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
           width: ad.size.width.toDouble(),
           height: ad.size.height.toDouble(),
           child: AdWidget(ad: ad),
