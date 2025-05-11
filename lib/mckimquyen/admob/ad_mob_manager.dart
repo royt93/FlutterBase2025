@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/k/k.dart';
 
 import 'event_bus.dart';
 
@@ -16,17 +17,11 @@ class AdMobManager {
 
   AdMobManager._internal();
 
-  //TODO roy93~ update ad ID
-  static const String _bannerAdUnitId = "";
-  static const String _interstitialAdUnitId = "";
-  static const String _rewardedAdUnitId = "";
-  static const String _appOpenAdUnitId = "";
-
   static String bannerAdUnitId() {
     if (kDebugMode) {
       return "ca-app-pub-3940256099942544/6300978111";
     } else {
-      return _bannerAdUnitId;
+      return kBannerAdUnitId;
     }
   }
 
@@ -34,7 +29,7 @@ class AdMobManager {
     if (kDebugMode) {
       return "ca-app-pub-3940256099942544/1033173712";
     } else {
-      return _interstitialAdUnitId;
+      return kInterstitialAdUnitId;
     }
   }
 
@@ -42,7 +37,7 @@ class AdMobManager {
     if (kDebugMode) {
       return "ca-app-pub-3940256099942544/5224354917";
     } else {
-      return _rewardedAdUnitId;
+      return kRewardedAdUnitId;
     }
   }
 
@@ -50,7 +45,7 @@ class AdMobManager {
     if (kDebugMode) {
       return "ca-app-pub-3940256099942544/9257395921";
     } else {
-      return _appOpenAdUnitId;
+      return kAppOpenAdUnitId;
     }
   }
 
