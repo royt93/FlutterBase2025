@@ -1,4 +1,6 @@
 // File: admob_manager.dart
+//https://developers.google.com/admob/flutter/mediation/applovin?hl=en
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
