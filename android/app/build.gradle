@@ -49,6 +49,8 @@ android {
     namespace("com.saigonphantomlabs.base")
     defaultConfig {
         applicationId "com.saigonphantomlabs.base"
+//        applicationId "com.roy.admobwrapper"
+
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 24
@@ -105,5 +107,5 @@ dependencies {
 //    implementation 'com.google.firebase:firebase-messaging:24.0.1'
 //    implementation("com.google.firebase:firebase-appcheck-playintegrity")
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
-    implementation("com.google.ads.mediation:applovin:13.2.0.1")
+//    implementation("com.google.ads.mediation:applovin:13.2.0.1")
 }
