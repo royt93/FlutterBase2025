@@ -10,6 +10,7 @@ import 'package:saigonphantomlabs/mckimquyen/admob/k/k.dart';
 
 import 'event_bus.dart';
 
+//version 20250529
 class AdMobManager {
   static final AdMobManager _instance = AdMobManager._internal();
 
@@ -59,9 +60,17 @@ class AdMobManager {
 
   Future<void> initialize() async {
     if (_isInitialized) return;
-    await MobileAds.instance.initialize();
-    _loadAppOpenAd();
-    _isInitialized = true;
+    // await MobileAds.instance.initialize();
+    MobileAds.instance.initialize().then((InitializationStatus status) {
+      debugPrint('roy93~ initialize Google Mobile Ads SDK initialized: ${status.adapterStatuses}');
+      // Bạn có thể kiểm tra trạng thái của các adapter tại đây.
+      // AppLovin adapter sẽ được liệt kê nếu nó được tích hợp đúng cách.
+      status.adapterStatuses.forEach((key, value) {
+        debugPrint('roy93~ initialize Adapter $key: ${value.description}');
+      });
+      _loadAppOpenAd();
+      _isInitialized = true;
+    });
   }
 
   // region App Open Ad (Global management)
