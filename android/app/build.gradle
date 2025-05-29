@@ -96,7 +96,7 @@ flutter {
 
 dependencies {
 //    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.0.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.1.10"
     implementation("androidx.multidex:multidex:2.0.1")
 //    implementation 'androidx.window:window:1.0.0'
 //    implementation 'androidx.window:window-java:1.0.0'
@@ -104,5 +104,6 @@ dependencies {
 //    implementation 'com.google.firebase:firebase-analytics'
 //    implementation 'com.google.firebase:firebase-messaging:24.0.1'
 //    implementation("com.google.firebase:firebase-appcheck-playintegrity")
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    implementation("com.google.ads.mediation:applovin:13.2.0.1")
 }
