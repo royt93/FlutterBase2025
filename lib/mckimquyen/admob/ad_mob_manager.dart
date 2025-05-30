@@ -15,6 +15,8 @@ import 'event_bus.dart';
 
 // ref https://developers.google.com/admob/flutter/mediation?hl=en
 
+//TODO impl ad for ios
+
 class AdMobManager {
   static final AdMobManager _instance = AdMobManager._internal();
 
