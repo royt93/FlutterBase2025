@@ -83,6 +83,7 @@ dependencies:
   toastification: ^3.0.2
   hugeicons: ^0.0.11
   google_mobile_ads: ^6.0.0
+  gma_mediation_applovin:
 
 #  dart run rename_app:main all="My App Name"
 #  rename_app: ^1.6.2

@@ -43,10 +43,10 @@
         android:label="Base"
         tools:ignore="DiscouragedApi,LockedOrientationActivity,UnusedAttribute">
 
-        <!--        TODO roy93~ update value app id-->
+        <!--        TODO roy93~ update admob app id-->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-3612191981543807~9731053733" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_bell" />

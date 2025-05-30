@@ -7,10 +7,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/k/k.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 import 'event_bus.dart';
 
 //version 20250529
+
+// ref https://developers.google.com/admob/flutter/mediation?hl=en
+
 class AdMobManager {
   static final AdMobManager _instance = AdMobManager._internal();
 
@@ -65,9 +69,14 @@ class AdMobManager {
       debugPrint('roy93~ initialize Google Mobile Ads SDK initialized: ${status.adapterStatuses}');
       // Bạn có thể kiểm tra trạng thái của các adapter tại đây.
       // AppLovin adapter sẽ được liệt kê nếu nó được tích hợp đúng cách.
+      var adapterStatus = "";
       status.adapterStatuses.forEach((key, value) {
         debugPrint('roy93~ initialize Adapter $key: ${value.description}');
+        adapterStatus += "$key: ${value.description}\n";
       });
+      if (kDebugMode) {
+        UIUtils.showToast("Admob", adapterStatus);
+      }
       _loadAppOpenAd();
       _isInitialized = true;
     });
