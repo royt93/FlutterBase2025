@@ -100,12 +100,28 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
       valueListenable: bannerNotifier,
       builder: (context, ad, _) {
         if (ad == null) return const SizedBox();
-        return Container(
-          alignment: Alignment.center,
-          margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-          width: ad.size.width.toDouble(),
-          height: ad.size.height.toDouble(),
-          child: AdWidget(ad: ad),
+        return Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              alignment: Alignment.centerLeft,
+              child: const Text(
+                "Ad",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Container(
+              alignment: Alignment.center,
+              margin: const EdgeInsets.fromLTRB(0, 1, 0, 16),
+              width: ad.size.width.toDouble(),
+              height: ad.size.height.toDouble(),
+              child: AdWidget(ad: ad),
+            ),
+          ],
         );
       },
     );
