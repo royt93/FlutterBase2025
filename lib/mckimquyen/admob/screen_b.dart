@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_screen.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/screen_c.dart';
 
 class ScreenB extends AdScreen {
   const ScreenB({super.key});
@@ -43,8 +45,13 @@ class _ScreenBState extends AdScreenState<ScreenB> {
             child: Column(
               children: [
                 ElevatedButton(
-                  onPressed: showInterstitialAd,
-                  child: const Text('Show Interstitial Ad'),
+                  onPressed: () {
+                    showInterstitialAd((value) {
+                      debugPrint("roy93~ showInterstitialAd value $value");
+                      Get.to(const ScreenC());
+                    });
+                  },
+                  child: const Text('Show Interstitial Ad\n(Ads may appear)'),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(

@@ -58,12 +58,6 @@ class _ScreenAState extends AdScreenState<ScreenA> {
                   const SizedBox(height: 16),
                   _buildControlButtons(),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      Get.to(const ScreenB());
-                    },
-                    child: const Text('Go to Screen B'),
-                  ),
                 ],
               ),
             ),
@@ -78,8 +72,13 @@ class _ScreenAState extends AdScreenState<ScreenA> {
     return Column(
       children: [
         ElevatedButton(
-          onPressed: showInterstitialAd,
-          child: const Text('Show Interstitial Ad'),
+          onPressed: () {
+            showInterstitialAd((value) {
+              debugPrint("roy93~ showInterstitialAd value $value");
+              Get.to(const ScreenB());
+            });
+          },
+          child: const Text('Go to Screen B\n (Ads may appear)'),
         ),
         const SizedBox(height: 16),
         ElevatedButton(

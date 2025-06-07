@@ -143,23 +143,33 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     AdMobManager().showAppOpenAd();
   }
 
-  void showInterstitialAd() {
+  void showInterstitialAd(Function(bool value) onDoneFlow) {
+    debugPrint("roy93~ showInterstitialAd");
     final ad = interstitialNotifier.value;
-    if (ad == null || _isDisposed) return;
-
+    if (ad == null || _isDisposed) {
+      debugPrint("roy93~ #1");
+      onDoneFlow.call(false);
+      return;
+    }
     AdMobManager().setLastInterstitialShowTime();
-
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        debugPrint("roy93~ #2");
         ad.dispose();
         if (!_isDisposed) loadInterstitialAd();
+        onDoneFlow.call(true);
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
+        debugPrint("roy93~ #3");
         ad.dispose();
         if (!_isDisposed) loadInterstitialAd();
+        onDoneFlow.call(false);
       },
     );
-    ad.show();
+    if (!_isDisposed) {
+      ad.show();
+    }
+    debugPrint("roy93~ #4");
   }
 
   void showRewardedAd({required VoidCallback onReward}) {
