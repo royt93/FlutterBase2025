@@ -101,22 +101,34 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
       builder: (context, ad, _) {
         if (ad == null) return const SizedBox();
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
+              width: 50,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              margin: const EdgeInsets.fromLTRB(8, 1, 8, 0),
               alignment: Alignment.centerLeft,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.blue,
+                  style: BorderStyle.solid,
+                  width: 1.0,
+                ),
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(45.0),
+              ),
               child: const Text(
                 "Ad",
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Colors.white,
                 ),
               ),
             ),
             Container(
               alignment: Alignment.center,
-              margin: const EdgeInsets.fromLTRB(0, 1, 0, 16),
+              margin: const EdgeInsets.fromLTRB(0, 4, 0, 12),
               width: ad.size.width.toDouble(),
               height: ad.size.height.toDouble(),
               child: AdWidget(ad: ad),

@@ -253,7 +253,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                     // ),
                     const SizedBox(height: 32),
                     const Text(
-                      "Please note: this action may show ads",
+                      "Please note: this action may display app open ads.",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
