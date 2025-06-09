@@ -137,32 +137,36 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
   }
 
   void showInterstitialAd(Function(bool value) onDoneFlow) {
-    debugPrint("roy93~ showInterstitialAd");
-    final ad = interstitialNotifier.value;
-    if (ad == null || _isDisposed) {
-      debugPrint("roy93~ #1");
-      onDoneFlow.call(false);
-      return;
-    }
-    AdMobManager().setLastInterstitialShowTime();
-    ad.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        debugPrint("roy93~ #2");
-        ad.dispose();
-        if (!_isDisposed) loadInterstitialAd();
-        onDoneFlow.call(true);
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        debugPrint("roy93~ #3");
-        ad.dispose();
-        if (!_isDisposed) loadInterstitialAd();
+    try {
+      // debugPrint("showInterstitialAd");
+      final ad = interstitialNotifier.value;
+      if (ad == null || _isDisposed) {
+        // debugPrint("#1");
         onDoneFlow.call(false);
-      },
-    );
-    if (!_isDisposed) {
-      ad.show();
+        return;
+      }
+      AdMobManager().setLastInterstitialShowTime();
+      ad.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          // debugPrint("#2");
+          ad.dispose();
+          if (!_isDisposed) loadInterstitialAd();
+          onDoneFlow.call(true);
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          // debugPrint("#3");
+          ad.dispose();
+          if (!_isDisposed) loadInterstitialAd();
+          onDoneFlow.call(false);
+        },
+      );
+      if (!_isDisposed) {
+        ad.show();
+      }
+      // debugPrint("#4");
+    } catch (e) {
+      onDoneFlow.call(false);
     }
-    debugPrint("roy93~ #4");
   }
 
   void showRewardedAd({required VoidCallback onReward}) {
