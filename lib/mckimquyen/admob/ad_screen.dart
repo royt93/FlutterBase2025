@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/label_ad.dart';
 
 abstract class AdScreen extends StatefulWidget {
   const AdScreen({super.key});
@@ -103,28 +104,10 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
+            const LabelAd(
+              txt: "Ad",
+              textSize: 12,
               width: 50,
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              margin: const EdgeInsets.fromLTRB(8, 1, 8, 0),
-              alignment: Alignment.centerLeft,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.blue,
-                  style: BorderStyle.solid,
-                  width: 1.0,
-                ),
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(45.0),
-              ),
-              child: const Text(
-                "Ad",
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
             ),
             Container(
               alignment: Alignment.center,

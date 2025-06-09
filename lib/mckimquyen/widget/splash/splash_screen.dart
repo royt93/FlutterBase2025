@@ -4,6 +4,7 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/event_bus.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
@@ -253,7 +254,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                     // ),
                     const SizedBox(height: 32),
                     const Text(
-                      "Please note: this action may display app open ads.",
+                      adPlsNoteEn,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,

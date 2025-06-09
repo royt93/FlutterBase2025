@@ -17,6 +17,12 @@ import 'event_bus.dart';
 
 //TODO impl ad for ios
 
+const String adPlsNoteEn = "Please note: this action may display app open ads.";
+const String adPlsNoteVi = "Xin lưu ý: hành động này có thể hiển thị quảng cáo khi mở ứng dụng.";
+
+const String adMayAppearEn = "(Ads may appear)";
+const String adMayAppearVi = "(Có thể xuất hiện quảng cáo)";
+
 class AdMobManager {
   static final AdMobManager _instance = AdMobManager._internal();
 
