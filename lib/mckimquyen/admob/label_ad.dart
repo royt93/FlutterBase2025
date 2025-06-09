@@ -50,7 +50,7 @@ class LabelAd extends StatelessWidget {
         style: TextStyle(
           fontSize: textSize,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: mColorTxt,
         ),
       ),
     );
