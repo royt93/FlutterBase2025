@@ -96,7 +96,10 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     rewardedNotifier.value = newAd;
   }
 
-  Widget buildBanner() {
+  Widget buildBanner({
+    Color? colorBkg,
+    Color? colorTxt,
+  }) {
     return ValueListenableBuilder<BannerAd?>(
       valueListenable: bannerNotifier,
       builder: (context, ad, _) {
@@ -104,14 +107,16 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
                 LabelAd(
                   txt: "Ad",
                   textSize: 12,
                   width: null,
+                  colorBkg: colorBkg,
+                  colorTxt: colorTxt,
                 ),
-                Spacer(),
+                const Spacer(),
               ],
             ),
             Container(
