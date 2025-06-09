@@ -104,10 +104,15 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const LabelAd(
-              txt: "Ad",
-              textSize: 12,
-              width: 50,
+            const Row(
+              children: [
+                LabelAd(
+                  txt: "Ad",
+                  textSize: 12,
+                  width: null,
+                ),
+                Spacer(),
+              ],
             ),
             Container(
               alignment: Alignment.center,
