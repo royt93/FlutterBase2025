@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+
 import 'package:dio/dio.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class WiFiStressorApp extends StatelessWidget {
   const WiFiStressorApp({super.key});
@@ -26,14 +26,7 @@ class StressorController extends GetxController {
   final startTime = Rx<DateTime?>(null);
 
   final urls = [
-    'http://speedtest.tele2.net/100MB.zip',
-    'http://ipv4.download.thinkbroadband.com/100MB.zip',
-    'http://speed.hetzner.de/100MB.bin',
-    'http://speedtest.tele2.net/10MB.zip',
-    'http://ipv4.download.thinkbroadband.com/10MB.zip',
-    'http://speed.hetzner.de/10MB.bin',
-    // 'http://test.best.vn/data/100MB.bin',
-    'https://download.microsoft.com/download/8/7/2/872BE5C4-7D3E-4F6A-99B2-6815A70B2F76/VS2019.Community.exe',
+    'https://proof.ovh.net/files/10Mb.dat',
   ];
 
   final List<CancelToken> _cancelTokens = [];
@@ -92,7 +85,7 @@ class StressorController extends GetxController {
     _updateTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       debugPrint('roy93~ Update timer tick - total downloaded: ${totalDownloadedBytes.value} bytes');
       _updateTotalSpeed();
-      update(); // Force UI update for chart
+      update();
     });
 
     for (int i = 0; i < parallelDownloads.value; i++) {
@@ -129,19 +122,6 @@ class StressorController extends GetxController {
     }
   }
 
-  String _getDownloadUrl() {
-    // Tự động chọn file 10MB nếu tốc độ dưới 10Mbps
-    final useSmallFile = speedMbps.value > 0 && speedMbps.value < 10;
-    final prefix = useSmallFile ? '10MB' : '100MB';
-
-    final availableUrls = urls.where((url) => url.contains(prefix)).toList();
-    if (availableUrls.isEmpty) return urls.first;
-
-    final selectedUrl = availableUrls[DateTime.now().millisecond % availableUrls.length];
-    debugPrint('roy93~ Selected URL: $selectedUrl');
-    return selectedUrl;
-  }
-
   Future<void> _runDownloadLoop(int id) async {
     debugPrint('roy93~ [Loop $id] Starting download loop');
     final cancelToken = CancelToken();
@@ -149,69 +129,69 @@ class StressorController extends GetxController {
 
     try {
       while (isRunning.value) {
-        final url = _getDownloadUrl();
+        final url = urls[id % urls.length];
+        debugPrint('roy93~ [Loop $id] Selected URL: $url');
+
         final stopwatch = Stopwatch()..start();
-        int bytesDownloaded = 0;
 
         try {
           debugPrint('roy93~ [Loop $id] Starting download from: $url');
+
           final response = await dio.get(
             url,
             options: Options(
-              responseType: ResponseType.stream,
-              receiveTimeout: const Duration(seconds: 30),
+              responseType: ResponseType.bytes,
+              followRedirects: true,
+              receiveTimeout: const Duration(seconds: 15),
+              headers: {
+                'User-Agent':
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+              },
             ),
             cancelToken: cancelToken,
+            onReceiveProgress: (received, total) {
+              if (cancelToken.isCancelled) return;
+              debugPrint('roy93~ [Loop $id] Progress: $received/$total bytes => ${received * 100 / total}');
+            },
           );
 
-          final chunks = <Uint8List>[];
-          await for (var chunk in response.data.stream) {
-            if (cancelToken.isCancelled) {
-              debugPrint('roy93~ [Loop $id] Download cancelled during stream');
-              break;
-            }
-            chunks.add(chunk);
-            // bytesDownloaded += chunk.length;
-            bytesDownloaded += (chunk as List<int>).length;
-          }
-
-          chunks.clear();
           stopwatch.stop();
 
-          if (stopwatch.elapsedMilliseconds > 0) {
-            final mbps = (bytesDownloaded * 8) / (stopwatch.elapsedMilliseconds * 1000);
+          num actualBytes = response.data.length;
+
+          if (actualBytes > 0) {
+            final mbps = (actualBytes * 8) / (stopwatch.elapsedMilliseconds * 1000);
             debugPrint('roy93~ [Loop $id] Download completed: '
-                '${(bytesDownloaded / (1024 * 1024)).toStringAsFixed(2)} MB in '
+                '${(actualBytes / (1024 * 1024)).toStringAsFixed(2)} MB in '
                 '${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)}s = '
                 '${mbps.toStringAsFixed(2)} Mbps');
 
             speedMbps.value = mbps;
-            totalDownloadedBytes.value += bytesDownloaded;
+            totalDownloadedBytes.value += actualBytes.toInt();
 
             speedHistory.add(mbps);
             if (speedHistory.length > 100) {
               speedHistory.removeAt(0);
             }
             debugPrint('roy93~ [Loop $id] Speed history updated (${speedHistory.length} points)');
+          } else {
+            debugPrint('roy93~ [Loop $id] Warning: Received 0 bytes!');
           }
 
           downloadCount.value++;
           debugPrint('roy93~ [Loop $id] Total downloads: ${downloadCount.value}');
         } catch (e) {
+          debugPrint('roy93~ [Loop $id] Download error: ${e.toString()}');
           if (e is DioException) {
-            if (e.type == DioExceptionType.cancel) {
-              debugPrint('roy93~ [Loop $id] Download cancelled');
-            } else {
-              debugPrint('roy93~ [Loop $id] Download failed: ${e.type} - ${e.message}');
-              if (e.response != null) {
-                debugPrint('roy93~ [Loop $id] Response status: ${e.response?.statusCode}');
-              }
+            debugPrint('roy93~ [Loop $id] Dio error type: ${e.type}');
+            debugPrint('roy93~ [Loop $id] Dio error message: ${e.message}');
+            if (e.response != null) {
+              debugPrint('roy93~ [Loop $id] Response status: ${e.response!.statusCode}');
             }
-          } else {
-            debugPrint('roy93~ [Loop $id] Unexpected error: $e');
           }
-          await Future.delayed(const Duration(seconds: 1));
         }
+
+        await Future.delayed(const Duration(milliseconds: 500));
       }
     } finally {
       _cancelTokens.remove(cancelToken);
