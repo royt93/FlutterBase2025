@@ -19,14 +19,29 @@ class StressorController extends GetxController {
   final downloadCount = 0.obs;
   final speedMbps = 0.0.obs;
   final totalSpeedMbps = 0.0.obs;
-  final parallelDownloads = 3.obs;
+  final parallelDownloads = 10.obs;
   final speedHistory = <double>[].obs;
   final totalDownloadedBytes = 0.obs;
   final testDuration = Duration.zero.obs;
   final startTime = Rx<DateTime?>(null);
 
   final urls = [
+    'https://proof.ovh.net/files/1GB.dat',
     'https://proof.ovh.net/files/10Mb.dat',
+    'https://speedtest.fremont.linode.com/10MB-fremont.bin',
+
+    // Các CDN lớn
+    'https://speed.cloudflare.com/__down?bytes=10000000',
+
+    // Các nhà cung cấp cloud
+    'https://storage.googleapis.com/speedtest/10mb.bin', // Google Cloud
+    'https://s3.amazonaws.com/speedtest/10mb.bin', // AWS S3
+
+    // Các tổ chức internet
+    'https://mirror.internet.asn.au/speedtest/10MB.bin', // AU Internet Association
+
+    // Các file test từ GitHub
+    'https://github.com/sivel/speedtest-cli/raw/master/speedtest.py', // File 10MB
   ];
 
   final List<CancelToken> _cancelTokens = [];
@@ -144,6 +159,9 @@ class StressorController extends GetxController {
               followRedirects: true,
               receiveTimeout: const Duration(seconds: 15),
               headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
                 'User-Agent':
                     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
               },
