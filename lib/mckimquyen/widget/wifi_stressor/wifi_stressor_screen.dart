@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:typed_data';
-
-import 'package:dio/dio.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dio/dio.dart';
+import 'package:fl_chart/fl_chart.dart';
+
+void main() => runApp(const WiFiStressorApp());
 
 class WiFiStressorApp extends StatelessWidget {
   const WiFiStressorApp({super.key});
@@ -21,7 +22,7 @@ class StressorController extends GetxController {
   final speedMbps = 0.0.obs;
   final totalSpeedMbps = 0.0.obs;
   final parallelDownloads = 3.obs;
-  final List<double> speedHistory = <double>[].obs;
+  final speedHistory = <double>[].obs; // Sử dụng RxList để tự động cập nhật
   final totalDownloadedBytes = 0.obs;
   final testDuration = Duration.zero.obs;
   final startTime = Rx<DateTime?>(null);
@@ -35,11 +36,13 @@ class StressorController extends GetxController {
   final List<CancelToken> _cancelTokens = [];
   final dio = Dio();
   Timer? _updateTimer;
+  Timer? _chartUpdateTimer;
 
   @override
   void onClose() {
     _cancelAllTasks();
     _updateTimer?.cancel();
+    _chartUpdateTimer?.cancel();
     super.onClose();
   }
 
@@ -81,6 +84,11 @@ class StressorController extends GetxController {
       _updateTotalSpeed();
     });
 
+    // Thêm timer để kích hoạt cập nhật UI cho biểu đồ
+    _chartUpdateTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      update(); // Kích hoạt rebuild cho các widget đang lắng nghe controller
+    });
+
     for (int i = 0; i < parallelDownloads.value; i++) {
       _runDownloadLoop(i);
     }
@@ -91,6 +99,7 @@ class StressorController extends GetxController {
     isRunning.value = false;
     _updateTotalSpeed();
     _updateTimer?.cancel();
+    _chartUpdateTimer?.cancel();
   }
 
   void _cancelAllTasks() {
@@ -144,9 +153,10 @@ class StressorController extends GetxController {
             speedMbps.value = mbps;
             totalDownloadedBytes.value += bytesDownloaded;
 
+            // Cập nhật lịch sử tốc độ và kích hoạt rebuild
             speedHistory.add(mbps);
             if (speedHistory.length > 100) {
-              speedHistory.removeRange(0, speedHistory.length - 100);
+              speedHistory.removeAt(0);
             }
           }
 
@@ -208,11 +218,13 @@ class StressorHomePage extends StatelessWidget {
                   duration: const Duration(milliseconds: 300),
                   child: isRunning
                       ? const CircleAvatar(
+                          key: ValueKey('running'),
                           radius: 64,
                           backgroundColor: Colors.blueAccent,
                           child: Icon(Icons.wifi, size: 56, color: Colors.white),
                         )
                       : const CircleAvatar(
+                          key: ValueKey('idle'),
                           radius: 64,
                           backgroundColor: Colors.grey,
                           child: Icon(Icons.wifi_find, size: 56, color: Colors.white),
@@ -264,7 +276,7 @@ class StressorHomePage extends StatelessWidget {
                         if (isRunning) ...[
                           _buildMetricTile(
                               Icons.speed, 'Tốc độ hiện tại', '${controller.speedMbps.value.toStringAsFixed(2)} Mbps'),
-                          _buildMetricTile(Icons.av_timer, 'Tốc độ trung bình',
+                          _buildMetricTile(Icons.speed, 'Tốc độ trung bình',
                               '${controller.totalSpeedMbps.value.toStringAsFixed(2)} Mbps'),
                           _buildMetricTile(
                               Icons.timer,
@@ -281,12 +293,24 @@ class StressorHomePage extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Biểu đồ tốc độ
-                if (isRunning && controller.speedHistory.isNotEmpty) SpeedChart(speeds: controller.speedHistory),
+                // Biểu đồ tốc độ - Sử dụng Obx để tự động cập nhật
+                if (isRunning)
+                  Obx(() => controller.speedHistory.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24.0),
+                          child: Column(
+                            children: [
+                              const Text('Đang thu thập dữ liệu...', style: TextStyle(color: Colors.grey)),
+                              const SizedBox(height: 16),
+                              const CircularProgressIndicator(),
+                            ],
+                          ),
+                        )
+                      : SpeedChart(speeds: controller.speedHistory)),
 
                 const SizedBox(height: 32),
 
-                // Nút điều khiển với FilledButton và Icon
+                // Nút điều khiển
                 isRunning
                     ? FilledButton.icon(
                         onPressed: controller.stopStressTest,
@@ -355,7 +379,13 @@ class SpeedChart extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Biểu đồ tốc độ', style: TextStyle(fontWeight: FontWeight.bold)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Biểu đồ tốc độ', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('${speeds.length} điểm dữ liệu', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 180,
@@ -373,12 +403,12 @@ class SpeedChart extends StatelessWidget {
                         return FlSpot(e.key.toDouble(), e.value);
                       }).toList(),
                       isCurved: true,
-                      color: Colors.blueAccent,
+                      color: Colors.cyanAccent,
                       barWidth: 3,
                       belowBarData: BarAreaData(
                         show: true,
                         gradient: LinearGradient(
-                          colors: [Colors.blueAccent.withOpacity(0.2), Colors.transparent],
+                          colors: [Colors.cyan.withOpacity(0.3), Colors.transparent],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
