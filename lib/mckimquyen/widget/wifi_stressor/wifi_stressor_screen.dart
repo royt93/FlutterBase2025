@@ -298,7 +298,7 @@ class StressorHomePage extends StatelessWidget {
                             const Text('Số kết nối:', style: TextStyle(fontSize: 16)),
                             DropdownButton<int>(
                               value: controller.parallelDownloads.value,
-                              items: [1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+                              items: [1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100, 200, 500]
                                   .map((val) => DropdownMenuItem<int>(
                                         value: val,
                                         child: Text('$val'),
