@@ -26,7 +26,6 @@ class StressorController extends GetxController {
   final startTime = Rx<DateTime?>(null);
 
   final urls = [
-    'https://proof.ovh.net/files/10GB.dat',
     'https://proof.ovh.net/files/1GB.dat',
     'https://proof.ovh.net/files/10Mb.dat',
     'https://speedtest.fremont.linode.com/10MB-fremont.bin',
