@@ -19,7 +19,7 @@ class StressorController extends GetxController {
   final downloadCount = 0.obs;
   final speedMbps = 0.0.obs;
   final totalSpeedMbps = 0.0.obs;
-  final parallelDownloads = 10.obs;
+  final parallelDownloads = 50.obs;
   final speedHistory = <double>[].obs;
   final totalDownloadedBytes = 0.obs;
   final testDuration = Duration.zero.obs;
@@ -299,7 +299,7 @@ class StressorHomePage extends StatelessWidget {
                             const Text('Số kết nối:', style: TextStyle(fontSize: 16)),
                             DropdownButton<int>(
                               value: controller.parallelDownloads.value,
-                              items: [1, 2, 3, 4, 5, 6, 8, 10]
+                              items: [1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50]
                                   .map((val) => DropdownMenuItem<int>(
                                         value: val,
                                         child: Text('$val'),
