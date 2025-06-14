@@ -29,7 +29,7 @@ class StressorController extends GetxController {
     'https://proof.ovh.net/files/1GB.dat',
     'https://proof.ovh.net/files/10Mb.dat',
     'https://speedtest.fremont.linode.com/10MB-fremont.bin',
-    'https://speed.cloudflare.com/__down?bytes=10000000',
+    'https://speed.cloudflare.com/__down?bytes=100000000000000000',
     'https://storage.googleapis.com/speedtest/10mb.bin', // Google Cloud
     'https://s3.amazonaws.com/speedtest/10mb.bin', // AWS S3
     'https://mirror.internet.asn.au/speedtest/10MB.bin', // AU Internet Association
