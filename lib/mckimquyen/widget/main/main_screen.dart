@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
+import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/wifi_stressor_screen.dart';
 
 import '../../core/base_stateful_state.dart';
 import '../controller_main.dart';
@@ -61,6 +62,13 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
           Icons.card_giftcard,
           () {
             Get.to(const ScreenA());
+          },
+        ),
+        UIUtils.getButton(
+          "Wifi stressor",
+          Icons.wifi,
+              () {
+            Get.to(const WiFiStressorApp());
           },
         ),
       ],
