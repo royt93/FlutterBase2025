@@ -32,7 +32,7 @@ class StressorController extends GetxController {
     'http://speedtest.tele2.net/10MB.zip',
     'http://ipv4.download.thinkbroadband.com/10MB.zip',
     'http://speed.hetzner.de/10MB.bin',
-    'http://test.best.vn/data/100MB.bin',
+    // 'http://test.best.vn/data/100MB.bin',
     'https://download.microsoft.com/download/8/7/2/872BE5C4-7D3E-4F6A-99B2-6815A70B2F76/VS2019.Community.exe',
   ];
 
@@ -42,6 +42,7 @@ class StressorController extends GetxController {
 
   @override
   void onClose() {
+    debugPrint('roy93~ Controller onClose called');
     _cancelAllTasks();
     _updateTimer?.cancel();
     super.onClose();
@@ -50,16 +51,21 @@ class StressorController extends GetxController {
   void startStressTest() {
     if (isRunning.value) return;
 
+    debugPrint('roy93~ Showing start confirmation dialog');
     Get.defaultDialog(
       title: '⚠️ Cảnh báo',
       content: const Text('Ứng dụng sẽ sử dụng lượng lớn dữ liệu mạng. Bạn có chắc muốn tiếp tục?'),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () {
+            debugPrint('roy93~ User canceled stress test');
+            Get.back();
+          },
           child: const Text('Hủy'),
         ),
         FilledButton(
           onPressed: () {
+            debugPrint('roy93~ User confirmed stress test');
             Get.back();
             _startTest();
           },
@@ -73,6 +79,7 @@ class StressorController extends GetxController {
   }
 
   void _startTest() {
+    debugPrint('roy93~ Starting stress test with ${parallelDownloads.value} parallel downloads');
     isRunning.value = true;
     downloadCount.value = 0;
     speedMbps.value = 0.0;
@@ -81,17 +88,21 @@ class StressorController extends GetxController {
     speedHistory.clear();
     startTime.value = DateTime.now();
 
+    debugPrint('roy93~ Starting update timer (1s interval)');
     _updateTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      debugPrint('roy93~ Update timer tick - total downloaded: ${totalDownloadedBytes.value} bytes');
       _updateTotalSpeed();
-      update(); // Quan trọng: Kích hoạt cập nhật UI
+      update(); // Force UI update for chart
     });
 
     for (int i = 0; i < parallelDownloads.value; i++) {
+      debugPrint('roy93~ Starting download loop #$i');
       _runDownloadLoop(i);
     }
   }
 
   void stopStressTest() {
+    debugPrint('roy93~ Stopping stress test');
     _cancelAllTasks();
     isRunning.value = false;
     _updateTotalSpeed();
@@ -99,6 +110,7 @@ class StressorController extends GetxController {
   }
 
   void _cancelAllTasks() {
+    debugPrint('roy93~ Canceling all download tasks (${_cancelTokens.length} tokens)');
     for (var token in _cancelTokens) {
       token.cancel();
     }
@@ -113,6 +125,7 @@ class StressorController extends GetxController {
 
     if (duration.inSeconds > 0) {
       totalSpeedMbps.value = (totalDownloadedBytes.value * 8) / (duration.inSeconds * 1000000);
+      debugPrint('roy93~ Updated total speed: ${totalSpeedMbps.value.toStringAsFixed(2)} Mbps');
     }
   }
 
@@ -124,20 +137,24 @@ class StressorController extends GetxController {
     final availableUrls = urls.where((url) => url.contains(prefix)).toList();
     if (availableUrls.isEmpty) return urls.first;
 
-    return availableUrls[DateTime.now().millisecond % availableUrls.length];
+    final selectedUrl = availableUrls[DateTime.now().millisecond % availableUrls.length];
+    debugPrint('roy93~ Selected URL: $selectedUrl');
+    return selectedUrl;
   }
 
   Future<void> _runDownloadLoop(int id) async {
+    debugPrint('roy93~ [Loop $id] Starting download loop');
     final cancelToken = CancelToken();
     _cancelTokens.add(cancelToken);
 
     try {
       while (isRunning.value) {
-        final url = _getDownloadUrl(); // Sử dụng cơ chế chọn URL thông minh
+        final url = _getDownloadUrl();
         final stopwatch = Stopwatch()..start();
         int bytesDownloaded = 0;
 
         try {
+          debugPrint('roy93~ [Loop $id] Starting download from: $url');
           final response = await dio.get(
             url,
             options: Options(
@@ -149,8 +166,12 @@ class StressorController extends GetxController {
 
           final chunks = <Uint8List>[];
           await for (var chunk in response.data.stream) {
-            if (cancelToken.isCancelled) break;
+            if (cancelToken.isCancelled) {
+              debugPrint('roy93~ [Loop $id] Download cancelled during stream');
+              break;
+            }
             chunks.add(chunk);
+            // bytesDownloaded += chunk.length;
             bytesDownloaded += (chunk as List<int>).length;
           }
 
@@ -159,6 +180,11 @@ class StressorController extends GetxController {
 
           if (stopwatch.elapsedMilliseconds > 0) {
             final mbps = (bytesDownloaded * 8) / (stopwatch.elapsedMilliseconds * 1000);
+            debugPrint('roy93~ [Loop $id] Download completed: '
+                '${(bytesDownloaded / (1024 * 1024)).toStringAsFixed(2)} MB in '
+                '${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)}s = '
+                '${mbps.toStringAsFixed(2)} Mbps');
+
             speedMbps.value = mbps;
             totalDownloadedBytes.value += bytesDownloaded;
 
@@ -166,19 +192,30 @@ class StressorController extends GetxController {
             if (speedHistory.length > 100) {
               speedHistory.removeAt(0);
             }
+            debugPrint('roy93~ [Loop $id] Speed history updated (${speedHistory.length} points)');
           }
 
           downloadCount.value++;
+          debugPrint('roy93~ [Loop $id] Total downloads: ${downloadCount.value}');
         } catch (e) {
           if (e is DioException) {
-            debugPrint('Download failed: ${e.response?.statusCode} ${e.message}');
-            // Bỏ qua lỗi và thử URL tiếp theo
+            if (e.type == DioExceptionType.cancel) {
+              debugPrint('roy93~ [Loop $id] Download cancelled');
+            } else {
+              debugPrint('roy93~ [Loop $id] Download failed: ${e.type} - ${e.message}');
+              if (e.response != null) {
+                debugPrint('roy93~ [Loop $id] Response status: ${e.response?.statusCode}');
+              }
+            }
+          } else {
+            debugPrint('roy93~ [Loop $id] Unexpected error: $e');
           }
           await Future.delayed(const Duration(seconds: 1));
         }
       }
     } finally {
       _cancelTokens.remove(cancelToken);
+      debugPrint('roy93~ [Loop $id] Download loop exited');
     }
   }
 }
@@ -196,26 +233,33 @@ class StressorHomePage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),
-            onPressed: () => Get.dialog(
-              AlertDialog(
-                title: const Text('Thông tin ứng dụng'),
-                content: const Text(
-                  'Ứng dụng kiểm tra sức chịu tải Wi-Fi bằng cách tải file song song liên tục.\n'
-                  '⚠️ Lưu ý: Sử dụng lượng lớn dữ liệu mạng!',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: Get.back,
-                    child: const Text('Đóng'),
+            onPressed: () {
+              debugPrint('roy93~ Info button pressed');
+              Get.dialog(
+                AlertDialog(
+                  title: const Text('Thông tin ứng dụng'),
+                  content: const Text(
+                    'Ứng dụng kiểm tra sức chịu tải Wi-Fi bằng cách tải file song song liên tục.\n'
+                    '⚠️ Lưu ý: Sử dụng lượng lớn dữ liệu mạng!',
                   ),
-                ],
-              ),
-            ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        debugPrint('roy93~ Info dialog closed');
+                        Get.back();
+                      },
+                      child: const Text('Đóng'),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
       body: Center(
         child: Obx(() {
+          debugPrint('roy93~ Building UI (isRunning: ${controller.isRunning.value})');
           final isRunning = controller.isRunning.value;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -270,7 +314,12 @@ class StressorHomePage extends StatelessWidget {
                                         child: Text('$val'),
                                       ))
                                   .toList(),
-                              onChanged: isRunning ? null : (val) => controller.parallelDownloads.value = val!,
+                              onChanged: isRunning
+                                  ? null
+                                  : (val) {
+                                      debugPrint('roy93~ Parallel downloads changed to: $val');
+                                      controller.parallelDownloads.value = val!;
+                                    },
                             ),
                           ],
                         ),
@@ -298,6 +347,7 @@ class StressorHomePage extends StatelessWidget {
                 // Biểu đồ với cơ chế cập nhật mạnh mẽ
                 if (isRunning)
                   Obx(() {
+                    debugPrint('roy93~ Building chart (data points: ${controller.speedHistory.length})');
                     if (controller.speedHistory.isEmpty) {
                       return const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24.0),
@@ -373,6 +423,7 @@ class SpeedChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('roy93~ Rendering chart with ${speeds.length} data points');
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
