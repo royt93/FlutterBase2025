@@ -5,8 +5,6 @@ import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-void main() => runApp(const WiFiStressorApp());
-
 class WiFiStressorApp extends StatelessWidget {
   const WiFiStressorApp({super.key});
 
@@ -22,7 +20,7 @@ class StressorController extends GetxController {
   final speedMbps = 0.0.obs;
   final totalSpeedMbps = 0.0.obs;
   final parallelDownloads = 3.obs;
-  final speedHistory = <double>[].obs; // Sử dụng RxList để tự động cập nhật
+  final speedHistory = <double>[].obs;
   final totalDownloadedBytes = 0.obs;
   final testDuration = Duration.zero.obs;
   final startTime = Rx<DateTime?>(null);
@@ -31,18 +29,21 @@ class StressorController extends GetxController {
     'http://speedtest.tele2.net/100MB.zip',
     'http://ipv4.download.thinkbroadband.com/100MB.zip',
     'http://speed.hetzner.de/100MB.bin',
+    'http://speedtest.tele2.net/10MB.zip',
+    'http://ipv4.download.thinkbroadband.com/10MB.zip',
+    'http://speed.hetzner.de/10MB.bin',
+    'http://test.best.vn/data/100MB.bin',
+    'https://download.microsoft.com/download/8/7/2/872BE5C4-7D3E-4F6A-99B2-6815A70B2F76/VS2019.Community.exe',
   ];
 
   final List<CancelToken> _cancelTokens = [];
   final dio = Dio();
   Timer? _updateTimer;
-  Timer? _chartUpdateTimer;
 
   @override
   void onClose() {
     _cancelAllTasks();
     _updateTimer?.cancel();
-    _chartUpdateTimer?.cancel();
     super.onClose();
   }
 
@@ -82,11 +83,7 @@ class StressorController extends GetxController {
 
     _updateTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       _updateTotalSpeed();
-    });
-
-    // Thêm timer để kích hoạt cập nhật UI cho biểu đồ
-    _chartUpdateTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      update(); // Kích hoạt rebuild cho các widget đang lắng nghe controller
+      update(); // Quan trọng: Kích hoạt cập nhật UI
     });
 
     for (int i = 0; i < parallelDownloads.value; i++) {
@@ -99,7 +96,6 @@ class StressorController extends GetxController {
     isRunning.value = false;
     _updateTotalSpeed();
     _updateTimer?.cancel();
-    _chartUpdateTimer?.cancel();
   }
 
   void _cancelAllTasks() {
@@ -120,20 +116,34 @@ class StressorController extends GetxController {
     }
   }
 
+  String _getDownloadUrl() {
+    // Tự động chọn file 10MB nếu tốc độ dưới 10Mbps
+    final useSmallFile = speedMbps.value > 0 && speedMbps.value < 10;
+    final prefix = useSmallFile ? '10MB' : '100MB';
+
+    final availableUrls = urls.where((url) => url.contains(prefix)).toList();
+    if (availableUrls.isEmpty) return urls.first;
+
+    return availableUrls[DateTime.now().millisecond % availableUrls.length];
+  }
+
   Future<void> _runDownloadLoop(int id) async {
     final cancelToken = CancelToken();
     _cancelTokens.add(cancelToken);
 
     try {
       while (isRunning.value) {
-        final url = urls[DateTime.now().millisecondsSinceEpoch % urls.length];
+        final url = _getDownloadUrl(); // Sử dụng cơ chế chọn URL thông minh
         final stopwatch = Stopwatch()..start();
         int bytesDownloaded = 0;
 
         try {
           final response = await dio.get(
             url,
-            options: Options(responseType: ResponseType.stream),
+            options: Options(
+              responseType: ResponseType.stream,
+              receiveTimeout: const Duration(seconds: 30),
+            ),
             cancelToken: cancelToken,
           );
 
@@ -141,7 +151,6 @@ class StressorController extends GetxController {
           await for (var chunk in response.data.stream) {
             if (cancelToken.isCancelled) break;
             chunks.add(chunk);
-            // bytesDownloaded += chunk.length;
             bytesDownloaded += (chunk as List<int>).length;
           }
 
@@ -153,7 +162,6 @@ class StressorController extends GetxController {
             speedMbps.value = mbps;
             totalDownloadedBytes.value += bytesDownloaded;
 
-            // Cập nhật lịch sử tốc độ và kích hoạt rebuild
             speedHistory.add(mbps);
             if (speedHistory.length > 100) {
               speedHistory.removeAt(0);
@@ -162,8 +170,9 @@ class StressorController extends GetxController {
 
           downloadCount.value++;
         } catch (e) {
-          if (e is DioException && e.type != DioExceptionType.cancel) {
-            debugPrint('Download error: ${e.message}');
+          if (e is DioException) {
+            debugPrint('Download failed: ${e.response?.statusCode} ${e.message}');
+            // Bỏ qua lỗi và thử URL tiếp theo
           }
           await Future.delayed(const Duration(seconds: 1));
         }
@@ -213,7 +222,6 @@ class StressorHomePage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Biểu tượng trạng thái
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: isRunning
@@ -233,7 +241,6 @@ class StressorHomePage extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Thông tin trạng thái
                 Text(
                   isRunning ? 'ĐANG KIỂM TRA WI-FI - Lượt tải: ${controller.downloadCount}' : 'SẴN SÀNG KIỂM TRA',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -242,7 +249,6 @@ class StressorHomePage extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Card điều khiển
                 Card(
                   elevation: 6,
                   shape: RoundedRectangleBorder(
@@ -252,7 +258,6 @@ class StressorHomePage extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        // Điều khiển song song
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -269,10 +274,7 @@ class StressorHomePage extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 16),
-
-                        // Thông số tốc độ
                         if (isRunning) ...[
                           _buildMetricTile(
                               Icons.speed, 'Tốc độ hiện tại', '${controller.speedMbps.value.toStringAsFixed(2)} Mbps'),
@@ -293,24 +295,26 @@ class StressorHomePage extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Biểu đồ tốc độ - Sử dụng Obx để tự động cập nhật
+                // Biểu đồ với cơ chế cập nhật mạnh mẽ
                 if (isRunning)
-                  Obx(() => controller.speedHistory.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 24.0),
-                          child: Column(
-                            children: [
-                              const Text('Đang thu thập dữ liệu...', style: TextStyle(color: Colors.grey)),
-                              const SizedBox(height: 16),
-                              const CircularProgressIndicator(),
-                            ],
-                          ),
-                        )
-                      : SpeedChart(speeds: controller.speedHistory)),
+                  Obx(() {
+                    if (controller.speedHistory.isEmpty) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Column(
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text('Đang thu thập dữ liệu tốc độ...', style: TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                      );
+                    }
+                    return SpeedChart(speeds: controller.speedHistory);
+                  }),
 
                 const SizedBox(height: 32),
 
-                // Nút điều khiển
                 isRunning
                     ? FilledButton.icon(
                         onPressed: controller.stopStressTest,
