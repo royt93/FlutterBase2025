@@ -91,42 +91,13 @@ class AdMobManager {
     });
   }
 
-  Future<bool> _isDeviceConnected() async {
-    final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
-
-    // This condition is for demo purposes only to explain every connection type.
-    // Use conditions which work for your requirements.
-    if (connectivityResult.contains(ConnectivityResult.mobile)) {
-      // Mobile network available.
-    } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
-      // Wi-fi is available.
-      // Note for Android:
-      // When both mobile and Wi-Fi are turned on system will return Wi-Fi only as active network type
-    } else if (connectivityResult.contains(ConnectivityResult.ethernet)) {
-      // Ethernet connection available.
-    } else if (connectivityResult.contains(ConnectivityResult.vpn)) {
-      // Vpn connection active.
-      // Note for iOS and macOS:
-      // There is no separate network interface type for [vpn].
-      // It returns [other] on any device (also simulator)
-    } else if (connectivityResult.contains(ConnectivityResult.bluetooth)) {
-      // Bluetooth connection available.
-    } else if (connectivityResult.contains(ConnectivityResult.other)) {
-      // Connected to a network which is not in the above mentioned networks.
-    } else if (connectivityResult.contains(ConnectivityResult.none)) {
-      // No available network types
-      return false;
-    }
-    return true;
-  }
-
   // region App Open Ad (Global management)
   Future<void> _loadAppOpenAd() async {
     try {
       debugPrint("roy93~ _loadAppOpenAd");
-      var isDeviceConnected = await _isDeviceConnected();
-      debugPrint("roy93~ isDeviceConnected $isDeviceConnected");
-      if (isDeviceConnected) {
+      var isConnected = await isDeviceConnected();
+      debugPrint("roy93~ isConnected $isConnected");
+      if (isConnected) {
         await AppOpenAd.load(
           adUnitId: appOpenAdUnitId(),
           request: const AdRequest(),
@@ -285,7 +256,40 @@ class AdMobManager {
 
   // endregion
 
-  static Future<AdSize?> getAdaptiveBannerSize(BuildContext context) {
+  static Future<AdSize?> getAdaptiveBannerSize(BuildContext context) async {
+    var isConnected = await isDeviceConnected();
+    if (!isConnected) {
+      return null;
+    }
     return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
   }
+}
+
+Future<bool> isDeviceConnected() async {
+  final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
+
+  // This condition is for demo purposes only to explain every connection type.
+  // Use conditions which work for your requirements.
+  if (connectivityResult.contains(ConnectivityResult.mobile)) {
+    // Mobile network available.
+  } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
+    // Wi-fi is available.
+    // Note for Android:
+    // When both mobile and Wi-Fi are turned on system will return Wi-Fi only as active network type
+  } else if (connectivityResult.contains(ConnectivityResult.ethernet)) {
+    // Ethernet connection available.
+  } else if (connectivityResult.contains(ConnectivityResult.vpn)) {
+    // Vpn connection active.
+    // Note for iOS and macOS:
+    // There is no separate network interface type for [vpn].
+    // It returns [other] on any device (also simulator)
+  } else if (connectivityResult.contains(ConnectivityResult.bluetooth)) {
+    // Bluetooth connection available.
+  } else if (connectivityResult.contains(ConnectivityResult.other)) {
+    // Connected to a network which is not in the above mentioned networks.
+  } else if (connectivityResult.contains(ConnectivityResult.none)) {
+    // No available network types
+    return false;
+  }
+  return true;
 }
