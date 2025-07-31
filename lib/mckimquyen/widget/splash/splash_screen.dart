@@ -253,20 +253,23 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                     //   ],
                     // ),
                     const SizedBox(height: 32),
-                    const Text(
-                      adPlsNoteEn,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 5.0,
-                            color: Colors.black,
-                            offset: Offset(1.0, 1.0),
-                          ),
-                        ],
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                      child: const Text(
+                        adPlsNoteEn,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 5.0,
+                              color: Colors.black,
+                              offset: Offset(1.0, 1.0),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     Container(

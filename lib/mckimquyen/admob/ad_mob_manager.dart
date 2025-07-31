@@ -3,6 +3,7 @@
 
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -11,7 +12,7 @@ import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 import 'event_bus.dart';
 
-//version 20250529
+//version 20250801
 
 // ref https://developers.google.com/admob/flutter/mediation?hl=en
 
@@ -90,46 +91,83 @@ class AdMobManager {
     });
   }
 
+  Future<bool> _isDeviceConnected() async {
+    final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
+
+    // This condition is for demo purposes only to explain every connection type.
+    // Use conditions which work for your requirements.
+    if (connectivityResult.contains(ConnectivityResult.mobile)) {
+      // Mobile network available.
+    } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
+      // Wi-fi is available.
+      // Note for Android:
+      // When both mobile and Wi-Fi are turned on system will return Wi-Fi only as active network type
+    } else if (connectivityResult.contains(ConnectivityResult.ethernet)) {
+      // Ethernet connection available.
+    } else if (connectivityResult.contains(ConnectivityResult.vpn)) {
+      // Vpn connection active.
+      // Note for iOS and macOS:
+      // There is no separate network interface type for [vpn].
+      // It returns [other] on any device (also simulator)
+    } else if (connectivityResult.contains(ConnectivityResult.bluetooth)) {
+      // Bluetooth connection available.
+    } else if (connectivityResult.contains(ConnectivityResult.other)) {
+      // Connected to a network which is not in the above mentioned networks.
+    } else if (connectivityResult.contains(ConnectivityResult.none)) {
+      // No available network types
+      return false;
+    }
+    return true;
+  }
+
   // region App Open Ad (Global management)
   Future<void> _loadAppOpenAd() async {
     try {
-      await AppOpenAd.load(
-        adUnitId: appOpenAdUnitId(),
-        request: const AdRequest(),
-        adLoadCallback: AppOpenAdLoadCallback(
-          onAdLoaded: (ad) async {
-            debugPrint('roy93~ AppOpenAd onAdLoaded');
-            _appOpenAd = ad;
-            _appOpenAdLoadTime = DateTime.now();
-            ad.fullScreenContentCallback = FullScreenContentCallback(
-              onAdDismissedFullScreenContent: (ad) {
-                debugPrint("roy93~ onAdDismissedFullScreenContent");
-                ad.dispose();
-                _appOpenAd = null;
-                // _loadAppOpenAd();
-                // await Future.delayed(const Duration(milliseconds: 500));
-                SimpleEventBus().fire(BoolEvent(true));
-              },
-              onAdFailedToShowFullScreenContent: (ad, error) {
-                debugPrint("roy93~ onAdFailedToShowFullScreenContent");
-                ad.dispose();
-                _appOpenAd = null;
-                // _loadAppOpenAd();
-                // await Future.delayed(const Duration(milliseconds: 500));
-                SimpleEventBus().fire(BoolEvent(true));
-              },
-            );
-            showAppOpenAd();
-          },
-          onAdFailedToLoad: (error) async {
-            debugPrint('roy93~ AppOpenAd failed to load: $error');
-            _appOpenAd = null;
-            // Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
-            await Future.delayed(const Duration(milliseconds: 1000));
-            SimpleEventBus().fire(BoolEvent(false));
-          },
-        ),
-      );
+      debugPrint("roy93~ _loadAppOpenAd");
+      var isDeviceConnected = await _isDeviceConnected();
+      debugPrint("roy93~ isDeviceConnected $isDeviceConnected");
+      if (isDeviceConnected) {
+        await AppOpenAd.load(
+          adUnitId: appOpenAdUnitId(),
+          request: const AdRequest(),
+          adLoadCallback: AppOpenAdLoadCallback(
+            onAdLoaded: (ad) async {
+              debugPrint('roy93~ AppOpenAd onAdLoaded');
+              _appOpenAd = ad;
+              _appOpenAdLoadTime = DateTime.now();
+              ad.fullScreenContentCallback = FullScreenContentCallback(
+                onAdDismissedFullScreenContent: (ad) {
+                  debugPrint("roy93~ onAdDismissedFullScreenContent");
+                  ad.dispose();
+                  _appOpenAd = null;
+                  // _loadAppOpenAd();
+                  // await Future.delayed(const Duration(milliseconds: 500));
+                  SimpleEventBus().fire(BoolEvent(true));
+                },
+                onAdFailedToShowFullScreenContent: (ad, error) {
+                  debugPrint("roy93~ onAdFailedToShowFullScreenContent");
+                  ad.dispose();
+                  _appOpenAd = null;
+                  // _loadAppOpenAd();
+                  // await Future.delayed(const Duration(milliseconds: 500));
+                  SimpleEventBus().fire(BoolEvent(true));
+                },
+              );
+              showAppOpenAd();
+            },
+            onAdFailedToLoad: (error) async {
+              debugPrint('roy93~ AppOpenAd failed to load: $error');
+              _appOpenAd = null;
+              // Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
+              await Future.delayed(const Duration(milliseconds: 1000));
+              SimpleEventBus().fire(BoolEvent(false));
+            },
+          ),
+        );
+      } else {
+        // await Future.delayed(const Duration(milliseconds: 1000));
+        SimpleEventBus().fire(BoolEvent(false));
+      }
     } catch (e) {
       debugPrint("roy93~ e _loadAppOpenAd $e");
       await Future.delayed(const Duration(milliseconds: 1000));
