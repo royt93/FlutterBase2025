@@ -3,16 +3,21 @@
 
 import 'dart:async';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/k/k.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 import 'event_bus.dart';
 
 //version 20250801
+
+//chu y: them lib tu yam
+//google_mobile_ads, gma_mediation_applovin, internet_connection_checker_plus
+//check gradle android
+//tham khao SplashScreen
 
 // ref https://developers.google.com/admob/flutter/mediation?hl=en
 
@@ -23,6 +28,14 @@ const String adPlsNoteVi = "Xin lưu ý: hành động này có thể hiển th�
 
 const String adMayAppearEn = "(Ads may appear)";
 const String adMayAppearVi = "(Có thể xuất hiện quảng cáo)";
+
+bool? _isInitializedAdmob = false;
+
+Future<bool> checkLogicSplashScreenIsInitializedAdmob() async {
+  await Future.delayed(const Duration(milliseconds: 1000));
+  debugPrint("roy93~ checkLogicSplashScreenIsInitializedAdmob _isInitializedAdmob $_isInitializedAdmob");
+  return _isInitializedAdmob ?? false;
+}
 
 class AdMobManager {
   static final AdMobManager _instance = AdMobManager._internal();
@@ -63,7 +76,6 @@ class AdMobManager {
     }
   }
 
-  bool _isInitialized = false;
   AppOpenAd? _appOpenAd;
   DateTime _appOpenAdLoadTime = DateTime(0);
 
@@ -72,7 +84,13 @@ class AdMobManager {
   DateTime _lastRewardedShowTime = DateTime(0);
 
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    if (_isInitializedAdmob == true) return;
+    debugPrint('roy93~ sdk initialize ~~~');
+    final isConnected = await _isDeviceConnected("initialize");
+    if (!isConnected) {
+      debugPrint('roy93~ initialize skipped: no internet connection');
+      return;
+    }
     // await MobileAds.instance.initialize();
     MobileAds.instance.initialize().then((InitializationStatus status) {
       debugPrint('roy93~ initialize Google Mobile Ads SDK initialized: ${status.adapterStatuses}');
@@ -87,7 +105,7 @@ class AdMobManager {
         UIUtils.showToast("Admob", adapterStatus);
       }
       _loadAppOpenAd();
-      _isInitialized = true;
+      _isInitializedAdmob = true;
     });
   }
 
@@ -95,8 +113,8 @@ class AdMobManager {
   Future<void> _loadAppOpenAd() async {
     try {
       debugPrint("roy93~ _loadAppOpenAd");
-      var isConnected = await isDeviceConnected();
-      debugPrint("roy93~ isConnected $isConnected");
+      var isConnected = await _isDeviceConnected("_loadAppOpenAd");
+      // debugPrint("isConnected $isConnected");
       if (isConnected) {
         await AppOpenAd.load(
           adUnitId: appOpenAdUnitId(),
@@ -180,10 +198,15 @@ class AdMobManager {
   // endregion
 
   // region Ad Factories
-  static BannerAd createBannerAd({
+  static Future<BannerAd?> createBannerAdAsync({
     required AdSize size,
     required BannerAdListener listener,
-  }) {
+  }) async {
+    final isConnected = await _isDeviceConnected("createBannerAdAsync");
+    if (!isConnected) {
+      debugPrint("roy93~ createBannerAdAsync skipped: no internet");
+      return null;
+    }
     return BannerAd(
       adUnitId: bannerAdUnitId(),
       size: size,
@@ -193,6 +216,11 @@ class AdMobManager {
   }
 
   static Future<InterstitialAd?> createInterstitialAd() async {
+    final isConnected = await _isDeviceConnected("createInterstitialAd");
+    if (!isConnected) {
+      debugPrint("roy93~ createInterstitialAd skipped: no internet");
+      return null;
+    }
     Completer<InterstitialAd?> completer = Completer();
 
     await InterstitialAd.load(
@@ -224,6 +252,11 @@ class AdMobManager {
   }
 
   static Future<RewardedAd?> createRewardedAd() async {
+    final isConnected = await _isDeviceConnected("createRewardedAd");
+    if (!isConnected) {
+      debugPrint("roy93~ createRewardedAd skipped: no internet");
+      return null;
+    }
     Completer<RewardedAd?> completer = Completer();
 
     await RewardedAd.load(
@@ -257,7 +290,7 @@ class AdMobManager {
   // endregion
 
   static Future<AdSize?> getAdaptiveBannerSize(BuildContext context) async {
-    var isConnected = await isDeviceConnected();
+    var isConnected = await _isDeviceConnected("getAdaptiveBannerSize");
     if (!isConnected) {
       return null;
     }
@@ -265,31 +298,13 @@ class AdMobManager {
   }
 }
 
-Future<bool> isDeviceConnected() async {
-  final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
-
-  // This condition is for demo purposes only to explain every connection type.
-  // Use conditions which work for your requirements.
-  if (connectivityResult.contains(ConnectivityResult.mobile)) {
-    // Mobile network available.
-  } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
-    // Wi-fi is available.
-    // Note for Android:
-    // When both mobile and Wi-Fi are turned on system will return Wi-Fi only as active network type
-  } else if (connectivityResult.contains(ConnectivityResult.ethernet)) {
-    // Ethernet connection available.
-  } else if (connectivityResult.contains(ConnectivityResult.vpn)) {
-    // Vpn connection active.
-    // Note for iOS and macOS:
-    // There is no separate network interface type for [vpn].
-    // It returns [other] on any device (also simulator)
-  } else if (connectivityResult.contains(ConnectivityResult.bluetooth)) {
-    // Bluetooth connection available.
-  } else if (connectivityResult.contains(ConnectivityResult.other)) {
-    // Connected to a network which is not in the above mentioned networks.
-  } else if (connectivityResult.contains(ConnectivityResult.none)) {
-    // No available network types
-    return false;
-  }
-  return true;
+Future<bool> _isDeviceConnected(String tag) async {
+  var dtStart = DateTime.now().millisecondsSinceEpoch;
+  // final bool isConnected = await InternetConnectionChecker.instance.hasConnection;
+  bool isConnected = await InternetConnection().hasInternetAccess;
+  // var isConnected = true;
+  var dtEnd = DateTime.now().millisecondsSinceEpoch;
+  var bench = dtEnd - dtStart;
+  debugPrint('roy93~ $tag _isDeviceConnected $isConnected, bench $bench');
+  return isConnected;
 }

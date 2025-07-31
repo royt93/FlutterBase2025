@@ -33,17 +33,21 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   void initState() {
     super.initState();
     _subscription = SimpleEventBus().onBoolEvent.listen((event) {
-      debugPrint("roy93~ onBoolEvent listen event ${event.value}");
+      debugPrint("roy93~ >>>>>>>>>>>>>>onBoolEvent listen event ${event.value}");
       _goToMainScreen();
     });
     if (kDebugMode) {
       _durationCountdown = 1;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      DurationUtils.delay(300, () {
+      DurationUtils.delay(300, () async {
         setState(() {
           _containerColor = Colors.transparent;
         });
+        var isInitializedAdmob = await checkLogicSplashScreenIsInitializedAdmob();
+        if (!isInitializedAdmob) {
+          _goToMainScreen();
+        }
       });
     });
   }

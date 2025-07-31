@@ -52,7 +52,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     final size = await AdMobManager.getAdaptiveBannerSize(context);
 
     if (size != null && !_isDisposed) {
-      final newAd = AdMobManager.createBannerAd(
+      final newAd = await AdMobManager.createBannerAdAsync(
         size: size,
         listener: BannerAdListener(
           onAdFailedToLoad: (ad, error) => ad.dispose(),
@@ -60,7 +60,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
       );
 
       if (_isDisposed) {
-        newAd.dispose();
+        newAd?.dispose();
         return;
       }
 
