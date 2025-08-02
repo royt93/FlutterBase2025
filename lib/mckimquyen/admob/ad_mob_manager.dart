@@ -3,10 +3,10 @@
 
 import 'dart:async';
 
+import 'package:connection_notifier/connection_notifier.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/k/k.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
@@ -86,6 +86,7 @@ class AdMobManager {
   Future<void> initialize() async {
     if (_isInitializedAdmob == true) return;
     debugPrint('roy93~ sdk initialize ~~~');
+    await ConnectionNotifierTools.initialize();
     final isConnected = await _isDeviceConnected("initialize");
     if (!isConnected) {
       debugPrint('roy93~ initialize skipped: no internet connection');
@@ -301,7 +302,8 @@ class AdMobManager {
 Future<bool> _isDeviceConnected(String tag) async {
   var dtStart = DateTime.now().millisecondsSinceEpoch;
   // final bool isConnected = await InternetConnectionChecker.instance.hasConnection;
-  bool isConnected = await InternetConnection().hasInternetAccess;
+  // bool isConnected = await InternetConnection().hasInternetAccess;
+  bool isConnected =  ConnectionNotifierTools.isConnected;
   // var isConnected = true;
   var dtEnd = DateTime.now().millisecondsSinceEpoch;
   var bench = dtEnd - dtStart;
