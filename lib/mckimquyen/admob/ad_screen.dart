@@ -69,7 +69,10 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
   }
 
   Future<void> loadInterstitialAd() async {
-    if (_isDisposed || !AdMobManager().canLoadInterstitial()) return;
+    if (_isDisposed || !AdMobManager().canLoadInterstitial()) {
+      interstitialNotifier.value = null;
+      return;
+    };
 
     interstitialNotifier.value?.dispose();
     final newAd = await AdMobManager.createInterstitialAd();

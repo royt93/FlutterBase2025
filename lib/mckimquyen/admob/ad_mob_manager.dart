@@ -32,9 +32,14 @@ const String adMayAppearVi = "(Có thể xuất hiện quảng cáo)";
 bool? _isInitializedAdmob = false;
 
 Future<bool> checkLogicSplashScreenIsInitializedAdmob() async {
-  await Future.delayed(const Duration(milliseconds: 1000));
-  debugPrint("roy93~ checkLogicSplashScreenIsInitializedAdmob _isInitializedAdmob $_isInitializedAdmob");
-  return _isInitializedAdmob ?? false;
+  var isConnected = await _isDeviceConnected("checkLogicSplashScreenIsInitializedAdmob");
+  if (isConnected) {
+    return true;
+  } else {
+    await Future.delayed(const Duration(milliseconds: 1000));
+    debugPrint("roy93~ checkLogicSplashScreenIsInitializedAdmob _isInitializedAdmob $_isInitializedAdmob");
+    return _isInitializedAdmob ?? false;
+  }
 }
 
 class AdMobManager {
