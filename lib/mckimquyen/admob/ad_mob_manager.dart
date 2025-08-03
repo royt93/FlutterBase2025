@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:connection_notifier/connection_notifier.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/k/k.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
@@ -295,12 +296,12 @@ class AdMobManager {
 
   // endregion
 
-  static Future<AdSize?> getAdaptiveBannerSize(BuildContext context) async {
+  static Future<AdSize?> getAdaptiveBannerSize() async {
     var isConnected = await _isDeviceConnected("getAdaptiveBannerSize");
     if (!isConnected) {
       return null;
     }
-    return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
+    return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(Get.width.toInt());
   }
 }
 
@@ -308,7 +309,7 @@ Future<bool> _isDeviceConnected(String tag) async {
   var dtStart = DateTime.now().millisecondsSinceEpoch;
   // final bool isConnected = await InternetConnectionChecker.instance.hasConnection;
   // bool isConnected = await InternetConnection().hasInternetAccess;
-  bool isConnected =  ConnectionNotifierTools.isConnected;
+  bool isConnected = ConnectionNotifierTools.isConnected;
   // var isConnected = true;
   var dtEnd = DateTime.now().millisecondsSinceEpoch;
   var bench = dtEnd - dtStart;

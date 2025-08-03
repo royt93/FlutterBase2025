@@ -49,7 +49,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     if (_isDisposed) return;
 
     bannerNotifier.value?.dispose();
-    final size = await AdMobManager.getAdaptiveBannerSize(context);
+    final size = await AdMobManager.getAdaptiveBannerSize();
 
     if (size != null && !_isDisposed) {
       final newAd = await AdMobManager.createBannerAdAsync(
@@ -72,7 +72,7 @@ abstract class AdScreenState<T extends AdScreen> extends State<T> {
     if (_isDisposed || !AdMobManager().canLoadInterstitial()) {
       interstitialNotifier.value = null;
       return;
-    };
+    }
 
     interstitialNotifier.value?.dispose();
     final newAd = await AdMobManager.createInterstitialAd();
