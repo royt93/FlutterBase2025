@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/label_ad.dart';
+import 'package:saigonphantomlabs/mckimquyen/core/base_stateful_state.dart';
 
 abstract class AdScreen extends StatefulWidget {
   const AdScreen({super.key});
 }
 
-abstract class AdScreenState<T extends AdScreen> extends State<T> {
+abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
   final ValueNotifier<BannerAd?> bannerNotifier = ValueNotifier(null);
   final ValueNotifier<InterstitialAd?> interstitialNotifier = ValueNotifier(null);
   final ValueNotifier<RewardedAd?> rewardedNotifier = ValueNotifier(null);
