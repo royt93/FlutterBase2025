@@ -20,15 +20,17 @@ class _ScreenBState extends AdScreenState<ScreenC> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(16),
-        child: const Text(
-          "Nothing",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-            fontSize: 16,
+      body: SafeArea(
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(16),
+          child: const Text(
+            "Nothing",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              fontSize: 16,
+            ),
           ),
         ),
       ),

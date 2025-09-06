@@ -1,19 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:app_settings/app_settings.dart';
-import 'package:lottie/lottie.dart';
-import 'package:saigonphantomlabs/mckimquyen/common/circle_button.dart';
-import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/daily_local_notifications.dart';
-import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/daily_local_notifications_config.dart';
-import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/notification_config.dart';
-import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/styling_config.dart';
 import 'package:bottom_sheet/bottom_sheet.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/daily_local_notifications.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/daily_local_notifications_config.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/notification_config.dart';
+import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/styling_config.dart';
 import 'package:toastification/toastification.dart';
 
 import '../common/const/color_constants.dart';
@@ -784,16 +785,16 @@ class UIUtils {
   }
 
   static void showDialogSuccess(
-      BuildContext context,
-      Widget textCenter,
-      String confirmText,
-      String cancelText,
-      String lottiePath,
-      bool barrierDismissible,
-      Function onClickConfirm,
-      Function onClickCancel,
-      Function onDismiss,
-      ) {
+    BuildContext context,
+    Widget textCenter,
+    String confirmText,
+    String cancelText,
+    String lottiePath,
+    bool barrierDismissible,
+    Function onClickConfirm,
+    Function onClickCancel,
+    Function onDismiss,
+  ) {
     showGeneralDialog(
       barrierLabel: "",
       barrierDismissible: barrierDismissible,
@@ -943,14 +944,14 @@ class UIUtils {
   }
 
   static void showToast(
-      String title,
-      String message, {
-        int durationInS = 2,
-        ToastificationType type = ToastificationType.success,
-        ToastificationStyle style = ToastificationStyle.minimal,
-        bool showIcon: true,
-        bool showProgressBar: false,
-      }) {
+    String title,
+    String message, {
+    int durationInS = 2,
+    ToastificationType type = ToastificationType.success,
+    ToastificationStyle style = ToastificationStyle.minimal,
+    bool showIcon: true,
+    bool showProgressBar: false,
+  }) {
     toastification.dismissAll();
     toastification.show(
       title: Text(
@@ -992,6 +993,44 @@ class UIUtils {
       //   onDismissed: (toastItem) => print('Toast ${toastItem.id} dismissed'),
       // ),
     );
+  }
+
+  static Future<void> initEdgeToEdge() async {
+    if (!Platform.isAndroid) return;
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+    if (sdkInt >= 29) {
+      // Android 10+ hỗ trợ edge-to-edge
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarDividerColor: Colors.transparent,
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
+      );
+    } else {
+      // Android cũ: fallback
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
+      );
+    }
+  }
+
+  static double getPaddingBottom(BuildContext context, {int ratio = 2}) {
+    final padding = MediaQuery.of(context).padding;
+    return padding.bottom * ratio;
   }
 }
 

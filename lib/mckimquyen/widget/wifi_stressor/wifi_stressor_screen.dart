@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 class WiFiStressorApp extends StatelessWidget {
   const WiFiStressorApp({super.key});
@@ -252,7 +253,7 @@ class StressorHomePage extends StatelessWidget {
           debugPrint('roy93~ Building UI (isRunning: ${controller.isRunning.value})');
           final isRunning = controller.isRunning.value;
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

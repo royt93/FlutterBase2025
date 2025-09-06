@@ -37,33 +37,35 @@ class _ScreenBState extends AdScreenState<ScreenB> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    showInterstitialAd((value) {
-                      debugPrint("roy93~ showInterstitialAd value $value");
-                      Get.to(const ScreenC());
-                    });
-                  },
-                  child: const Text('Show Interstitial Ad\n(Ads may appear)'),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => showRewardedAd(onReward: () {}),
-                  child: const Text('Show Rewarded Ad'),
-                ),
-              ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              alignment: Alignment.center,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      showInterstitialAd((value) {
+                        debugPrint("roy93~ showInterstitialAd value $value");
+                        Get.to(const ScreenC());
+                      });
+                    },
+                    child: const Text('Show Interstitial Ad\n(Ads may appear)'),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => showRewardedAd(onReward: () {}),
+                    child: const Text('Show Rewarded Ad'),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Spacer(),
-          buildBanner(),
-        ],
+            const Spacer(),
+            buildBanner(),
+          ],
+        ),
       ),
     );
   }

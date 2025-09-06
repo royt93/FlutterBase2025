@@ -46,24 +46,26 @@ class _ScreenAState extends AdScreenState<ScreenA> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              alignment: Alignment.center,
-              child: Column(
-                children: [
-                  Text('Coins: $_coins', style: const TextStyle(fontSize: 24)),
-                  const SizedBox(height: 16),
-                  _buildControlButtons(),
-                  const SizedBox(height: 16),
-                ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                alignment: Alignment.center,
+                child: Column(
+                  children: [
+                    Text('Coins: $_coins', style: const TextStyle(fontSize: 24)),
+                    const SizedBox(height: 16),
+                    _buildControlButtons(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
-          ),
-          buildBanner(),
-        ],
+            buildBanner(),
+          ],
+        ),
       ),
     );
   }

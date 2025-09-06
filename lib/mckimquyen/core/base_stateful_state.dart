@@ -10,13 +10,13 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T> {
 
   @override
   void initState() {
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ));
+    // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    //   statusBarColor: Colors.transparent,
+    //   statusBarIconBrightness: Brightness.light,
+    //   statusBarBrightness: Brightness.dark,
+    //   systemNavigationBarColor: Colors.white,
+    //   systemNavigationBarIconBrightness: Brightness.dark,
+    // ));
     super.initState();
   }
 

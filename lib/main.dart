@@ -6,6 +6,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
 import 'package:saigonphantomlabs/mckimquyen/core/base_stateful_state.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:toastification/toastification.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -38,7 +39,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AdMobManager().initialize();
   WakelockPlus.enable();
-
+  UIUtils.initEdgeToEdge();
   if (Platform.isAndroid) {
     await FlutterDisplayMode.setHighRefreshRate();
   }
