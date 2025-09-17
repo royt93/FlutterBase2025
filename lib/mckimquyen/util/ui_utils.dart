@@ -1028,7 +1028,7 @@ class UIUtils {
     }
   }
 
-  static double getPaddingBottom(BuildContext context, {int ratio = 2}) {
+  static double getPaddingBottom(BuildContext context, {double ratio = 2}) {
     final padding = MediaQuery.of(context).padding;
     return padding.bottom * ratio;
   }
