@@ -336,7 +336,7 @@ class StressorHomePage extends StatelessWidget {
                           ? const CircleAvatar(
                               key: ValueKey('running'),
                               radius: 64,
-                              backgroundColor: Colors.blueAccent,
+                              backgroundColor: Colors.green,
                               child: Icon(Icons.wifi, size: 56, color: Colors.white),
                             )
                           : const CircleAvatar(
@@ -445,7 +445,7 @@ class StressorHomePage extends StatelessWidget {
                         return SpeedChart(speeds: controller.speedHistory);
                       }),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
 
                     isRunning
                         ? FilledButton.icon(
@@ -487,9 +487,23 @@ class StressorHomePage extends StatelessWidget {
   Widget _buildMetricTile(IconData icon, String title, String value) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(title, style: const TextStyle(fontSize: 14)),
-      trailing: Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      leading: Icon(icon, color: Colors.green),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          color: ColorConstants.appColor,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+      trailing: Text(
+        value,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: ColorConstants.appColor,
+        ),
+      ),
     );
   }
 }
