@@ -54,7 +54,7 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
           statusBarBrightness: Brightness.light,
         ),
       ),
-      backgroundColor: ColorConstants.backgroundColor,
+      backgroundColor: ColorConstants.appColor,
       body: _buildBodyView(context),
     );
   }
