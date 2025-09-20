@@ -325,7 +325,7 @@ class StressorHomePage extends StatelessWidget {
               debugPrint('roy93~ Building UI (isRunning: ${controller.isRunning.value})');
               final isRunning = controller.isRunning.value;
               return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                // physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                 padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context, ratio: 3.0)),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
