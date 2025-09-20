@@ -544,13 +544,27 @@ class SpeedChart extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Biểu đồ tốc độ', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('${speeds.length} điểm dữ liệu', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text(
+                  'Biểu đồ tốc độ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: ColorConstants.appColor,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  '${speeds.length} điểm dữ liệu',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             SizedBox(
-              height: 180,
+              height: 360,
               child: LineChart(
                 LineChartData(
                   lineTouchData: const LineTouchData(enabled: false),
