@@ -1,7 +1,7 @@
 name: saigonphantomlabs
 description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 2025.07.20+20250720
+version: 2025.09.20+20250920
 
 environment:
   sdk: '>=2.19.6 <4.0.0'
@@ -16,12 +16,12 @@ dependencies:
   #  shimmer: ^3.0.0
   #  package_info_plus:
   avatar_glow: ^3.0.1
-  in_app_review: ^2.0.10
+  in_app_review: ^2.0.11
   url_launcher: ^6.3.2
   animated_text_kit: ^4.2.3
   #  blur:
   #  cached_network_image: ^3.4.1
-  dio: ^5.8.0+1
+  dio: ^5.9.0
   fl_chart: ^1.0.0
   device_info_plus: ^11.5.0
   #  flutter_pretty_dio_logger: ^3.0.0
