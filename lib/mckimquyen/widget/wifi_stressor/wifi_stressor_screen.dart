@@ -326,7 +326,7 @@ class StressorHomePage extends StatelessWidget {
               final isRunning = controller.isRunning.value;
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context)),
+                padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context, ratio: 2.0)),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -432,12 +432,21 @@ class StressorHomePage extends StatelessWidget {
                         debugPrint('roy93~ Building chart (data points: ${controller.speedHistory.length})');
                         if (controller.speedHistory.isEmpty) {
                           return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24.0),
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
                             child: Column(
                               children: [
-                                CircularProgressIndicator(),
+                                CircularProgressIndicator(
+                                  color: Colors.grey,
+                                ),
                                 SizedBox(height: 16),
-                                Text('Đang thu thập dữ liệu tốc độ...', style: TextStyle(color: Colors.grey)),
+                                Text(
+                                  'Đang thu thập dữ liệu tốc độ...',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 16,
+                                  ),
+                                ),
                               ],
                             ),
                           );
@@ -523,12 +532,12 @@ class SpeedChart extends StatelessWidget {
   Widget build(BuildContext context) {
     debugPrint('roy93~ Rendering chart with ${speeds.length} data points');
     return Card(
-      elevation: 4,
+      elevation: 6,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
