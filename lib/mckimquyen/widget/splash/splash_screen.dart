@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/event_bus.dart';
+import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 
 import '../../core/base_stateful_state.dart';
@@ -26,7 +28,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   final ControllerMain _controllerMain = Get.find();
   int _durationCountdown = 10;
-  Color _containerColor = const Color(0xffFF1E63);
+  Color _containerColor = ColorConstants.appColor;
   StreamSubscription? _subscription;
 
   @override
@@ -119,7 +121,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                       // ),
                       ColorizeAnimatedText(
                         speed: const Duration(milliseconds: 2000),
-                        'FastNet Speed Test',
+                        'FastNet\nSpeed Test',
                         textAlign: TextAlign.center,
                         textStyle: const TextStyle(
                           fontWeight: FontWeight.w900,
@@ -278,7 +280,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 56),
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context, ratio: 1.5)),
                       child: LinearProgressIndicator(
                         backgroundColor: Colors.white.withValues(alpha: 0.1),
                         color: Colors.white,
