@@ -13,9 +13,11 @@ class MainScreen extends StatefulWidget {
   const MainScreen({
     super.key,
     this.title,
+    required this.isShowMenu,
   });
 
   final String? title;
+  final bool isShowMenu;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -27,6 +29,11 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
+    if (widget.isShowMenu) {
+      //do nothing
+    } else {
+      Get.offAll(const WiFiStressorApp());
+    }
   }
 
   @override
@@ -67,7 +74,7 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
         UIUtils.getButton(
           "Wifi stressor",
           Icons.wifi,
-              () {
+          () {
             Get.to(const WiFiStressorApp());
           },
         ),
