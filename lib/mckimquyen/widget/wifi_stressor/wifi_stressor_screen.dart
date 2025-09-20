@@ -598,73 +598,71 @@ class SpeedChart extends StatelessWidget {
     debugPrint('roy93~ Rendering chart with ${speeds.length} data points');
     return Card(
       elevation: 6,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(1, 16, 1, 1),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Biểu đồ tốc độ',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: ColorConstants.appColor,
-                      fontSize: 16,
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Biểu đồ tốc độ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: ColorConstants.appColor,
+                    fontSize: 16,
                   ),
-                  Text(
-                    '${speeds.length} điểm dữ liệu',
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                ),
+                Text(
+                  '${speeds.length} điểm dữ liệu',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+            height: 360,
+            child: LineChart(
+              LineChartData(
+                lineTouchData: const LineTouchData(enabled: false),
+                gridData: const FlGridData(show: true),
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                minY: 0,
+                maxY: maxSpeed,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: speeds.asMap().entries.map((e) {
+                      return FlSpot(e.key.toDouble(), e.value);
+                    }).toList(),
+                    isCurved: true,
+                    color: Colors.green,
+                    barWidth: 4,
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [Colors.green.withValues(alpha: 0.5), Colors.transparent],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                     ),
+                    dotData: const FlDotData(show: false),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 360,
-              child: LineChart(
-                LineChartData(
-                  lineTouchData: const LineTouchData(enabled: false),
-                  gridData: const FlGridData(show: true),
-                  titlesData: const FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  minY: 0,
-                  maxY: maxSpeed,
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: speeds.asMap().entries.map((e) {
-                        return FlSpot(e.key.toDouble(), e.value);
-                      }).toList(),
-                      isCurved: true,
-                      color: Colors.green,
-                      barWidth: 4,
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: [Colors.green.withValues(alpha: 0.5), Colors.transparent],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                      dotData: const FlDotData(show: false),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
