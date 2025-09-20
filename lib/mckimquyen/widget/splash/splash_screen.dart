@@ -79,6 +79,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
             children: [
               Expanded(
                 child: Container(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                   alignment: Alignment.center,
                   child: AnimatedTextKit(
                     animatedTexts: [
@@ -123,7 +124,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                         textStyle: const TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
-                          fontSize: 68,
+                          fontSize: 48,
                           // shadows: [
                           //   Shadow(
                           //     blurRadius: 5.0,
