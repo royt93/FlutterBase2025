@@ -7,15 +7,6 @@ import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
-class WiFiStressorApp extends StatelessWidget {
-  const WiFiStressorApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const StressorHomePage();
-  }
-}
-
 class StressorController extends GetxController {
   final isRunning = false.obs;
   final downloadCount = 0.obs;
@@ -235,13 +226,27 @@ class StressorController extends GetxController {
   }
 }
 
-class StressorHomePage extends StatelessWidget {
-  const StressorHomePage({super.key});
+class WiFiStressorApp extends StatelessWidget {
+  const WiFiStressorApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(StressorController());
+    return const StressorHomePage();
+  }
+}
 
+class StressorHomePage extends StatefulWidget {
+  const StressorHomePage({super.key});
+
+  @override
+  State<StressorHomePage> createState() => _StressorHomePageState();
+}
+
+class _StressorHomePageState extends State<StressorHomePage> {
+  final controller = Get.put(StressorController());
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       children: [
         Image.asset(
