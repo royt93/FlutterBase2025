@@ -326,7 +326,7 @@ class StressorHomePage extends StatelessWidget {
               final isRunning = controller.isRunning.value;
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context, ratio: 2.0)),
+                padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context, ratio: 3.0)),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -571,7 +571,7 @@ class SpeedChart extends StatelessWidget {
               child: LineChart(
                 LineChartData(
                   lineTouchData: const LineTouchData(enabled: false),
-                  gridData: const FlGridData(show: false),
+                  gridData: const FlGridData(show: true),
                   titlesData: const FlTitlesData(show: false),
                   borderData: FlBorderData(show: false),
                   minY: 0,
@@ -582,12 +582,12 @@ class SpeedChart extends StatelessWidget {
                         return FlSpot(e.key.toDouble(), e.value);
                       }).toList(),
                       isCurved: true,
-                      color: Colors.cyanAccent,
-                      barWidth: 3,
+                      color: Colors.green,
+                      barWidth: 4,
                       belowBarData: BarAreaData(
                         show: true,
                         gradient: LinearGradient(
-                          colors: [Colors.cyan.withOpacity(0.3), Colors.transparent],
+                          colors: [Colors.green.withValues(alpha: 0.5), Colors.transparent],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
