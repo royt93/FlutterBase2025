@@ -280,7 +280,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context, ratio: 1.5)),
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context, ratio: 1.0)),
                       child: LinearProgressIndicator(
                         backgroundColor: Colors.white.withValues(alpha: 0.1),
                         color: Colors.white,

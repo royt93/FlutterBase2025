@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 class WiFiStressorApp extends StatelessWidget {
@@ -218,176 +219,221 @@ class StressorHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(StressorController());
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Wi-Fi Stressor Pro'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              debugPrint('roy93~ Info button pressed');
-              Get.dialog(
-                AlertDialog(
-                  title: const Text('Thông tin ứng dụng'),
-                  content: const Text(
-                    'Ứng dụng kiểm tra sức chịu tải Wi-Fi bằng cách tải file song song liên tục.\n'
-                    '⚠️ Lưu ý: Sử dụng lượng lớn dữ liệu mạng!',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        debugPrint('roy93~ Info dialog closed');
-                        Get.back();
-                      },
-                      child: const Text('Đóng'),
+    return Stack(
+      children: [
+        Image.asset(
+          "assets/images/bkg_2.jpg",
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+        ),
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            iconTheme: const IconThemeData(
+              color: Colors.white,
+            ),
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            title: const Text(
+              'FastNet Speed Test',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.info_outline,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  debugPrint('roy93~ Info button pressed');
+                  Get.dialog(
+                    AlertDialog(
+                      title: const Text(
+                        'Thông tin ứng dụng',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: ColorConstants.appColor,
+                        ),
+                      ),
+                      content: const Text(
+                        'Ứng dụng kiểm tra sức chịu tải Wi-Fi bằng cách tải file song song liên tục.\n'
+                        '⚠️ Lưu ý: Sử dụng lượng lớn dữ liệu mạng!',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            debugPrint('roy93~ Info dialog closed');
+                            Get.back();
+                          },
+                          child: const Text(
+                            'Đóng',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: ColorConstants.appColor,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  );
+                },
+              ),
+            ],
+          ),
+          body: Center(
+            child: Obx(() {
+              debugPrint('roy93~ Building UI (isRunning: ${controller.isRunning.value})');
+              final isRunning = controller.isRunning.value;
+              return SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: isRunning
+                          ? const CircleAvatar(
+                              key: ValueKey('running'),
+                              radius: 64,
+                              backgroundColor: Colors.blueAccent,
+                              child: Icon(Icons.wifi, size: 56, color: Colors.white),
+                            )
+                          : const CircleAvatar(
+                              key: ValueKey('idle'),
+                              radius: 64,
+                              backgroundColor: Colors.grey,
+                              child: Icon(Icons.wifi_find, size: 56, color: Colors.white),
+                            ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Text(
+                      isRunning ? 'ĐANG KIỂM TRA WI-FI - Lượt tải: ${controller.downloadCount}' : 'SẴN SÀNG KIỂM TRA',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Card(
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Số kết nối:', style: TextStyle(fontSize: 16)),
+                                DropdownButton<int>(
+                                  value: controller.parallelDownloads.value,
+                                  items: [1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100, 200, 500]
+                                      .map((val) => DropdownMenuItem<int>(
+                                            value: val,
+                                            child: Text('$val'),
+                                          ))
+                                      .toList(),
+                                  onChanged: isRunning
+                                      ? null
+                                      : (val) {
+                                          debugPrint('roy93~ Parallel downloads changed to: $val');
+                                          controller.parallelDownloads.value = val!;
+                                        },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            if (isRunning) ...[
+                              _buildMetricTile(Icons.speed, 'Tốc độ hiện tại',
+                                  '${controller.speedMbps.value.toStringAsFixed(2)} Mbps'),
+                              _buildMetricTile(Icons.speed, 'Tốc độ trung bình',
+                                  '${controller.totalSpeedMbps.value.toStringAsFixed(2)} Mbps'),
+                              _buildMetricTile(
+                                  Icons.timer,
+                                  'Thời gian chạy',
+                                  '${controller.testDuration.value.inMinutes}'
+                                      ':${(controller.testDuration.value.inSeconds % 60).toString().padLeft(2, '0')}'),
+                              _buildMetricTile(Icons.data_usage, 'Dữ liệu đã tải',
+                                  '${(controller.totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(2)} MB'),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Biểu đồ với cơ chế cập nhật mạnh mẽ
+                    if (isRunning)
+                      Obx(() {
+                        debugPrint('roy93~ Building chart (data points: ${controller.speedHistory.length})');
+                        if (controller.speedHistory.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24.0),
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 16),
+                                Text('Đang thu thập dữ liệu tốc độ...', style: TextStyle(color: Colors.grey)),
+                              ],
+                            ),
+                          );
+                        }
+                        return SpeedChart(speeds: controller.speedHistory);
+                      }),
+
+                    const SizedBox(height: 32),
+
+                    isRunning
+                        ? FilledButton.icon(
+                            onPressed: controller.stopStressTest,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon: const Icon(Icons.stop),
+                            label: const Text('DỪNG KIỂM TRA', style: TextStyle(fontSize: 16)),
+                          )
+                        : FilledButton.icon(
+                            onPressed: controller.startStressTest,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon: const Icon(Icons.play_arrow),
+                            label: const Text('BẮT ĐẦU KIỂM TRA', style: TextStyle(fontSize: 16)),
+                          ),
                   ],
                 ),
               );
-            },
+            }),
           ),
-        ],
-      ),
-      body: Center(
-        child: Obx(() {
-          debugPrint('roy93~ Building UI (isRunning: ${controller.isRunning.value})');
-          final isRunning = controller.isRunning.value;
-          return SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context)),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: isRunning
-                      ? const CircleAvatar(
-                          key: ValueKey('running'),
-                          radius: 64,
-                          backgroundColor: Colors.blueAccent,
-                          child: Icon(Icons.wifi, size: 56, color: Colors.white),
-                        )
-                      : const CircleAvatar(
-                          key: ValueKey('idle'),
-                          radius: 64,
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.wifi_find, size: 56, color: Colors.white),
-                        ),
-                ),
-
-                const SizedBox(height: 24),
-
-                Text(
-                  isRunning ? 'ĐANG KIỂM TRA WI-FI - Lượt tải: ${controller.downloadCount}' : 'SẴN SÀNG KIỂM TRA',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 24),
-
-                Card(
-                  elevation: 6,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Số kết nối:', style: TextStyle(fontSize: 16)),
-                            DropdownButton<int>(
-                              value: controller.parallelDownloads.value,
-                              items: [1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100, 200, 500]
-                                  .map((val) => DropdownMenuItem<int>(
-                                        value: val,
-                                        child: Text('$val'),
-                                      ))
-                                  .toList(),
-                              onChanged: isRunning
-                                  ? null
-                                  : (val) {
-                                      debugPrint('roy93~ Parallel downloads changed to: $val');
-                                      controller.parallelDownloads.value = val!;
-                                    },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        if (isRunning) ...[
-                          _buildMetricTile(
-                              Icons.speed, 'Tốc độ hiện tại', '${controller.speedMbps.value.toStringAsFixed(2)} Mbps'),
-                          _buildMetricTile(Icons.speed, 'Tốc độ trung bình',
-                              '${controller.totalSpeedMbps.value.toStringAsFixed(2)} Mbps'),
-                          _buildMetricTile(
-                              Icons.timer,
-                              'Thời gian chạy',
-                              '${controller.testDuration.value.inMinutes}'
-                                  ':${(controller.testDuration.value.inSeconds % 60).toString().padLeft(2, '0')}'),
-                          _buildMetricTile(Icons.data_usage, 'Dữ liệu đã tải',
-                              '${(controller.totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(2)} MB'),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Biểu đồ với cơ chế cập nhật mạnh mẽ
-                if (isRunning)
-                  Obx(() {
-                    debugPrint('roy93~ Building chart (data points: ${controller.speedHistory.length})');
-                    if (controller.speedHistory.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24.0),
-                        child: Column(
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(height: 16),
-                            Text('Đang thu thập dữ liệu tốc độ...', style: TextStyle(color: Colors.grey)),
-                          ],
-                        ),
-                      );
-                    }
-                    return SpeedChart(speeds: controller.speedHistory);
-                  }),
-
-                const SizedBox(height: 32),
-
-                isRunning
-                    ? FilledButton.icon(
-                        onPressed: controller.stopStressTest,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        icon: const Icon(Icons.stop),
-                        label: const Text('DỪNG KIỂM TRA', style: TextStyle(fontSize: 16)),
-                      )
-                    : FilledButton.icon(
-                        onPressed: controller.startStressTest,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        icon: const Icon(Icons.play_arrow),
-                        label: const Text('BẮT ĐẦU KIỂM TRA', style: TextStyle(fontSize: 16)),
-                      ),
-              ],
-            ),
-          );
-        }),
-      ),
+        ),
+      ],
     );
   }
 
