@@ -64,7 +64,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
       body: Stack(
         children: [
           Image.asset(
-            "assets/images/bkg_1.jpg",
+            "assets/images/bkg_2.jpg",
             width: double.infinity,
             height: double.infinity,
             fit: BoxFit.cover,
@@ -118,7 +118,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                       // ),
                       ColorizeAnimatedText(
                         speed: const Duration(milliseconds: 2000),
-                        'Device Mockup',
+                        'FastNet Speed Test',
                         textAlign: TextAlign.center,
                         textStyle: const TextStyle(
                           fontWeight: FontWeight.w900,
@@ -295,6 +295,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   }
 
   Future<void> _goToMainScreen() async {
+    return;
     Get.offAll(() => const MainScreen());
   }
 }
