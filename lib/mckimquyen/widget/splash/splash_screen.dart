@@ -298,7 +298,6 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   }
 
   Future<void> _goToMainScreen() async {
-    return;
     Get.offAll(() => const MainScreen());
   }
 }
