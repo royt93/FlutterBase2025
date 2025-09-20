@@ -227,6 +227,11 @@ class StressorHomePage extends StatelessWidget {
           height: double.infinity,
           fit: BoxFit.cover,
         ),
+        Container(
+          color: Colors.black.withValues(alpha: 0.8),
+          width: Get.width,
+          height: Get.height,
+        ),
         Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
@@ -297,6 +302,7 @@ class StressorHomePage extends StatelessWidget {
               debugPrint('roy93~ Building UI (isRunning: ${controller.isRunning.value})');
               final isRunning = controller.isRunning.value;
               return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                 padding: EdgeInsets.fromLTRB(16, 16, 16, UIUtils.getPaddingBottom(context)),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -318,15 +324,19 @@ class StressorHomePage extends StatelessWidget {
                             ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
 
                     Text(
                       isRunning ? 'ĐANG KIỂM TRA WI-FI - Lượt tải: ${controller.downloadCount}' : 'SẴN SÀNG KIỂM TRA',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                       textAlign: TextAlign.center,
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
 
                     Card(
                       elevation: 6,
@@ -340,13 +350,27 @@ class StressorHomePage extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Số kết nối:', style: TextStyle(fontSize: 16)),
+                                const Text(
+                                  'Số kết nối:',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
                                 DropdownButton<int>(
                                   value: controller.parallelDownloads.value,
-                                  items: [1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100, 200, 500]
+                                  items: [1, 5, 10, 15, 30, 50, 100, 200, 500]
                                       .map((val) => DropdownMenuItem<int>(
                                             value: val,
-                                            child: Text('$val'),
+                                            child: Text(
+                                              '$val',
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
                                           ))
                                       .toList(),
                                   onChanged: isRunning
