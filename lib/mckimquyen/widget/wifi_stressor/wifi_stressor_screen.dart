@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
+import '../../admob/ad_mob_manager.dart';
 import '../../admob/ad_screen.dart';
 
 class StressorController extends GetxController {
@@ -497,24 +498,47 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(45),
                                   ),
                                 ),
                                 icon: const Icon(Icons.stop),
                                 label: const Text('DỪNG KIỂM TRA', style: TextStyle(fontSize: 16)),
                               )
                             : FilledButton.icon(
-                                onPressed: controller.startStressTest,
+                                onPressed: () {
+                                  showInterstitialAd((value) {
+                                    debugPrint("roy93~ showInterstitialAd value $value");
+                                    controller.startStressTest();
+                                  });
+                                },
                                 style: FilledButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(45),
                                   ),
                                 ),
                                 icon: const Icon(Icons.play_arrow),
-                                label: const Text('BẮT ĐẦU KIỂM TRA', style: TextStyle(fontSize: 16)),
+                                label: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Text('BẮT ĐẦU KIỂM TRA', style: TextStyle(fontSize: 16)),
+                                    Container(
+                                      color: Colors.transparent,
+                                      width: 120,
+                                      alignment: Alignment.bottomCenter,
+                                      child: const Text(
+                                        adMayAppearEn,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                       ],
                     ),
