@@ -55,15 +55,31 @@ class StressorController extends GetxController {
 
     debugPrint('roy93~ Showing start confirmation dialog');
     Get.defaultDialog(
+      titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      contentPadding: const EdgeInsets.all(16),
       title: '⚠️ Cảnh báo',
-      content: const Text('Ứng dụng sẽ sử dụng lượng lớn dữ liệu mạng. Bạn có chắc muốn tiếp tục?'),
+      content: const Text(
+        'Ứng dụng sẽ sử dụng lượng lớn dữ liệu mạng. Bạn có chắc muốn tiếp tục?',
+        style: TextStyle(
+          fontWeight: FontWeight.normal,
+          color: ColorConstants.appColor,
+          fontSize: 16,
+        ),
+      ),
       actions: [
         TextButton(
           onPressed: () {
             debugPrint('roy93~ User canceled stress test');
             Get.back();
           },
-          child: const Text('Hủy'),
+          child: const Text(
+            'Hủy bỏ',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: ColorConstants.appColor,
+              fontSize: 16,
+            ),
+          ),
         ),
         FilledButton(
           onPressed: () {
@@ -74,7 +90,14 @@ class StressorController extends GetxController {
           style: FilledButton.styleFrom(
             backgroundColor: Colors.green,
           ),
-          child: const Text('Tiếp tục'),
+          child: const Text(
+            'Tiếp tục',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 16,
+            ),
+          ),
         ),
       ],
     );
@@ -401,7 +424,7 @@ class StressorHomePage extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
 
                     // Biểu đồ với cơ chế cập nhật mạnh mẽ
                     if (isRunning)
