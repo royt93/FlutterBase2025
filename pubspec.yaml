@@ -9,6 +9,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+  marquee: ^2.3.0
+  image_picker: ^1.1.2
+  mime: ^2.0.0
+  in_app_review: ^2.0.11
+  url_launcher: ^6.3.2
+
   # Core dependencies - essential only
   cupertino_icons: ^1.0.8
   get: ^4.7.2
@@ -19,7 +25,7 @@ dependencies:
   connection_notifier: ^2.0.1
 
   # UI Components - minimal set
-  fl_chart: ^1.0.0
+  fl_chart: ^1.1.1
   toastification: ^3.0.3
 
   # Essential utilities
@@ -53,8 +59,8 @@ dev_dependencies:
   # Testing dependencies
   mockito: ^5.4.4
   build_runner: ^2.4.9
-  integration_test:
-    sdk: flutter
+  # integration_test: temporarily removed for fl_chart compatibility
+  #   sdk: flutter
 
   #https://pub.dev/packages/flutter_launcher_icons
   flutter_launcher_icons:
@@ -63,6 +69,9 @@ flutter_icons:
   ios: true
   image_path: "assets/images/ic_launcher.png"
 #  flutter pub run flutter_launcher_icons:main
+
+dependency_overrides:
+  vector_math: ^2.2.0
 
 flutter:
   uses-material-design: true
