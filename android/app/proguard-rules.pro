@@ -19,32 +19,25 @@
 -keep class androidx.** { *; }
 -keep class com.google.android.material.** { *; }
 
-# RxJava, RxAndroid (https://gist.github.com/kosiara/487868792fbd3214f9c9)
--keep class rx.schedulers.Schedulers {
-    public static <methods>;
+# Conservative optimization settings for compatibility
+-optimizations !code/simplification/arithmetic,!code/simplification/cast
+-optimizationpasses 3
+-dontpreverify
+
+# Remove unused code aggressively
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
 }
--keep class rx.schedulers.ImmediateScheduler {
-    public <methods>;
-}
--keep class rx.schedulers.TestScheduler {
-    public <methods>;
-}
--keep class rx.schedulers.Schedulers {
-    public static ** test();
-}
--keepclassmembers class rx.internal.util.unsafe.*ArrayQueue*Field* {
-    long producerIndex;
-    long consumerIndex;
-}
--keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueProducerNodeRef {
-    long producerNode;
-    long consumerNode;
-}
--dontwarn sun.misc.Unsafe
--dontwarn org.reactivestreams.FlowAdapters
--dontwarn org.reactivestreams.**
--dontwarn java.util.concurrent.flow.**
--dontwarn java.util.concurrent.**
+
+# Dio HTTP client (thay thế RxJava không dùng)
+-keep class dio.** { *; }
+-dontwarn dio.**
+
+# Google Mobile Ads
+-keep class com.google.android.gms.ads.** { *; }
+-dontwarn com.google.android.gms.ads.**
 
 ### Gson uses generic type information stored in a class file when working with fields. Proguard
 # removes such information by default, so configure it to keep all of it.
@@ -67,27 +60,23 @@
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
 
-# LeakCanary
--keep class org.eclipse.mat.** { *; }
--keep class com.squareup.leakcanary.** { *; }
+# Flutter specific optimizations
+-keep class io.flutter.app.** { *; }
+-keep class io.flutter.plugin.** { *; }
+-keep class io.flutter.util.** { *; }
+-keep class io.flutter.view.** { *; }
+-keep class io.flutter.** { *; }
 
-# Room
--dontwarn androidx.room.paging.**
--keep class * extends androidx.room.RoomDatabase
+# GetX state management
+-keep class dev.flutter.pigeon.** { *; }
 
-# VCard Parser
--dontwarn ezvcard.**
--keep,includedescriptorclasses class ezvcard.** { *; }
-
--keep class java.util.stream.** { *; }
--keep class com.finos.mobile.android.ekyc_v4** { *; }
--keep class finos.mobile.android.ekyc_v4** { *; }
--keep class com.finos.mobile.android.ekyc_v4.liveness { *; }
+# Essential JSON parsing only (no more unused eKYC/Room)
 -keep class org.json.* { *; }
 
-# Giữ lại generic type của Gson
--keepattributes Signature
--keep class com.google.gson.reflect.TypeToken { *; }
+# AppLovin mediation
+-keep class com.applovin.** { *; }
+-dontwarn com.applovin.**
 
-# Giữ lại tất cả các class và phương thức của FlutterLocalNotifications
--keep class com.dexterous.flutterlocalnotifications.** { *; }
+# Google Play Core (for deferred components)
+-keep class com.google.android.play.core.** { *; }
+-dontwarn com.google.android.play.core.**

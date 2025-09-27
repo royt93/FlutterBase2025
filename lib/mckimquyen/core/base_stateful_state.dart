@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
+// Removed unused dependency: lottie
 
 import '../common/const/dimen_constants.dart';
 

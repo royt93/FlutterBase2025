@@ -9,83 +9,36 @@ dependencies:
   flutter:
     sdk: flutter
 
-  #  platform_device_id: ^1.0.1
+  # Core dependencies - essential only
   cupertino_icons: ^1.0.8
   get: ^4.7.2
   shared_preferences: ^2.5.3
-  #  shimmer: ^3.0.0
-  #  package_info_plus:
-  avatar_glow: ^3.0.1
-  in_app_review: ^2.0.11
-  url_launcher: ^6.3.2
-  animated_text_kit: ^4.2.3
-  #  blur:
-  #  cached_network_image: ^3.4.1
+
+  # Network & Performance
   dio: ^5.9.0
+  connection_notifier: ^2.0.1
+
+  # UI Components - minimal set
   fl_chart: ^1.0.0
-  device_info_plus: ^11.5.0
-  #  flutter_pretty_dio_logger: ^3.0.0
-  #  easy_debounce: ^2.0.3
-  flutter_displaymode: ^0.6.0
-  #  panara_dialogs: ^0.1.5
-  lottie: ^3.3.1
-  share_plus: ^11.0.0
-  marquee: ^2.3.0
-  #  kenburns_nullsafety: ^1.0.1
-  permission_handler: ^12.0.1
-  #  toggle_switch: ^2.3.0
-  #  highlight_text: ^1.8.0
-  flutter_udid: ^4.0.0
-
-  intl:
-  #  scrollable_positioned_list:
-  circular_countdown_timer: ^0.2.4
-  path:
-  flutter_email_sender: ^7.0.0
-  modal_bottom_sheet: ^3.0.0
-  #  html:
-  #  device_frame: ^1.2.0
-
-  #zone daily_local_notification
-  flutter_local_notifications: ^17.2.1+2
-  flutter_time_picker_spinner:
-    git: https://github.com/novas1r1/flutter_time_picker_spinner.git
-  flutter_timezone:
-  provider: ^6.1.5
-  timezone:
-  app_settings: ^6.1.1
-  #end zone daily_local_notification
-  flutter_easyloading: ^3.0.5
-  flutter_keyboard_visibility: ^6.0.0
-
-  image_picker: ^1.1.2
-  mime: ^2.0.0
-  wakelock_plus: ^1.3.2
-  #  timeago: ^3.7.0
-  #  bottom_bar_with_sheet: ^2.4.0
-  bottom_sheet: ^4.0.4
-  #  toggle_switch: ^2.3.0
-  #  grouped_list: ^6.0.0
-  #  wheel_slider: ^1.2.2
-  #  flutter_joystick: ^0.2.1
-  #  hsv_color_pickers: ^0.3.0
-  #  flutter_hsvcolor_picker: ^1.5.1
-  #  flutter_colorpicker: ^1.1.0
-  #  holding_gesture: ^1.2.0
-  #  stepper_counter_swipe: ^1.0.2
-  vibration: ^3.1.3
-  #  group_button: ^5.3.4
-  #  google_fonts: ^6.2.1
-  #  screenshot:
-  #  path_provider:
-  #  image:
-  #  image_gallery_saver:
-  focus_detector_v2: ^3.1.0+1
   toastification: ^3.0.3
-  hugeicons: ^0.0.11
+
+  # Essential utilities
+  device_info_plus: ^11.5.0
+  flutter_displaymode: ^0.6.0
+  permission_handler: ^12.0.1
+  wakelock_plus: ^1.3.2
+
+  # Core platform
+  intl:
+  path:
+
+  # AdMob integration
   google_mobile_ads: ^6.0.0
   gma_mediation_applovin:
-  connection_notifier: ^2.0.1
+
+  # Essential UI feedback
+  vibration: ^3.1.3
+  flutter_easyloading: ^3.0.5
 
 #  dart run rename_app:main all="My App Name"
 #  rename_app: ^1.6.2
@@ -97,6 +50,12 @@ dev_dependencies:
   flutter_native_splash:
   change_app_package_name: ^1.5.0
 
+  # Testing dependencies
+  mockito: ^5.4.4
+  build_runner: ^2.4.9
+  integration_test:
+    sdk: flutter
+
   #https://pub.dev/packages/flutter_launcher_icons
   flutter_launcher_icons:
 flutter_icons:
@@ -107,12 +66,9 @@ flutter_icons:
 
 flutter:
   uses-material-design: true
-  #  fonts:
-  #    - family: Pacifico
-  #      fonts:
-  #        - asset: data_repo/fonts/Pacifico-Regular.ttf
-  #          weight: 400
   assets:
-    - assets/files/
-    #    - assets/videos/
-    - assets/images/
+    # Only essential images - remove unused assets
+    - assets/images/bkg_2.jpg
+    - assets/images/ic_launcher.png
+    - assets/images/ic_go.png
+    - assets/images/ic_check_mark_green.png

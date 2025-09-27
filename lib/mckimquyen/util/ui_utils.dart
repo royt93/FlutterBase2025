@@ -1,20 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:app_settings/app_settings.dart';
-import 'package:bottom_sheet/bottom_sheet.dart';
+// Removed unused dependencies: app_settings, bottom_sheet
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+// Removed unused dependencies: lottie, modal_bottom_sheet
 import 'package:permission_handler/permission_handler.dart';
-import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/daily_local_notifications.dart';
-import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/daily_local_notifications_config.dart';
-import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/notification_config.dart';
-import 'package:saigonphantomlabs/mckimquyen/lib/daily_local_notification/utils/styling_config.dart';
+// Removed daily notification imports - feature removed
 import 'package:toastification/toastification.dart';
 
 import '../common/const/color_constants.dart';
@@ -625,7 +620,7 @@ class UIUtils {
         if (c == null) {
           return;
         }
-        showBarModalBottomSheet(
+        showModalBottomSheet(
           enableDrag: false,
           context: c,
           builder: (context) => Container(
@@ -666,55 +661,13 @@ class UIUtils {
                     cacheExtent: double.maxFinite,
                     physics: const BouncingScrollPhysics(),
                     children: [
-                      DailyLocalNotifications(
-                        notificationConfig: const NotificationConfig(
-                          title: "'Device Mockup' misses you so much",
-                          description:
-                              "Have you opened the 'Device Mockup' app today to see the latest news? Open it now <3",
-                        ),
-                        config: const DailyLocalNotificationsConfig(),
-                        stylingConfig: StylingConfig(
-                          activeColor: Theme.of(context).primaryColor,
-                          inactiveColor: Theme.of(context).primaryColor.withOpacity(0.3),
-                          backgroundColor: Colors.white,
-                        ),
-                        reminderTitleText: const Text(
-                          'Turn notifications on/off',
-                          style: TextStyle(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
-                        reminderRepeatText: const Text(
-                          'Repeat message',
-                          style: TextStyle(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
-                        reminderDailyText: const Text(
-                          'Daily',
-                          style: TextStyle(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
-                        timeNormalTextStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 25,
+                      const Text(
+                        'Notification settings removed to reduce APK size',
+                        style: TextStyle(
+                          fontSize: 16,
                           color: Colors.grey,
                         ),
-                        timeSelectedTextStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 25,
-                          color: ColorConstants.appColor,
-                        ),
-                        onNotificationsUpdated: () {
-                          // debugPrint("Notifications updated");
-                        },
+                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
@@ -736,7 +689,7 @@ class UIUtils {
           if (value == PermissionStatus.granted) {
             show();
           } else if (value == PermissionStatus.permanentlyDenied) {
-            AppSettings.openAppSettings(type: AppSettingsType.notification);
+            // AppSettings removed - using basic permission request
           }
         });
       }
@@ -762,22 +715,16 @@ class UIUtils {
     List<double>? anchors,
   ) {
     onStart.call();
-    showFlexibleBottomSheet(
-      minHeight: 0,
-      initHeight: 0.5,
-      maxHeight: maxHeight,
-      anchors: anchors,
+    showModalBottomSheet(
       context: context,
       builder: builder,
-      // isExpand: false,
-      // isCollapsible: false,
-      isSafeArea: true,
-      keyboardBarrierColor: Colors.white,
-      bottomSheetColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.0),
-      bottomSheetBorderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(16),
-        topRight: Radius.circular(16),
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.5),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
       ),
     ).then((value) {
       onDismiss.call();
@@ -837,10 +784,18 @@ class UIUtils {
                     ),
                   ),
                 ),
-                Lottie.asset(
-                  lottiePath,
+                Container(
                   width: 155,
                   height: 155,
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(75),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle,
+                    size: 80,
+                    color: Colors.green,
+                  ),
                 ),
                 const SizedBox(height: DimenConstants.marginPaddingMedium),
                 textCenter,

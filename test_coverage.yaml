@@ -1,0 +1,33 @@
+# Test Coverage Configuration
+# Cấu hình cho test coverage reporting
+
+coverage:
+  # Minimum coverage threshold (%)
+  min_coverage: 80
+
+  # Exclude files from coverage
+  exclude:
+    - lib/main.dart
+    - lib/**/*.g.dart
+    - lib/**/*.freezed.dart
+    - lib/**/*.config.dart
+    - lib/**/generated/**
+    - lib/admob/k/k.dart  # Exclude constants file
+
+  # Include directories
+  include:
+    - lib/mckimquyen/
+
+  # Output formats
+  output:
+    - lcov
+    - html
+    - json
+
+  # HTML report settings
+  html:
+    output_directory: coverage/html
+
+  # LCOV report settings
+  lcov:
+    output_file: coverage/lcov.info

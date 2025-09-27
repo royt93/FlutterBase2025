@@ -78,21 +78,43 @@ android {
         }
     }
 
+    // APK Split configuration disabled to fix R8 compilation
+    // splits {
+    //     abi {
+    //         enable true
+    //         reset()
+    //         include 'arm64-v8a', 'armeabi-v7a'
+    //         universalApk false
+    //     }
+    //     density {
+    //         enable true
+    //         reset()
+    //         include 'mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi'
+    //     }
+    // }
+
     buildTypes {
         release {
             debuggable false
             minifyEnabled true
             shrinkResources true
-            //used android.enableR8=true in gradle.properties
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            zipAlignEnabled true
+            // Tối ưu code optimization
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+
+            // Nén resources và optimize
+            crunchPngs true
+
+            // Bundle optimization
+            manifestPlaceholders = [enableCrashlytics: "true"]
         }
         debug {
             minifyEnabled false
             shrinkResources false
-            //used android.enableR8=true in gradle.properties
+            zipAlignEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//            signingConfig signingConfigs.debug
+            manifestPlaceholders = [enableCrashlytics: "false"]
         }
     }
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:animated_text_kit/animated_text_kit.dart';
+// Removed unused dependency: animated_text_kit
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -83,71 +83,21 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                   alignment: Alignment.center,
-                  child: AnimatedTextKit(
-                    animatedTexts: [
-                      // ColorizeAnimatedText(
-                      //   'Device',
-                      //   textAlign: TextAlign.center,
-                      //   textStyle: const TextStyle(
-                      //     fontWeight: FontWeight.w900,
-                      //     color: Colors.white,
-                      //     fontSize: 70,
-                      //   ),
-                      //   colors: [
-                      //     Colors.white,
-                      //     Colors.green,
-                      //     Colors.purple,
-                      //     Colors.blue,
-                      //     Colors.yellow,
-                      //     Colors.red,
-                      //   ],
-                      // ),
-                      // ColorizeAnimatedText(
-                      //   'Mockup',
-                      //   textAlign: TextAlign.center,
-                      //   textStyle: const TextStyle(
-                      //     fontWeight: FontWeight.w900,
-                      //     color: Colors.white,
-                      //     fontSize: 70,
-                      //   ),
-                      //   colors: [
-                      //     Colors.white,
-                      //     Colors.green,
-                      //     Colors.purple,
-                      //     Colors.blue,
-                      //     Colors.yellow,
-                      //     Colors.red,
-                      //   ],
-                      // ),
-                      ColorizeAnimatedText(
-                        speed: const Duration(milliseconds: 2000),
-                        'FastNet\nSpeed Test',
-                        textAlign: TextAlign.center,
-                        textStyle: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          fontSize: 48,
-                          // shadows: [
-                          //   Shadow(
-                          //     blurRadius: 5.0,
-                          //     color: Colors.black,
-                          //     offset: Offset(1.0, 1.0),
-                          //   ),
-                          // ],
+                  child: const Text(
+                    'FastNet\nSpeed Test',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      fontSize: 48,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 10.0,
+                          color: Colors.black,
+                          offset: Offset(2.0, 2.0),
                         ),
-                        colors: [
-                          Colors.white,
-                          Colors.green,
-                          Colors.purple,
-                          Colors.blue,
-                          Colors.yellow,
-                          // Colors.red,
-                          Colors.white,
-                        ],
-                      ),
-                    ],
-                    isRepeatingAnimation: true,
-                    onTap: () {},
+                      ],
+                    ),
                   ),
                 ),
               ),
