@@ -22,7 +22,6 @@ dependencies:
 
   # Network & Performance
   dio: ^5.9.0
-  connection_notifier: ^2.0.1
 
   # UI Components - minimal set
   fl_chart: ^1.1.1
@@ -41,6 +40,7 @@ dependencies:
   # AdMob integration
   google_mobile_ads: ^6.0.0
   gma_mediation_applovin:
+  connection_notifier: ^2.0.1
 
   # Essential UI feedback
   vibration: ^3.1.3
@@ -59,8 +59,8 @@ dev_dependencies:
   # Testing dependencies
   mockito: ^5.4.4
   build_runner: ^2.4.9
-  # integration_test: temporarily removed for fl_chart compatibility
-  #   sdk: flutter
+  integration_test:
+    sdk: flutter
 
   #https://pub.dev/packages/flutter_launcher_icons
   flutter_launcher_icons:

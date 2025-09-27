@@ -164,24 +164,22 @@ class TestUtils {
   }
 
   /// Generate test constants
-  static class TestConstants {
-    static const Duration shortTimeout = Duration(seconds: 1);
-    static const Duration mediumTimeout = Duration(seconds: 3);
-    static const Duration longTimeout = Duration(seconds: 10);
+  static const Duration shortTimeout = Duration(seconds: 1);
+  static const Duration mediumTimeout = Duration(seconds: 3);
+  static const Duration longTimeout = Duration(seconds: 10);
 
-    static const List<int> testConnectionCounts = [1, 5, 10, 25, 50];
-    static const List<String> testUrls = [
-      'https://httpbin.org/bytes/1024',
-      'https://httpbin.org/bytes/2048',
-    ];
+  static const List<int> testConnectionCounts = [1, 5, 10, 25, 50];
+  static const List<String> testUrls = [
+    'https://httpbin.org/bytes/1024',
+    'https://httpbin.org/bytes/2048',
+  ];
 
-    static const Map<String, dynamic> mockMetrics = {
-      'downloadCount': 5,
-      'speedMbps': 25.5,
-      'totalSpeedMbps': 22.3,
-      'totalDownloadedBytes': 1048576, // 1MB
-    };
-  }
+  static const Map<String, dynamic> mockMetrics = {
+    'downloadCount': 5,
+    'speedMbps': 25.5,
+    'totalSpeedMbps': 22.3,
+    'totalDownloadedBytes': 1048576, // 1MB
+  };
 }
 
 /// Custom matcher cho testing
