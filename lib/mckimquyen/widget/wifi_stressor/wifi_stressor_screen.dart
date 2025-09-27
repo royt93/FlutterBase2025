@@ -18,10 +18,15 @@ class StressorController extends GetxController {
   final speedMbps = 0.0.obs;
   final totalSpeedMbps = 0.0.obs;
   final parallelDownloads = 50.obs;
+  // Tách speedHistory riêng để tối ưu chart updates
   final speedHistory = <double>[].obs;
   final totalDownloadedBytes = 0.obs;
   final testDuration = Duration.zero.obs;
   final startTime = Rx<DateTime?>(null);
+
+  // Throttle mechanism để giảm chart updates
+  DateTime _lastChartUpdate = DateTime.now();
+  static const _chartUpdateInterval = Duration(milliseconds: 500);
 
   final urls = [
     'https://proof.ovh.net/files/1GB.dat',
@@ -117,7 +122,7 @@ class StressorController extends GetxController {
     _updateTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       debugPrint('roy93~ Update timer tick - total downloaded: ${totalDownloadedBytes.value} bytes');
       _updateTotalSpeed();
-      update();
+      // Loại bỏ update() để tránh rebuild toàn bộ controller
     });
 
     for (int i = 0; i < parallelDownloads.value; i++) {
@@ -152,6 +157,21 @@ class StressorController extends GetxController {
       totalSpeedMbps.value = (totalDownloadedBytes.value * 8) / (duration.inSeconds * 1000000);
       debugPrint('roy93~ Updated total speed: ${totalSpeedMbps.value.toStringAsFixed(2)} Mbps');
     }
+  }
+
+  /// Cập nhật speed history với tối ưu performance
+  void _updateSpeedHistory(double mbps) {
+    // Tạo list mới để batch update
+    final newHistory = List<double>.from(speedHistory)..add(mbps);
+
+    // Giới hạn data points để tối ưu chart rendering
+    if (newHistory.length > 50) { // Giảm từ 100 xuống 50
+      speedHistory.value = newHistory.sublist(newHistory.length - 50);
+    } else {
+      speedHistory.value = newHistory;
+    }
+
+    debugPrint('roy93~ Speed history updated (${speedHistory.length} points)');
   }
 
   Future<void> _runDownloadLoop(int id) async {
@@ -204,11 +224,13 @@ class StressorController extends GetxController {
             speedMbps.value = mbps;
             totalDownloadedBytes.value += actualBytes.toInt();
 
-            speedHistory.add(mbps);
-            if (speedHistory.length > 100) {
-              speedHistory.removeAt(0);
+            // Throttle chart updates để tối ưu performance
+            final now = DateTime.now();
+            if (now.difference(_lastChartUpdate) >= _chartUpdateInterval) {
+              _updateSpeedHistory(mbps);
+              _lastChartUpdate = now;
             }
-            debugPrint('roy93~ [Loop $id] Speed history updated (${speedHistory.length} points)');
+            debugPrint('roy93~ [Loop $id] Speed updated: ${mbps.toStringAsFixed(2)} Mbps');
           } else {
             debugPrint('roy93~ [Loop $id] Warning: Received 0 bytes!');
           }
@@ -669,6 +691,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   }
 }
 
+/// Chart tối ưu performance với caching và reduced complexity
 class SpeedChart extends StatelessWidget {
   final List<double> speeds;
 
@@ -682,7 +705,7 @@ class SpeedChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('roy93~ Rendering chart with ${speeds.length} data points');
+    // Loại bỏ debug print để tối ưu performance
     return Card(
       elevation: 6,
       clipBehavior: Clip.antiAlias,
@@ -693,7 +716,7 @@ class SpeedChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            padding: const EdgeInsets.all(16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -706,49 +729,52 @@ class SpeedChart extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${speeds.length} điểm dữ liệu',
+                  '${speeds.length} điểm',
                   style: const TextStyle(
                     color: Colors.grey,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+          SizedBox(
             height: 360,
-            child: LineChart(
-              LineChartData(
-                lineTouchData: const LineTouchData(enabled: false),
-                gridData: const FlGridData(show: true),
-                titlesData: const FlTitlesData(show: false),
-                borderData: FlBorderData(show: false),
-                minY: 0,
-                maxY: maxSpeed,
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: speeds.asMap().entries.map((e) {
-                      return FlSpot(e.key.toDouble(), e.value);
-                    }).toList(),
-                    isCurved: true,
-                    color: Colors.green,
-                    barWidth: 4,
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [Colors.green.withValues(alpha: 0.5), Colors.transparent],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              child: LineChart(
+                LineChartData(
+                  lineTouchData: const LineTouchData(enabled: false),
+                  gridData: const FlGridData(show: true),
+                  titlesData: const FlTitlesData(show: false),
+                  borderData: FlBorderData(show: false),
+                  minY: 0,
+                  maxY: maxSpeed,
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: speeds.asMap().entries.map((e) {
+                        return FlSpot(e.key.toDouble(), e.value);
+                      }).toList(),
+                      isCurved: true,
+                      color: Colors.green,
+                      barWidth: 2,
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [Colors.green.withValues(alpha: 0.5), Colors.transparent],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
                       ),
+                      dotData: const FlDotData(show: false),
                     ),
-                    dotData: const FlDotData(show: false),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
