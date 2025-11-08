@@ -1,7 +1,7 @@
 name: saigonphantomlabs
 description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 2025.09.27+20250927
+version: 2025.11.08+20251108
 
 environment:
   sdk: '>=2.19.6 <4.0.0'

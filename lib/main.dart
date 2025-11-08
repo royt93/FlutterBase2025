@@ -123,7 +123,7 @@ class _MyAppState extends BaseStatefulState<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Device Mockup',
+      title: 'RoyApp',
       theme: ThemeData(
         primarySwatch: Colors.red,
       ),
