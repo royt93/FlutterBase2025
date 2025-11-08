@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:marquee/marquee.dart';
 
 import '../../core/base_stateful_state.dart';
-import '../../widget/controller_main.dart';
 
 class TextMarquee extends StatefulWidget {
   const TextMarquee(
@@ -20,12 +19,12 @@ class TextMarquee extends StatefulWidget {
 }
 
 class _TextMarqueeState extends BaseStatefulState<TextMarquee> {
-  final ControllerMain _controllerMain = Get.find();
+  // final ControllerMain _controllerMain = Get.find();
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  // }
 
   @override
   Widget build(BuildContext context) {

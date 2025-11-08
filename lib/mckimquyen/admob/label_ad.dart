@@ -19,7 +19,7 @@ class LabelAd extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox.shrink();
+    // return const SizedBox.shrink();
     Color mColorBkg;
     Color mColorTxt;
     if (colorBkg == null) {

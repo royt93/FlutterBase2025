@@ -113,12 +113,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends BaseStatefulState<MyApp> {
-  final ControllerMain _controllerMain = Get.find();
+  // final ControllerMain _controllerMain = Get.find();
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  // }
 
   @override
   Widget build(BuildContext context) {

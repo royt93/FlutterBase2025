@@ -30,7 +30,7 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T> {
     VoidCallback okAction,
   ) {
     showGeneralDialog(
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       context: context,
       pageBuilder: (_, __, ___) {
         return WillPopScope(

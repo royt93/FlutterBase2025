@@ -351,7 +351,7 @@ class ScaffoldGradientBackground extends StatelessWidget {
 
   const ScaffoldGradientBackground({
     required this.gradient,
-    Key? key,
+    super.key,
     this.appBar,
     this.body,
     this.floatingActionButton,
@@ -374,7 +374,7 @@ class ScaffoldGradientBackground extends StatelessWidget {
     this.drawerEnableOpenDragGesture = true,
     this.endDrawerEnableOpenDragGesture = true,
     this.restorationId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

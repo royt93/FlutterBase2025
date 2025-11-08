@@ -24,7 +24,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerProviderStateMixin {
-  final ControllerMain _controllerMain = Get.find();
+  // final ControllerMain _controllerMain = Get.find();
 
   @override
   void initState() {

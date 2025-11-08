@@ -26,7 +26,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends BaseStatefulState<SplashScreen> {
-  final ControllerMain _controllerMain = Get.find();
+  // final ControllerMain _controllerMain = Get.find();
   int _durationCountdown = 10;
   Color _containerColor = ColorConstants.appColor;
   StreamSubscription? _subscription;

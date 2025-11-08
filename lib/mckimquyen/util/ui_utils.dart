@@ -31,7 +31,7 @@ class UIUtils {
         return Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(45),
             boxShadow: const [
               BoxShadow(
@@ -113,7 +113,7 @@ class UIUtils {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.black,
-          backgroundColor: Colors.white.withOpacity(0.8),
+          backgroundColor: Colors.white.withValues(alpha: 0.8),
           minimumSize: const Size(double.infinity, DimenConstants.buttonHeight * 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DimenConstants.radiusRound),

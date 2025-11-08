@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_screen.dart';
 
 class ScreenC extends AdScreen {
