@@ -936,7 +936,7 @@ class UIUtils {
       showProgressBar: showProgressBar,
       // padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       // margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-      closeButtonShowType: CloseButtonShowType.none,
+      // closeButtonShowType: CloseButtonShowType.none,
       closeOnClick: true,
       pauseOnHover: true,
       dragToClose: true,

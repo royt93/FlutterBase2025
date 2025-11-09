@@ -32,8 +32,8 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T> {
       barrierColor: Colors.black.withValues(alpha: 0.7),
       context: context,
       pageBuilder: (_, __, ___) {
-        return WillPopScope(
-          onWillPop: () async => barrierDismissible,
+        return PopScope(
+          canPop: barrierDismissible,
           child: Center(
             child: Container(
               width: Get.width,
