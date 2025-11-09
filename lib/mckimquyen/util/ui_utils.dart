@@ -72,7 +72,7 @@ class UIUtils {
       leading: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(45),
           boxShadow: const [
             BoxShadow(
@@ -118,7 +118,7 @@ class UIUtils {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DimenConstants.radiusRound),
             side: BorderSide(
-              color: const Color(0xFF8C98A8).withOpacity(0.2),
+              color: const Color(0xFF8C98A8).withValues(alpha: 0.2),
               width: 0.5,
             ),
           ),
@@ -611,7 +611,7 @@ class UIUtils {
 //   );
 // }
 
-  static showBottomSheetNotification(Function onDismiss) {
+  static void showBottomSheetNotification(Function onDismiss) {
     Permission.notification.isGranted.then((isGrantedPermissionNotification) {
       // debugPrint("isGrantedPermissionNotification $isGrantedPermissionNotification");
 
@@ -719,7 +719,7 @@ class UIUtils {
       context: context,
       builder: builder,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(16),
@@ -745,7 +745,7 @@ class UIUtils {
     showGeneralDialog(
       barrierLabel: "",
       barrierDismissible: barrierDismissible,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       context: context,
       pageBuilder: (_, __, ___) {
         return Center(
@@ -788,7 +788,7 @@ class UIUtils {
                   width: 155,
                   height: 155,
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(75),
                   ),
                   child: const Icon(
@@ -904,8 +904,8 @@ class UIUtils {
     int durationInS = 2,
     ToastificationType type = ToastificationType.success,
     ToastificationStyle style = ToastificationStyle.minimal,
-    bool showIcon: true,
-    bool showProgressBar: false,
+    bool showIcon = true,
+    bool showProgressBar = false,
   }) {
     toastification.dismissAll();
     toastification.show(

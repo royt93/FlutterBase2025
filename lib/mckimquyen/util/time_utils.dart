@@ -1,8 +1,7 @@
 import 'package:intl/intl.dart';
 
-
 class TimeUtils {
-  static const String FORMAT_1 = "dd/MM/yyyy hh:mm:ss";
+  static const String format1 = "dd/MM/yyyy hh:mm:ss";
 
   static String convertFromMillisecondsSinceEpoch(int millisecondsSinceEpoch, String pattern) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(millisecondsSinceEpoch);

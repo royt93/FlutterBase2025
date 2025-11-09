@@ -7,7 +7,6 @@ import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/wifi_stressor_screen.dart';
 
 import '../../core/base_stateful_state.dart';
-import '../controller_main.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({
@@ -36,10 +35,10 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {

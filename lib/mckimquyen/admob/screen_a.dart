@@ -29,10 +29,10 @@ class _ScreenAState extends AdScreenState<ScreenA> {
     loadBannerAd();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {

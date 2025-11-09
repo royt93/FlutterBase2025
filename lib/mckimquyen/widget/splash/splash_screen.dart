@@ -12,7 +12,6 @@ import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 
 import '../../core/base_stateful_state.dart';
-import '../controller_main.dart';
 
 class SplashScreen extends StatefulWidget {
   static String screenName = "/SplashScreen";

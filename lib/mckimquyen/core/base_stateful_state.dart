@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 // Removed unused dependency: lottie
 
@@ -198,7 +197,7 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T> {
     showGeneralDialog(
       barrierDismissible: barrierDismissible,
       barrierLabel: "",
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       context: context,
       pageBuilder: (_, __, ___) {
         return Center(

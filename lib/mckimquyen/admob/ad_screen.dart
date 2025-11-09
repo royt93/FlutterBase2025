@@ -16,10 +16,10 @@ abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
   final ValueNotifier<RewardedAd?> rewardedNotifier = ValueNotifier(null);
   bool _isDisposed = false;
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  // }
 
   Future<void> initializeAds() async {
     await Future.wait([

@@ -1,11 +1,11 @@
 import 'package:intl/intl.dart';
 
 class DurationUtils {
-  static const FORMAT_T_Z = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-  static const FORMAT_T = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-  static const FORMAT_1 = "dd/MM/yyyy - HH:mm";
-  static const FORMAT_2 = "dd/MM/yyyy HH:mm:ss";
-  static const FORMAT_3 = "dd/MM/yyyy";
+  static const formatTZ = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+  static const formatT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+  static const format1 = "dd/MM/yyyy - HH:mm";
+  static const format2 = "dd/MM/yyyy HH:mm:ss";
+  static const format3 = "dd/MM/yyyy";
 
   static String formatSeconds(int sec) {
     Duration duration = Duration(seconds: sec);
@@ -62,7 +62,7 @@ class DurationUtils {
   }
 
   static String nowHHmm() {
-    return formatTime(DateTime.now().millisecondsSinceEpoch, FORMAT_2);
+    return formatTime(DateTime.now().millisecondsSinceEpoch, format2);
   }
 
   //date 2021-04-07T23:21:13.0481878,
@@ -128,7 +128,7 @@ class DurationUtils {
     }
   }
 
-  static delay(int milliseconds, Function f) {
+  static void delay(int milliseconds, Function f) {
     Future.delayed(Duration(milliseconds: milliseconds), () {
       f.call();
     });

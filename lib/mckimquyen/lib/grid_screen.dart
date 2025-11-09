@@ -24,7 +24,7 @@ class GridPainter extends CustomPainter {
     //   c = Colors.transparent;
     // }
 
-    final c = Colors.red.withOpacity(0.25);
+    final c = Colors.red.withValues(alpha: 0.25);
     final paint = Paint()
       ..color = c // Màu đỏ với độ trong suốt 50%
       ..strokeWidth = 1; // Độ dày của các đường kẻ
