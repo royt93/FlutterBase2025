@@ -249,7 +249,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
 
   Future<void> _goToMainScreen() async {
     Get.offAll(() => const MainScreen(
-          isShowMenu: kDebugMode,
+          isShowMenu: true,
         ));
   }
 }

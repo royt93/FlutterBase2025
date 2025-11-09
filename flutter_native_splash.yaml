@@ -8,10 +8,10 @@
 
 #dart run flutter_native_splash:create
 flutter_native_splash:
-  color: "#012f47"
+  color: "#faf9f5"
   image: assets/images/ic_launcher_960.png
 #  branding: assets/images/ic_launcher_960.png
-  color_dark: "#012f47"
+  color_dark: "#faf9f5"
   image_dark: assets/images/ic_launcher_960.png
 #  branding_dark: assets/images/ic_launcher_960.png
   fullscreen: true
@@ -19,8 +19,8 @@ flutter_native_splash:
   ios_content_mode: center
   android_12:
     image: assets/images/ic_launcher_960.png
-    icon_background_color: "#012f47"
+    icon_background_color: "#faf9f5"
     image_dark: assets/images/ic_launcher_960.png
-    icon_background_color_dark: "#012f47"
+    icon_background_color_dark: "#faf9f5"
 
   web: false
