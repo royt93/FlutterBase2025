@@ -39,7 +39,7 @@
         android:allowBackup="true"
         android:fullBackupOnly="true"
         android:hasFragileUserData="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:label="Lingo Up"
         tools:ignore="DiscouragedApi,LockedOrientationActivity,UnusedAttribute">
 
