@@ -39,8 +39,8 @@
         android:allowBackup="true"
         android:fullBackupOnly="true"
         android:hasFragileUserData="true"
-        android:icon="@mipmap/launcher_icon"
-        android:label="LingoUp"
+        android:icon="@drawable/ic_launcher"
+        android:label="Lingo Up"
         tools:ignore="DiscouragedApi,LockedOrientationActivity,UnusedAttribute">
 
         <!--        TODO roy93~ update admob app id-->
