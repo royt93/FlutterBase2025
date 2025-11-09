@@ -15,23 +15,18 @@ import 'mckimquyen/widget/controller_main.dart';
 import 'mckimquyen/widget/splash/splash_screen.dart';
 
 //TODO roy93~ multi language
+//TODO roy93~ admob
+//ic_launcher, flutter native splash, splash change bkg
 
 //done
 //Please note: this action may show ads
 //screenOrientation
 //review in app
 //120hz
-//add button reset default
-//shadow text header + body
-//touch element thi show bottom sheet tuong ung => bad practise ko nen lam
-//visible text header + body
 //keystore mckimquyen
-//ic_launcher, flutter native splash, splash change bkg
-//fix noti daily setting cai scrollbar ki ki
 //ad id manifest
 //app name
 //pkg name
-//splash screen
 
 final navigatorKey = GlobalKey<NavigatorState>();
 

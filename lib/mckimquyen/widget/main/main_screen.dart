@@ -1,9 +1,7 @@
-import 'package:saigonphantomlabs/mckimquyen/admob/screen_a.dart';
-import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
+import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/wifi_stressor_screen.dart';
 
 import '../../core/base_stateful_state.dart';
@@ -31,7 +29,7 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
     if (widget.isShowMenu) {
       //do nothing
     } else {
-      Get.offAll(const WiFiStressorApp());
+      Get.offAll(() => const WiFiStressorApp());
     }
   }
 
@@ -59,25 +57,6 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
   }
 
   Widget _buildBodyView(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-      children: [
-        UIUtils.getButton(
-          "Admob demo",
-          Icons.card_giftcard,
-          () {
-            Get.to(const ScreenA());
-          },
-        ),
-        UIUtils.getButton(
-          "Wifi stressor",
-          Icons.wifi,
-          () {
-            Get.to(const WiFiStressorApp());
-          },
-        ),
-      ],
-    );
+    return Container();
   }
 }
