@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/string_constants.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 import '../../admob/ad_mob_manager.dart';
@@ -28,33 +29,48 @@ class StressorController extends GetxController {
   DateTime _lastChartUpdate = DateTime.now();
   static const _chartUpdateInterval = Duration(milliseconds: 500);
 
+  // Track instant speed để tránh race condition
+  int _lastTotalBytes = 0;
+  DateTime _lastSpeedUpdate = DateTime.now();
+
   final urls = [
     'https://proof.ovh.net/files/1GB.dat',
     'https://proof.ovh.net/files/10Mb.dat',
     'https://speedtest.fremont.linode.com/10MB-fremont.bin',
-    'https://speed.cloudflare.com/__down?bytes=100000000000000000',
+    'https://speed.cloudflare.com/__down?bytes=10485760', // 10MB
     'https://storage.googleapis.com/speedtest/10mb.bin', // Google Cloud
     'https://s3.amazonaws.com/speedtest/10mb.bin', // AWS S3
     'https://mirror.internet.asn.au/speedtest/10MB.bin', // AU Internet Association
-    'https://github.com/sivel/speedtest-cli/raw/master/speedtest.py', // File 10MB
   ];
 
   final List<CancelToken> _cancelTokens = [];
-  final dio = Dio();
+  late final Dio dio;
   Timer? _updateTimer;
+
+  StressorController() {
+    // Configure Dio with proper settings
+    dio = Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
+      followRedirects: true,
+      maxRedirects: 5,
+    ));
+  }
 
   @override
   void onClose() {
-    debugPrint('roy93~ Controller onClose called');
+    Logger.i('Controller onClose called');
     _cancelAllTasks();
     _updateTimer?.cancel();
+    dio.close(); // Close Dio to prevent memory leak
     super.onClose();
   }
 
   void startStressTest() {
     if (isRunning.value) return;
     bool isConnected = ConnectionNotifierTools.isConnected;
-    debugPrint('roy93~ Showing start confirmation dialog isConnected $isConnected');
+    Logger.i('Showing start confirmation dialog isConnected $isConnected');
     if (isConnected) {
       Get.defaultDialog(
         titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -71,7 +87,7 @@ class StressorController extends GetxController {
         actions: [
           TextButton(
             onPressed: () {
-              debugPrint('roy93~ User canceled stress test');
+              Logger.i('User canceled stress test');
               Get.back();
             },
             child: const Text(
@@ -85,7 +101,7 @@ class StressorController extends GetxController {
           ),
           FilledButton(
             onPressed: () {
-              debugPrint('roy93~ User confirmed stress test');
+              Logger.i('User confirmed stress test');
               Get.back();
               _startTest();
             },
@@ -109,7 +125,7 @@ class StressorController extends GetxController {
   }
 
   void _startTest() {
-    debugPrint('roy93~ Starting stress test with ${parallelDownloads.value} parallel downloads');
+    Logger.i('Starting stress test with ${parallelDownloads.value} parallel downloads');
     isRunning.value = true;
     downloadCount.value = 0;
     speedMbps.value = 0.0;
@@ -117,22 +133,23 @@ class StressorController extends GetxController {
     totalDownloadedBytes.value = 0;
     speedHistory.clear();
     startTime.value = DateTime.now();
+    _lastTotalBytes = 0;
+    _lastSpeedUpdate = DateTime.now();
 
-    debugPrint('roy93~ Starting update timer (1s interval)');
-    _updateTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      debugPrint('roy93~ Update timer tick - total downloaded: ${totalDownloadedBytes.value} bytes');
+    Logger.i('Starting update timer (500ms interval)');
+    _updateTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       _updateTotalSpeed();
       // Loại bỏ update() để tránh rebuild toàn bộ controller
     });
 
     for (int i = 0; i < parallelDownloads.value; i++) {
-      debugPrint('roy93~ Starting download loop #$i');
+      Logger.i('Starting download loop #$i');
       _runDownloadLoop(i);
     }
   }
 
   void stopStressTest() {
-    debugPrint('roy93~ Stopping stress test');
+    Logger.i('Stopping stress test');
     _cancelAllTasks();
     isRunning.value = false;
     _updateTotalSpeed();
@@ -140,7 +157,7 @@ class StressorController extends GetxController {
   }
 
   void _cancelAllTasks() {
-    debugPrint('roy93~ Canceling all download tasks (${_cancelTokens.length} tokens)');
+    Logger.i('Canceling all download tasks (${_cancelTokens.length} tokens)');
     for (var token in _cancelTokens) {
       token.cancel();
     }
@@ -150,12 +167,29 @@ class StressorController extends GetxController {
   void _updateTotalSpeed() {
     if (startTime.value == null) return;
 
-    final duration = DateTime.now().difference(startTime.value!);
+    final now = DateTime.now();
+    final duration = now.difference(startTime.value!);
     testDuration.value = duration;
 
     if (duration.inSeconds > 0) {
       totalSpeedMbps.value = (totalDownloadedBytes.value * 8) / (duration.inSeconds * 1000000);
-      debugPrint('roy93~ Updated total speed: ${totalSpeedMbps.value.toStringAsFixed(2)} Mbps');
+
+      // Tính instant speed dựa trên delta bytes (tránh race condition)
+      final timeSinceLastUpdate = now.difference(_lastSpeedUpdate).inMilliseconds;
+      if (timeSinceLastUpdate > 0) {
+        final deltaBytes = totalDownloadedBytes.value - _lastTotalBytes;
+        speedMbps.value = (deltaBytes * 8) / (timeSinceLastUpdate * 1000);
+        _lastTotalBytes = totalDownloadedBytes.value;
+        _lastSpeedUpdate = now;
+
+        // Update speed history với instant speed để consistent với metric
+        if (now.difference(_lastChartUpdate) >= _chartUpdateInterval) {
+          _updateSpeedHistory(speedMbps.value);
+          _lastChartUpdate = now;
+        }
+      }
+
+      Logger.i('Updated total speed: ${totalSpeedMbps.value.toStringAsFixed(2)} Mbps');
     }
   }
 
@@ -171,30 +205,28 @@ class StressorController extends GetxController {
       speedHistory.value = newHistory;
     }
 
-    debugPrint('roy93~ Speed history updated (${speedHistory.length} points)');
+    Logger.i('Speed history updated (${speedHistory.length} points)');
   }
 
   Future<void> _runDownloadLoop(int id) async {
-    debugPrint('roy93~ [Loop $id] Starting download loop');
+    Logger.i('[Loop $id] Starting download loop');
     final cancelToken = CancelToken();
     _cancelTokens.add(cancelToken);
 
     try {
       while (isRunning.value) {
         final url = urls[id % urls.length];
-        debugPrint('roy93~ [Loop $id] Selected URL: $url');
+        Logger.i('[Loop $id] Selected URL: $url');
 
         final stopwatch = Stopwatch()..start();
 
         try {
-          debugPrint('roy93~ [Loop $id] Starting download from: $url');
+          Logger.i('[Loop $id] Starting download from: $url');
 
           final response = await dio.get(
             url,
             options: Options(
               responseType: ResponseType.bytes,
-              followRedirects: true,
-              receiveTimeout: const Duration(seconds: 15),
               headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
@@ -204,10 +236,6 @@ class StressorController extends GetxController {
               },
             ),
             cancelToken: cancelToken,
-            onReceiveProgress: (received, total) {
-              if (cancelToken.isCancelled) return;
-              debugPrint('roy93~ [Loop $id] Progress: $received/$total bytes => ${received * 100 / total}');
-            },
           );
 
           stopwatch.stop();
@@ -216,43 +244,36 @@ class StressorController extends GetxController {
 
           if (actualBytes > 0) {
             final mbps = (actualBytes * 8) / (stopwatch.elapsedMilliseconds * 1000);
-            debugPrint('roy93~ [Loop $id] Download completed: '
+            Logger.i('[Loop $id] Download completed: '
                 '${(actualBytes / (1024 * 1024)).toStringAsFixed(2)} MB in '
                 '${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)}s = '
                 '${mbps.toStringAsFixed(2)} Mbps');
 
-            speedMbps.value = mbps;
+            // Chỉ cập nhật totalDownloadedBytes, speedMbps sẽ được tính trong _updateTotalSpeed
             totalDownloadedBytes.value += actualBytes.toInt();
 
-            // Throttle chart updates để tối ưu performance
-            final now = DateTime.now();
-            if (now.difference(_lastChartUpdate) >= _chartUpdateInterval) {
-              _updateSpeedHistory(mbps);
-              _lastChartUpdate = now;
-            }
-            debugPrint('roy93~ [Loop $id] Speed updated: ${mbps.toStringAsFixed(2)} Mbps');
+            // Chỉ tăng download count khi thực sự tải được data
+            downloadCount.value++;
+            Logger.i('[Loop $id] Total downloads: ${downloadCount.value}');
           } else {
-            debugPrint('roy93~ [Loop $id] Warning: Received 0 bytes!');
+            Logger.i('[Loop $id] Warning: Received 0 bytes!');
           }
-
-          downloadCount.value++;
-          debugPrint('roy93~ [Loop $id] Total downloads: ${downloadCount.value}');
         } catch (e) {
-          debugPrint('roy93~ [Loop $id] Download error: ${e.toString()}');
+          Logger.i('[Loop $id] Download error: ${e.toString()}');
           if (e is DioException) {
-            debugPrint('roy93~ [Loop $id] Dio error type: ${e.type}');
-            debugPrint('roy93~ [Loop $id] Dio error message: ${e.message}');
+            Logger.i('[Loop $id] Dio error type: ${e.type}');
+            Logger.i('[Loop $id] Dio error message: ${e.message}');
             if (e.response != null) {
-              debugPrint('roy93~ [Loop $id] Response status: ${e.response!.statusCode}');
+              Logger.i('[Loop $id] Response status: ${e.response!.statusCode}');
             }
           }
         }
 
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 100));
       }
     } finally {
       _cancelTokens.remove(cancelToken);
-      debugPrint('roy93~ [Loop $id] Download loop exited');
+      Logger.i('[Loop $id] Download loop exited');
     }
   }
 }
@@ -284,9 +305,14 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   // Sử dụng Get.put() để đảm bảo singleton controller
   final controller = Get.put(StressorController());
 
+  // Cache cacheWidth để tránh tính toán lại mỗi lần rebuild
+  late final int _cachedImageWidth;
+
   @override
   void initState() {
     super.initState();
+    // Cache image width calculation
+    _cachedImageWidth = (Get.width * 2).round();
     // Sử dụng addPostFrameCallback để tránh blocking UI render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeAdsAsync();
@@ -304,14 +330,14 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       // Load banner cuối cùng vì ít quan trọng nhất
       loadBannerAd();
     } catch (e) {
-      debugPrint('Lỗi khởi tạo quảng cáo: $e');
+      Logger.i('Lỗi khởi tạo quảng cáo: $e');
     }
   }
 
   @override
   void dispose() {
-    // Cleanup controller nếu cần thiết
-    // Get.delete<StressorController>(); // Uncomment nếu muốn cleanup
+    // Cleanup controller để tránh memory leak
+    Get.delete<StressorController>();
     super.dispose();
   }
 
@@ -339,7 +365,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       // Tối ưu memory cho large images
       filterQuality: FilterQuality.medium,
       // Cache để tránh reload không cần thiết
-      cacheWidth: (Get.width * 2).round(),
+      cacheWidth: _cachedImageWidth,
     );
   }
 
@@ -483,16 +509,39 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
 
   /// Tạo status text với performance tối ưu
   Widget _buildStatusText(bool isRunning) {
-    return Text(
-      isRunning
-          ? 'ĐANG KIỂM TRA WI-FI - Lượt tải: ${controller.downloadCount}'
-          : 'SẴN SÀNG KIỂM TRA',
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-      textAlign: TextAlign.center,
+    if (!isRunning) {
+      return const Text(
+        'SẴN SÀNG KIỂM TRA',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        textAlign: TextAlign.center,
+      );
+    }
+
+    // Wrap chỉ phần dynamic trong Obx riêng
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'ĐANG KIỂM TRA WI-FI - Lượt tải: ',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        Obx(() => Text(
+          '${controller.downloadCount.value}',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        )),
+      ],
     );
   }
 
@@ -520,6 +569,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
 
   /// Tạo connection selector với performance tối ưu
   Widget _buildConnectionSelector(bool isRunning) {
+    const connectionOptions = [1, 5, 10, 15, 30, 50, 100, 200, 500];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -533,7 +583,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
         ),
         DropdownButton<int>(
           value: controller.parallelDownloads.value,
-          items: const [1, 5, 10, 15, 30, 50, 100, 200, 500]
+          items: connectionOptions
               .map((val) => DropdownMenuItem<int>(
                     value: val,
                     child: Text(
@@ -561,27 +611,27 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   /// Tạo danh sách metrics với performance tối ưu
   List<Widget> _buildMetrics() {
     return [
-      _buildMetricTile(
+      Obx(() => _buildMetricTile(
         Icons.speed,
         'Tốc độ hiện tại',
         '${controller.speedMbps.value.toStringAsFixed(2)} Mbps',
-      ),
-      _buildMetricTile(
+      )),
+      Obx(() => _buildMetricTile(
         Icons.speed,
         'Tốc độ trung bình',
         '${controller.totalSpeedMbps.value.toStringAsFixed(2)} Mbps',
-      ),
-      _buildMetricTile(
+      )),
+      Obx(() => _buildMetricTile(
         Icons.timer,
         'Thời gian chạy',
         '${controller.testDuration.value.inMinutes}:'
             '${(controller.testDuration.value.inSeconds % 60).toString().padLeft(2, '0')}',
-      ),
-      _buildMetricTile(
+      )),
+      Obx(() => _buildMetricTile(
         Icons.data_usage,
         'Dữ liệu đã tải',
         '${(controller.totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(2)} MB',
-      ),
+      )),
     ];
   }
 
@@ -607,7 +657,10 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           ),
         );
       }
-      return SpeedChart(speeds: controller.speedHistory);
+      // RepaintBoundary để tránh repaint toàn bộ widget tree
+      return RepaintBoundary(
+        child: SpeedChart(speeds: controller.speedHistory),
+      );
     });
   }
 
@@ -669,7 +722,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   /// Tạo metric tile với performance tối ưu
   Widget _buildMetricTile(IconData icon, String title, String value) {
     return ListTile(
-      contentPadding: EdgeInsets.zero,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 0),
       leading: Icon(icon, color: Colors.green),
       title: Text(
         title,

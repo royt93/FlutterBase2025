@@ -142,23 +142,23 @@ abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
 
   void showInterstitialAd(Function(bool value) onDoneFlow) {
     try {
-      // debugPrint("showInterstitialAd");
+      // Logger.i("showInterstitialAd");
       final ad = interstitialNotifier.value;
       if (ad == null || _isDisposed) {
-        // debugPrint("#1");
+        // Logger.i("#1");
         onDoneFlow.call(false);
         return;
       }
       AdMobManager().setLastInterstitialShowTime();
       ad.fullScreenContentCallback = FullScreenContentCallback(
         onAdDismissedFullScreenContent: (ad) {
-          // debugPrint("#2");
+          // Logger.i("#2");
           ad.dispose();
           if (!_isDisposed) loadInterstitialAd();
           onDoneFlow.call(true);
         },
         onAdFailedToShowFullScreenContent: (ad, error) {
-          // debugPrint("#3");
+          // Logger.i("#3");
           ad.dispose();
           if (!_isDisposed) loadInterstitialAd();
           onDoneFlow.call(false);
@@ -167,7 +167,7 @@ abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
       if (!_isDisposed) {
         ad.show();
       }
-      // debugPrint("#4");
+      // Logger.i("#4");
     } catch (e) {
       onDoneFlow.call(false);
     }

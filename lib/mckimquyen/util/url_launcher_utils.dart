@@ -1,7 +1,8 @@
 import 'package:saigonphantomlabs/mckimquyen/util/shared_preferences_util.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'logger.dart';
 
 class UrlLauncherUtils {
   static String getLinkGit(String path) {
@@ -16,7 +17,7 @@ class UrlLauncherUtils {
         mode: LaunchMode.externalApplication,
       );
     } else {
-      debugPrint("Could not launch $url");
+      Logger.i("Could not launch $url");
     }
   }
 
@@ -49,8 +50,8 @@ class UrlLauncherUtils {
     var prevTimestamp = await SharedPreferencesUtil.getInt(key) ?? 0;
     var nowTimestamp = DateTime.now().millisecondsSinceEpoch;
     var limit = 1000 * 60 * 60 * 24 * 7; //7 days
-    // debugPrint("prevTimestamp $prevTimestamp");
-    // debugPrint("nowTimestamp $nowTimestamp");
+    // Logger.i("prevTimestamp $prevTimestamp");
+    // Logger.i("nowTimestamp $nowTimestamp");
     if (nowTimestamp - prevTimestamp > limit) {
       final InAppReview inAppReview = InAppReview.instance;
       if (await inAppReview.isAvailable()) {

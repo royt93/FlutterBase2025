@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/k/k.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 import 'event_bus.dart';
@@ -37,7 +38,7 @@ Future<bool> checkLogicSplashScreenIsInitializedAdmob() async {
     return true;
   } else {
     await Future.delayed(const Duration(milliseconds: 1000));
-    debugPrint("roy93~ checkLogicSplashScreenIsInitializedAdmob _isInitializedAdmob $_isInitializedAdmob");
+    Logger.i("roy93~ checkLogicSplashScreenIsInitializedAdmob _isInitializedAdmob $_isInitializedAdmob");
     return _isInitializedAdmob ?? false;
   }
 }
@@ -90,21 +91,21 @@ class AdMobManager {
 
   Future<void> initialize() async {
     if (_isInitializedAdmob == true) return;
-    debugPrint('roy93~ sdk initialize ~~~');
+    Logger.i('roy93~ sdk initialize ~~~');
     await ConnectionNotifierTools.initialize();
     final isConnected = await _isDeviceConnected("initialize");
     if (!isConnected) {
-      debugPrint('roy93~ initialize skipped: no internet connection');
+      Logger.i('roy93~ initialize skipped: no internet connection');
       return;
     }
     // await MobileAds.instance.initialize();
     MobileAds.instance.initialize().then((InitializationStatus status) {
-      debugPrint('roy93~ initialize Google Mobile Ads SDK initialized: ${status.adapterStatuses}');
+      Logger.i('roy93~ initialize Google Mobile Ads SDK initialized: ${status.adapterStatuses}');
       // Bạn có thể kiểm tra trạng thái của các adapter tại đây.
       // AppLovin adapter sẽ được liệt kê nếu nó được tích hợp đúng cách.
       var adapterStatus = "";
       status.adapterStatuses.forEach((key, value) {
-        debugPrint('roy93~ initialize Adapter $key: ${value.description}');
+        Logger.i('roy93~ initialize Adapter $key: ${value.description}');
         adapterStatus += "$key: ${value.description}\n";
       });
       if (kDebugMode) {
@@ -118,21 +119,21 @@ class AdMobManager {
   // region App Open Ad (Global management)
   Future<void> _loadAppOpenAd() async {
     try {
-      debugPrint("roy93~ _loadAppOpenAd");
+      Logger.i("roy93~ _loadAppOpenAd");
       var isConnected = await _isDeviceConnected("_loadAppOpenAd");
-      // debugPrint("isConnected $isConnected");
+      // Logger.i("isConnected $isConnected");
       if (isConnected) {
         await AppOpenAd.load(
           adUnitId: appOpenAdUnitId(),
           request: const AdRequest(),
           adLoadCallback: AppOpenAdLoadCallback(
             onAdLoaded: (ad) async {
-              debugPrint('roy93~ AppOpenAd onAdLoaded');
+              Logger.i('roy93~ AppOpenAd onAdLoaded');
               _appOpenAd = ad;
               _appOpenAdLoadTime = DateTime.now();
               ad.fullScreenContentCallback = FullScreenContentCallback(
                 onAdDismissedFullScreenContent: (ad) {
-                  debugPrint("roy93~ onAdDismissedFullScreenContent");
+                  Logger.i("roy93~ onAdDismissedFullScreenContent");
                   ad.dispose();
                   _appOpenAd = null;
                   // _loadAppOpenAd();
@@ -140,7 +141,7 @@ class AdMobManager {
                   SimpleEventBus().fire(BoolEvent(true));
                 },
                 onAdFailedToShowFullScreenContent: (ad, error) {
-                  debugPrint("roy93~ onAdFailedToShowFullScreenContent");
+                  Logger.i("roy93~ onAdFailedToShowFullScreenContent");
                   ad.dispose();
                   _appOpenAd = null;
                   // _loadAppOpenAd();
@@ -151,7 +152,7 @@ class AdMobManager {
               showAppOpenAd();
             },
             onAdFailedToLoad: (error) async {
-              debugPrint('roy93~ AppOpenAd failed to load: $error');
+              Logger.i('roy93~ AppOpenAd failed to load: $error');
               _appOpenAd = null;
               // Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
               await Future.delayed(const Duration(milliseconds: 1000));
@@ -164,7 +165,7 @@ class AdMobManager {
         SimpleEventBus().fire(BoolEvent(false));
       }
     } catch (e) {
-      debugPrint("roy93~ e _loadAppOpenAd $e");
+      Logger.i("roy93~ e _loadAppOpenAd $e");
       await Future.delayed(const Duration(milliseconds: 1000));
       SimpleEventBus().fire(BoolEvent(false));
     }
@@ -172,7 +173,7 @@ class AdMobManager {
 
   void showAppOpenAd() {
     if (_appOpenAd == null || DateTime.now().difference(_appOpenAdLoadTime).inHours >= 4) {
-      debugPrint("roy93~ showAppOpenAd return");
+      Logger.i("roy93~ showAppOpenAd return");
       return;
     }
     _appOpenAd?.show();
@@ -191,13 +192,13 @@ class AdMobManager {
 
   bool canLoadInterstitial() {
     var isValid = DateTime.now().difference(_lastInterstitialShowTime).inMinutes >= 15;
-    debugPrint("roy93~ canLoadInterstitial isValid $isValid");
+    Logger.i("roy93~ canLoadInterstitial isValid $isValid");
     return isValid;
   }
 
   bool canLoadRewarded() {
     var isValid = DateTime.now().difference(_lastRewardedShowTime).inMinutes >= 15;
-    debugPrint("roy93~ canLoadRewarded isValid $isValid");
+    Logger.i("roy93~ canLoadRewarded isValid $isValid");
     return isValid;
   }
 
@@ -210,7 +211,7 @@ class AdMobManager {
   }) async {
     final isConnected = await _isDeviceConnected("createBannerAdAsync");
     if (!isConnected) {
-      debugPrint("roy93~ createBannerAdAsync skipped: no internet");
+      Logger.i("roy93~ createBannerAdAsync skipped: no internet");
       return null;
     }
     return BannerAd(
@@ -224,7 +225,7 @@ class AdMobManager {
   static Future<InterstitialAd?> createInterstitialAd() async {
     final isConnected = await _isDeviceConnected("createInterstitialAd");
     if (!isConnected) {
-      debugPrint("roy93~ createInterstitialAd skipped: no internet");
+      Logger.i("roy93~ createInterstitialAd skipped: no internet");
       return null;
     }
     Completer<InterstitialAd?> completer = Completer();
@@ -238,7 +239,7 @@ class AdMobManager {
           completer.complete(ad);
         },
         onAdFailedToLoad: (error) {
-          debugPrint('InterstitialAd failed: $error');
+          Logger.i('InterstitialAd failed: $error');
           completer.complete(null);
         },
       ),
@@ -260,7 +261,7 @@ class AdMobManager {
   static Future<RewardedAd?> createRewardedAd() async {
     final isConnected = await _isDeviceConnected("createRewardedAd");
     if (!isConnected) {
-      debugPrint("roy93~ createRewardedAd skipped: no internet");
+      Logger.i("roy93~ createRewardedAd skipped: no internet");
       return null;
     }
     Completer<RewardedAd?> completer = Completer();
@@ -274,7 +275,7 @@ class AdMobManager {
           completer.complete(ad);
         },
         onAdFailedToLoad: (error) {
-          debugPrint('RewardedAd failed: $error');
+          Logger.i('RewardedAd failed: $error');
           completer.complete(null);
         },
       ),
@@ -312,6 +313,6 @@ Future<bool> _isDeviceConnected(String tag) async {
   // var isConnected = true;
   var dtEnd = DateTime.now().millisecondsSinceEpoch;
   var bench = dtEnd - dtStart;
-  debugPrint('roy93~ $tag _isDeviceConnected $isConnected, bench $bench');
+  Logger.i('roy93~ $tag _isDeviceConnected $isConnected, bench $bench');
   return isConnected;
 }

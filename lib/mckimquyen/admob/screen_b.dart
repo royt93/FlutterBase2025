@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_screen.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/screen_c.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/logger.dart';
 
 class ScreenB extends AdScreen {
   const ScreenB({super.key});
@@ -48,7 +49,7 @@ class _ScreenBState extends AdScreenState<ScreenB> {
                   ElevatedButton(
                     onPressed: () {
                       showInterstitialAd((value) {
-                        debugPrint("roy93~ showInterstitialAd value $value");
+                        Logger.i("roy93~ showInterstitialAd value $value");
                         Get.to(const ScreenC());
                       });
                     },

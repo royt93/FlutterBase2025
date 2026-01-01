@@ -8,6 +8,7 @@ import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/event_bus.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 
@@ -34,7 +35,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   void initState() {
     super.initState();
     _subscription = SimpleEventBus().onBoolEvent.listen((event) {
-      debugPrint("roy93~ >>>>>>>>>>>>>>onBoolEvent listen event ${event.value}");
+      Logger.i("roy93~ >>>>>>>>>>>>>>onBoolEvent listen event ${event.value}");
       _goToMainScreen();
     });
     if (kDebugMode) {
@@ -173,14 +174,14 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                     //       isTimerTextShown: true,
                     //       autoStart: true,
                     //       onStart: () {
-                    //         // debugPrint('Countdown Started');
+                    //         // Logger.i('Countdown Started');
                     //       },
                     //       onComplete: () {
-                    //         // debugPrint('Countdown Ended');
+                    //         // Logger.i('Countdown Ended');
                     //         _goToMainScreen();
                     //       },
                     //       onChange: (String timeStamp) {
-                    //         // debugPrint('Countdown Changed $timeStamp');
+                    //         // Logger.i('Countdown Changed $timeStamp');
                     //       },
                     //       timeFormatterFunction: (defaultFormatterFunction, duration) {
                     //         return Function.apply(defaultFormatterFunction, [duration]);
