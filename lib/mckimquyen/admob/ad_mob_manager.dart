@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/k/k.dart';
-import 'package:saigonphantomlabs/mckimquyen/util/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 import 'event_bus.dart';

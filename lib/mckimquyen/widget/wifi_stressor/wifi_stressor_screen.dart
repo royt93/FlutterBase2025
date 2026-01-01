@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/string_constants.dart';
-import 'package:saigonphantomlabs/mckimquyen/util/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 
 import '../../admob/ad_mob_manager.dart';

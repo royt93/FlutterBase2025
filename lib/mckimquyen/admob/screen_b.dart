@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_screen.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/screen_c.dart';
-import 'package:saigonphantomlabs/mckimquyen/util/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
 
 class ScreenB extends AdScreen {
   const ScreenB({super.key});

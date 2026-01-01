@@ -8,7 +8,7 @@ import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/event_bus.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
-import 'package:saigonphantomlabs/mckimquyen/util/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 
