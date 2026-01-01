@@ -80,7 +80,6 @@ class StressorController extends GetxController {
           'Ứng dụng sẽ sử dụng lượng lớn dữ liệu mạng. Bạn có chắc muốn tiếp tục?',
           style: TextStyle(
             fontWeight: FontWeight.normal,
-            color: ColorConstants.appColor,
             fontSize: 16,
           ),
         ),
@@ -94,7 +93,6 @@ class StressorController extends GetxController {
               'Hủy bỏ',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: ColorConstants.appColor,
                 fontSize: 16,
               ),
             ),
@@ -430,7 +428,6 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: ColorConstants.appColor,
           ),
         ),
         content: const Text(
@@ -439,7 +436,6 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.normal,
-            color: Colors.grey,
           ),
         ),
         actions: [
@@ -450,7 +446,6 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: ColorConstants.appColor,
               ),
             ),
           ),
@@ -578,7 +573,6 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
           ),
         ),
         DropdownButton<int>(
@@ -591,7 +585,6 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
                       ),
                     ),
                   ))
@@ -643,12 +636,11 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           padding: EdgeInsets.symmetric(vertical: 16.0),
           child: Column(
             children: [
-              CircularProgressIndicator(color: Colors.grey),
+              CircularProgressIndicator(color: Colors.green),
               SizedBox(height: 16),
               Text(
                 'Đang thu thập dữ liệu tốc độ...',
                 style: TextStyle(
-                  color: Colors.grey,
                   fontWeight: FontWeight.normal,
                   fontSize: 16,
                 ),
@@ -728,7 +720,6 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
         title,
         style: const TextStyle(
           fontSize: 16,
-          color: ColorConstants.appColor,
           fontWeight: FontWeight.normal,
         ),
       ),
@@ -737,7 +728,6 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: ColorConstants.appColor,
         ),
       ),
     );
