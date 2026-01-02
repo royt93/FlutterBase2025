@@ -16,9 +16,9 @@ class StatusTextWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!isRunning) {
-      return const Text(
-        'SẴN SÀNG KIỂM TRA',
-        style: TextStyle(
+      return Text(
+        'status_ready'.tr,
+        style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
           color: Colors.white,
@@ -31,9 +31,9 @@ class StatusTextWidget extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'ĐANG KIỂM TRA WI-FI - Lượt tải: ',
-          style: TextStyle(
+        Text(
+          '${'status_testing'.tr} ',
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.white,

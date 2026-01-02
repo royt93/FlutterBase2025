@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
 import '../stressor_controller.dart';
 
@@ -29,7 +30,7 @@ class ControlButtonWidget extends StatelessWidget {
           ),
         ),
         icon: const Icon(Icons.stop),
-        label: const Text('DỪNG KIỂM TRA', style: TextStyle(fontSize: 16)),
+        label: Text('stop_test'.tr, style: const TextStyle(fontSize: 16)),
       );
     }
 
@@ -51,7 +52,7 @@ class ControlButtonWidget extends StatelessWidget {
       label: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text('BẮT ĐẦU KIỂM TRA', style: TextStyle(fontSize: 16)),
+          Text('start_test'.tr, style: const TextStyle(fontSize: 16)),
           Container(
             color: Colors.transparent,
             width: 120,

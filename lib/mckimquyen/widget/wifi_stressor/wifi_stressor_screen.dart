@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
+import 'package:saigonphantomlabs/mckimquyen/util/language_service.dart';
 
 import '../../admob/ad_screen.dart';
 import 'stressor_controller.dart';
@@ -136,15 +137,19 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       iconTheme: const IconThemeData(color: Colors.white),
       centerTitle: true,
       backgroundColor: Colors.transparent,
-      title: const Text(
-        'FastNet Speed Test',
-        style: TextStyle(
+      title: Text(
+        'app_title'.tr,
+        style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
           fontSize: 22,
         ),
       ),
       actions: [
+        IconButton(
+          icon: const Icon(Icons.language, color: Colors.white),
+          onPressed: _showLanguageDialog,
+        ),
         IconButton(
           icon: const Icon(Icons.info_outline, color: Colors.white),
           onPressed: _showInfoDialog,
@@ -153,21 +158,78 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
     );
   }
 
-  /// Hiển thị dialog thông tin với tối ưu performance
-  void _showInfoDialog() {
+  /// Hiển thị dialog chọn ngôn ngữ
+  void _showLanguageDialog() {
     Get.dialog(
       AlertDialog(
-        title: const Text(
-          'Thông tin ứng dụng',
-          style: TextStyle(
+        title: Text(
+          'select_language'.tr,
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: const Text(
-          'Ứng dụng kiểm tra sức chịu tải Wi-Fi bằng cách tải file song song liên tục.\n'
-          '⚠️ Lưu ý: Sử dụng lượng lớn dữ liệu mạng!',
-          style: TextStyle(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildLanguageOption(
+              language: 'language_vietnamese'.tr,
+              locale: const Locale('vi', 'VN'),
+              flag: '🇻🇳',
+            ),
+            const SizedBox(height: 8),
+            _buildLanguageOption(
+              language: 'language_english'.tr,
+              locale: const Locale('en', 'US'),
+              flag: '🇺🇸',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Tạo option cho từng ngôn ngữ
+  Widget _buildLanguageOption({
+    required String language,
+    required Locale locale,
+    required String flag,
+  }) {
+    final isSelected = Get.locale == locale;
+    return ListTile(
+      leading: Text(flag, style: const TextStyle(fontSize: 28)),
+      title: Text(
+        language,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      trailing: isSelected
+          ? const Icon(Icons.check_circle, color: Colors.green)
+          : null,
+      onTap: () async {
+        // Save language preference và update locale
+        await LanguageService.changeLanguage(locale);
+        Get.back();
+      },
+    );
+  }
+
+  /// Hiển thị dialog thông tin với tối ưu performance
+  void _showInfoDialog() {
+    Get.dialog(
+      AlertDialog(
+        title: Text(
+          'info_dialog_title'.tr,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'info_dialog_content'.tr,
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.normal,
           ),
@@ -175,9 +237,9 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
         actions: [
           TextButton(
             onPressed: Get.back,
-            child: const Text(
-              'Đóng',
-              style: TextStyle(
+            child: Text(
+              'close_button'.tr,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -227,15 +289,15 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   Widget _buildSpeedChart() {
     return Obx(() {
       if (controller.speedHistory.isEmpty) {
-        return const Padding(
-          padding: EdgeInsets.symmetric(vertical: 16.0),
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
           child: Column(
             children: [
-              CircularProgressIndicator(color: Colors.green),
-              SizedBox(height: 16),
+              const CircularProgressIndicator(color: Colors.green),
+              const SizedBox(height: 16),
               Text(
-                'Đang thu thập dữ liệu tốc độ...',
-                style: TextStyle(
+                'collecting_data'.tr,
+                style: const TextStyle(
                   fontWeight: FontWeight.normal,
                   fontSize: 16,
                 ),

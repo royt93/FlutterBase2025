@@ -13,6 +13,8 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'mckimquyen/common/const/color_constants.dart';
 import 'mckimquyen/widget/controller_main.dart';
 import 'mckimquyen/widget/splash/splash_screen.dart';
+import 'mckimquyen/util/language_service.dart';
+import 'translations/app_translations.dart';
 
 //TODO roy93~ multi language
 //TODO roy93~ admob
@@ -39,6 +41,10 @@ Future<void> main() async {
     await FlutterDisplayMode.setHighRefreshRate();
   }
   await initializePlugin();
+
+  // Load saved language preference
+  final savedLocale = await LanguageService.getSavedLanguage();
+
   runApp(
     ToastificationWrapper(
       child: GetMaterialApp(
@@ -50,6 +56,12 @@ Future<void> main() async {
         // defaultTransition: Transition.size,
         // transitionDuration: const Duration(milliseconds: 1000),
         transitionDuration: const Duration(milliseconds: 700),
+
+        // Multi-language configuration
+        translations: AppTranslations(),
+        locale: savedLocale ?? const Locale('vi', 'VN'), // Use saved or default to Vietnamese
+        fallbackLocale: const Locale('en', 'US'),
+
         home: const MyApp(),
         // builder: EasyLoading.init(),
 

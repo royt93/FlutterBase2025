@@ -43,9 +43,9 @@ class ControlPanelWidget extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'Số kết nối:',
-          style: TextStyle(
+        Text(
+          'connections_label'.tr,
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -81,7 +81,7 @@ class ControlPanelWidget extends StatelessWidget {
     return [
       Obx(() => MetricTileWidget(
         icon: Icons.speed,
-        title: 'Tốc độ hiện tại',
+        title: 'current_speed'.tr,
         valueWidget: AnimatedNumberText(
           value: controller.speedMbps.value,
           decimals: 2,
@@ -94,7 +94,7 @@ class ControlPanelWidget extends StatelessWidget {
       )),
       Obx(() => MetricTileWidget(
         icon: Icons.speed,
-        title: 'Tốc độ trung bình',
+        title: 'average_speed'.tr,
         valueWidget: AnimatedNumberText(
           value: controller.totalSpeedMbps.value,
           decimals: 2,
@@ -107,13 +107,13 @@ class ControlPanelWidget extends StatelessWidget {
       )),
       Obx(() => MetricTileWidget.text(
         icon: Icons.timer,
-        title: 'Thời gian chạy',
+        title: 'running_time'.tr,
         value: '${controller.testDuration.value.inMinutes}:'
             '${(controller.testDuration.value.inSeconds % 60).toString().padLeft(2, '0')}',
       )),
       Obx(() => MetricTileWidget(
         icon: Icons.data_usage,
-        title: 'Dữ liệu đã tải',
+        title: 'data_downloaded'.tr,
         valueWidget: AnimatedNumberText(
           value: controller.totalBytesIncludingProgress.value / (1024 * 1024),
           decimals: 2,

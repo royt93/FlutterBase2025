@@ -146,10 +146,10 @@ class StressorController extends GetxController {
       Get.defaultDialog(
         titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         contentPadding: const EdgeInsets.all(16),
-        title: '⚠️ Cảnh báo',
-        content: const Text(
-          'Ứng dụng sẽ sử dụng lượng lớn dữ liệu mạng. Bạn có chắc muốn tiếp tục?',
-          style: TextStyle(
+        title: 'warning_title'.tr,
+        content: Text(
+          'warning_message'.tr,
+          style: const TextStyle(
             fontWeight: FontWeight.normal,
             fontSize: 16,
           ),
@@ -160,9 +160,9 @@ class StressorController extends GetxController {
               Logger.i('User canceled stress test');
               Get.back();
             },
-            child: const Text(
-              'Hủy bỏ',
-              style: TextStyle(
+            child: Text(
+              'cancel'.tr,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
@@ -177,9 +177,9 @@ class StressorController extends GetxController {
             style: FilledButton.styleFrom(
               backgroundColor: Colors.green,
             ),
-            child: const Text(
-              'Tiếp tục',
-              style: TextStyle(
+            child: Text(
+              'continue'.tr,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 fontSize: 16,
@@ -189,7 +189,7 @@ class StressorController extends GetxController {
         ],
       );
     } else {
-      UIUtils.showToast(StringConstants.warning, "It looks like your device is not connected to the internet");
+      UIUtils.showToast(StringConstants.warning, 'no_internet'.tr);
     }
   }
 
