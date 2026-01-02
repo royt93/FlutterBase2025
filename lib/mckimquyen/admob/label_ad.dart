@@ -23,9 +23,9 @@ class LabelAd extends StatelessWidget {
     Color mColorBkg;
     Color mColorTxt;
     if (colorBkg == null) {
-      mColorBkg = ColorConstants.appColor;
+      mColorBkg = Colors.green.withValues(alpha: 0.5);
     } else {
-      mColorBkg = colorBkg ?? ColorConstants.appColor;
+      mColorBkg = colorBkg ?? Colors.green.withValues(alpha: 0.5);
     }
     if (colorTxt == null) {
       mColorTxt = Colors.white;
