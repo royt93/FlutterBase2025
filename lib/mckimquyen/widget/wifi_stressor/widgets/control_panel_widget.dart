@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../stressor_controller.dart';
 import 'metric_tile_widget.dart';
+import 'animated_number_text.dart';
 
 /// Widget hiển thị control panel với connection selector và metrics
 class ControlPanelWidget extends StatelessWidget {
@@ -81,14 +82,30 @@ class ControlPanelWidget extends StatelessWidget {
       Obx(() => MetricTileWidget(
         icon: Icons.speed,
         title: 'Tốc độ hiện tại',
-        value: '${controller.speedMbps.value.toStringAsFixed(2)} Mbps',
+        valueWidget: AnimatedNumberText(
+          value: controller.speedMbps.value,
+          decimals: 2,
+          suffix: ' Mbps',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       )),
       Obx(() => MetricTileWidget(
         icon: Icons.speed,
         title: 'Tốc độ trung bình',
-        value: '${controller.totalSpeedMbps.value.toStringAsFixed(2)} Mbps',
+        valueWidget: AnimatedNumberText(
+          value: controller.totalSpeedMbps.value,
+          decimals: 2,
+          suffix: ' Mbps',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       )),
-      Obx(() => MetricTileWidget(
+      Obx(() => MetricTileWidget.text(
         icon: Icons.timer,
         title: 'Thời gian chạy',
         value: '${controller.testDuration.value.inMinutes}:'
@@ -97,7 +114,15 @@ class ControlPanelWidget extends StatelessWidget {
       Obx(() => MetricTileWidget(
         icon: Icons.data_usage,
         title: 'Dữ liệu đã tải',
-        value: '${(controller.totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(2)} MB',
+        valueWidget: AnimatedNumberText(
+          value: controller.totalBytesIncludingProgress.value / (1024 * 1024),
+          decimals: 2,
+          suffix: ' MB',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       )),
     ];
   }

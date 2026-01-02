@@ -4,14 +4,33 @@ import 'package:flutter/material.dart';
 class MetricTileWidget extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String value;
+  final Widget valueWidget;
 
   const MetricTileWidget({
     super.key,
     required this.icon,
     required this.title,
-    required this.value,
+    required this.valueWidget,
   });
+
+  // Constructor cũ để backward compatibility
+  factory MetricTileWidget.text({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
+    return MetricTileWidget(
+      icon: icon,
+      title: title,
+      valueWidget: Text(
+        value,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +44,7 @@ class MetricTileWidget extends StatelessWidget {
           fontWeight: FontWeight.normal,
         ),
       ),
-      trailing: Text(
-        value,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      trailing: valueWidget,
     );
   }
 }

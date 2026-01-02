@@ -16,7 +16,6 @@ class SpeedChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Loại bỏ debug print để tối ưu performance
     return Card(
       elevation: 6,
       clipBehavior: Clip.antiAlias,
@@ -54,33 +53,50 @@ class SpeedChart extends StatelessWidget {
             height: 360,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 0),
-              child: LineChart(
-                LineChartData(
-                  lineTouchData: const LineTouchData(enabled: false),
-                  gridData: const FlGridData(show: true),
-                  titlesData: const FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  minY: 0,
-                  maxY: maxSpeed,
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: speeds.asMap().entries.map((e) {
-                        return FlSpot(e.key.toDouble(), e.value);
-                      }).toList(),
-                      isCurved: true,
-                      color: Colors.green,
-                      barWidth: 2,
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: [Colors.green.withValues(alpha: 0.5), Colors.transparent],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: LineChart(
+                  key: ValueKey(speeds.length),
+                  LineChartData(
+                    lineTouchData: const LineTouchData(enabled: false),
+                    gridData: const FlGridData(show: true),
+                    titlesData: const FlTitlesData(show: false),
+                    borderData: FlBorderData(show: false),
+                    minY: 0,
+                    maxY: maxSpeed,
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: speeds.asMap().entries.map((e) {
+                          return FlSpot(e.key.toDouble(), e.value);
+                        }).toList(),
+                        isCurved: true,
+                        curveSmoothness: 0.4, // Thêm độ smooth
+                        color: Colors.green,
+                        barWidth: 2, // Tăng độ dày line
+                        belowBarData: BarAreaData(
+                          show: true,
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.green.withValues(alpha: 0.8),
+                              Colors.green.withValues(alpha: 0.5),
+                              Colors.green.withValues(alpha: 0.3),
+                              Colors.transparent
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
                         ),
+                        dotData: const FlDotData(show: false),
+                        // Thêm shadow effect
+                        // shadow: const Shadow(
+                        //   color: Colors.green,
+                        //   blurRadius: 4,
+                        // ),
                       ),
-                      dotData: const FlDotData(show: false),
-                    ),
-                  ],
+                    ],
+                  ),
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeInOutCubic,
                 ),
               ),
             ),

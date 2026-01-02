@@ -17,39 +17,114 @@ class StressorController extends GetxController {
   // Tách speedHistory riêng để tối ưu chart updates
   final speedHistory = <double>[].obs;
   final totalDownloadedBytes = 0.obs;
+  final totalBytesIncludingProgress = 0.obs; // Bao gồm cả bytes đang tải
   final testDuration = Duration.zero.obs;
   final startTime = Rx<DateTime?>(null);
 
   // Throttle mechanism để giảm chart updates
   DateTime _lastChartUpdate = DateTime.now();
-  static const _chartUpdateInterval = Duration(milliseconds: 500);
+  static const _chartUpdateInterval = Duration(milliseconds: 250); // Giảm xuống 250ms để smooth hơn
 
   // Track instant speed để tránh race condition
   int _lastTotalBytes = 0;
   DateTime _lastSpeedUpdate = DateTime.now();
 
+  // Track bytes đang download cho mỗi loop
+  final Map<int, int> _loopCurrentBytes = {};
+
   final urls = [
-    'https://proof.ovh.net/files/1GB.dat',
-    'https://proof.ovh.net/files/10Mb.dat',
-    'https://speedtest.fremont.linode.com/10MB-fremont.bin',
+    // CloudFlare Speed Test - Global CDN, MOST RELIABLE - always works
     'https://speed.cloudflare.com/__down?bytes=10485760', // 10MB
-    'https://storage.googleapis.com/speedtest/10mb.bin', // Google Cloud
-    'https://s3.amazonaws.com/speedtest/10mb.bin', // AWS S3
-    'https://mirror.internet.asn.au/speedtest/10MB.bin', // AU Internet Association
+    'https://speed.cloudflare.com/__down?bytes=52428800', // 50MB
+    'https://speed.cloudflare.com/__down?bytes=104857600', // 100MB
+
+    // GitHub large files - Very reliable
+    'https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe', // ~50MB
+
+    // Cachefly CDN - Globally distributed, fast
+    'https://cachefly.cachefly.net/10mb.test',
+    'https://cachefly.cachefly.net/100mb.test',
+
+    // Linode Speed Test - Multiple global locations
+    'https://speedtest.newark.linode.com/100MB-newark.bin', // US East
+    'https://speedtest.dallas.linode.com/100MB-dallas.bin', // US Central
+    'https://speedtest.fremont.linode.com/100MB-fremont.bin', // US West
+    'https://speedtest.atlanta.linode.com/100MB-atlanta.bin', // US Southeast
+    'https://speedtest.tokyo2.linode.com/100MB-tokyo2.bin', // Japan
+    'https://speedtest.singapore.linode.com/100MB-singapore.bin', // Singapore
+    'https://speedtest.frankfurt.linode.com/100MB-frankfurt.bin', // Germany
+    'https://speedtest.london.linode.com/100MB-london.bin', // UK
+
+    // OVH Speed Test - European CDN
+    'https://proof.ovh.net/files/10Mb.dat',
+    'https://proof.ovh.net/files/100Mb.dat',
+
+    // Bouygues Telecom - French provider
+    'https://test-debit.free.fr/10240.rnd', // 10MB
+
+    // Vultr Speed Test - Multiple locations
+    'https://wa-us-ping.vultr.com/vultr.com.100MB.bin', // US Seattle
+    'https://nj-us-ping.vultr.com/vultr.com.100MB.bin', // US New Jersey
+    'https://il-us-ping.vultr.com/vultr.com.100MB.bin', // US Chicago
+    'https://ga-us-ping.vultr.com/vultr.com.100MB.bin', // US Atlanta
+    'https://sgp-ping.vultr.com/vultr.com.100MB.bin', // Singapore
+    'https://hnd-jp-ping.vultr.com/vultr.com.100MB.bin', // Japan Tokyo
+    'https://syd-au-ping.vultr.com/vultr.com.100MB.bin', // Australia Sydney
+    'https://fra-de-ping.vultr.com/vultr.com.100MB.bin', // Germany Frankfurt
+    'https://ams-nl-ping.vultr.com/vultr.com.100MB.bin', // Netherlands Amsterdam
+
+    // DigitalOcean Speed Test - Global CDN
+    'https://speedtest-nyc1.digitalocean.com/10mb.test', // New York
+    'https://speedtest-sfo2.digitalocean.com/10mb.test', // San Francisco
+    'https://speedtest-sgp1.digitalocean.com/10mb.test', // Singapore
+    'https://speedtest-lon1.digitalocean.com/10mb.test', // London
+    'https://speedtest-fra1.digitalocean.com/10mb.test', // Frankfurt
+
+    // ThinkBroadband - UK based
+    'https://ipv4.download.thinkbroadband.com/10MB.zip',
+    'https://ipv4.download.thinkbroadband.com/50MB.zip',
   ];
 
   final List<CancelToken> _cancelTokens = [];
-  late final Dio dio;
+  final Dio dio;
   Timer? _updateTimer;
+  Timer? _retryTimer;
 
-  StressorController() {
-    // Configure Dio with proper settings
-    dio = Dio(BaseOptions(
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 30),
+  // Track failed URLs để tránh retry liên tục
+  final Set<String> _failedUrls = {};
+  final Map<String, int> _urlErrorCount = {};
+  final Map<String, DateTime> _urlLastFailTime = {};
+
+  // Shuffled URLs để phân tán load
+  List<String>? _shuffledUrls;
+
+  StressorController() : dio = Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 10),
       followRedirects: true,
       maxRedirects: 5,
+      // Allow all status codes to handle them manually
+      validateStatus: (status) => true,
+    )) {
+    // Shuffle URLs để phân tán load tốt hơn
+    _shuffledUrls = List.from(urls)..shuffle();
+
+    // Add progress interceptor
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        Logger.i('[DIO] Request: ${options.uri}');
+        return handler.next(options);
+      },
+      onResponse: (response, handler) {
+        final length = response.data is List ? (response.data as List).length : 0;
+        Logger.i('[DIO] Response: ${response.requestOptions.uri} | Status: ${response.statusCode} | Bytes: $length');
+        return handler.next(response);
+      },
+      onError: (error, handler) {
+        Logger.i('[DIO] Error: ${error.requestOptions.uri} | ${error.type}');
+        return handler.next(error);
+      },
     ));
   }
 
@@ -58,6 +133,7 @@ class StressorController extends GetxController {
     Logger.i('Controller onClose called');
     _cancelAllTasks();
     _updateTimer?.cancel();
+    _retryTimer?.cancel();
     dio.close(); // Close Dio to prevent memory leak
     super.onClose();
   }
@@ -129,10 +205,24 @@ class StressorController extends GetxController {
     _lastTotalBytes = 0;
     _lastSpeedUpdate = DateTime.now();
 
+    // Reset failed URLs tracking
+    _failedUrls.clear();
+    _urlErrorCount.clear();
+    _urlLastFailTime.clear();
+
+    // Reset in-progress bytes tracking
+    _loopCurrentBytes.clear();
+
     Logger.i('Starting update timer (500ms interval)');
     _updateTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       _updateTotalSpeed();
       // Loại bỏ update() để tránh rebuild toàn bộ controller
+    });
+
+    // Start retry timer để thử lại failed URLs sau 2 phút
+    Logger.i('Starting retry timer (120s interval)');
+    _retryTimer = Timer.periodic(const Duration(seconds: 120), (_) {
+      _retryFailedUrls();
     });
 
     for (int i = 0; i < parallelDownloads.value; i++) {
@@ -141,12 +231,41 @@ class StressorController extends GetxController {
     }
   }
 
+  /// Thử lại các URL đã failed sau một khoảng thời gian
+  void _retryFailedUrls() {
+    if (_failedUrls.isEmpty) return;
+
+    final now = DateTime.now();
+    final urlsToRetry = <String>[];
+
+    for (final url in _failedUrls) {
+      final lastFailTime = _urlLastFailTime[url];
+      if (lastFailTime != null) {
+        // Nếu đã failed hơn 2 phút, thử lại
+        if (now.difference(lastFailTime).inMinutes >= 2) {
+          urlsToRetry.add(url);
+        }
+      }
+    }
+
+    if (urlsToRetry.isNotEmpty) {
+      Logger.i('Retrying ${urlsToRetry.length} failed URLs');
+      for (final url in urlsToRetry) {
+        _failedUrls.remove(url);
+        _urlErrorCount.remove(url);
+        _urlLastFailTime.remove(url);
+      }
+    }
+  }
+
   void stopStressTest() {
     Logger.i('Stopping stress test');
     _cancelAllTasks();
     isRunning.value = false;
+    _loopCurrentBytes.clear(); // Clear in-progress bytes
     _updateTotalSpeed();
     _updateTimer?.cancel();
+    _retryTimer?.cancel();
   }
 
   void _cancelAllTasks() {
@@ -158,21 +277,29 @@ class StressorController extends GetxController {
   }
 
   void _updateTotalSpeed() {
-    if (startTime.value == null) return;
+    final start = startTime.value;
+    if (start == null) return;
 
     final now = DateTime.now();
-    final duration = now.difference(startTime.value!);
+    final duration = now.difference(start);
     testDuration.value = duration;
 
     if (duration.inSeconds > 0) {
-      totalSpeedMbps.value = (totalDownloadedBytes.value * 8) / (duration.inSeconds * 1000000);
+      // Tính tổng bytes = bytes đã hoàn thành + bytes đang tải
+      final bytesInProgress = _loopCurrentBytes.values.fold<int>(0, (sum, bytes) => sum + bytes);
+      final totalBytes = totalDownloadedBytes.value + bytesInProgress;
+
+      // Update total bytes including progress (for UI display)
+      totalBytesIncludingProgress.value = totalBytes;
+
+      totalSpeedMbps.value = (totalBytes * 8) / (duration.inSeconds * 1000000);
 
       // Tính instant speed dựa trên delta bytes (tránh race condition)
       final timeSinceLastUpdate = now.difference(_lastSpeedUpdate).inMilliseconds;
       if (timeSinceLastUpdate > 0) {
-        final deltaBytes = totalDownloadedBytes.value - _lastTotalBytes;
+        final deltaBytes = totalBytes - _lastTotalBytes;
         speedMbps.value = (deltaBytes * 8) / (timeSinceLastUpdate * 1000);
-        _lastTotalBytes = totalDownloadedBytes.value;
+        _lastTotalBytes = totalBytes;
         _lastSpeedUpdate = now;
 
         // Update speed history với instant speed để consistent với metric
@@ -182,7 +309,7 @@ class StressorController extends GetxController {
         }
       }
 
-      Logger.i('Updated total speed: ${totalSpeedMbps.value.toStringAsFixed(2)} Mbps');
+      Logger.i('Updated total speed: ${totalSpeedMbps.value.toStringAsFixed(2)} Mbps (Downloaded: ${(totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(1)}MB, In-progress: ${(bytesInProgress / (1024 * 1024)).toStringAsFixed(1)}MB)');
     }
   }
 
@@ -192,13 +319,37 @@ class StressorController extends GetxController {
     final newHistory = List<double>.from(speedHistory)..add(mbps);
 
     // Giới hạn data points để tối ưu chart rendering
-    if (newHistory.length > 50) { // Giảm từ 100 xuống 50
-      speedHistory.value = newHistory.sublist(newHistory.length - 50);
+    if (newHistory.length > 100) { // Tăng lên 100 để chart smooth hơn
+      speedHistory.value = newHistory.sublist(newHistory.length - 100);
     } else {
       speedHistory.value = newHistory;
     }
 
     Logger.i('Speed history updated (${speedHistory.length} points)');
+  }
+
+  /// Tìm URL khả dụng (không bị failed)
+  String? _getAvailableUrl(int loopId) {
+    final urlList = _shuffledUrls ?? urls;
+
+    // Nếu tất cả URLs đều failed, reset lại
+    if (_failedUrls.length >= urlList.length) {
+      Logger.i('[Loop $loopId] All URLs failed, resetting failed list');
+      _failedUrls.clear();
+      _urlErrorCount.clear();
+      _urlLastFailTime.clear();
+    }
+
+    // Tìm URL không bị failed từ shuffled list
+    for (int i = 0; i < urlList.length; i++) {
+      final index = (loopId + i) % urlList.length;
+      final url = urlList[index];
+      if (!_failedUrls.contains(url)) {
+        return url;
+      }
+    }
+
+    return null;
   }
 
   Future<void> _runDownloadLoop(int id) async {
@@ -208,13 +359,19 @@ class StressorController extends GetxController {
 
     try {
       while (isRunning.value) {
-        final url = urls[id % urls.length];
-        Logger.i('[Loop $id] Selected URL: $url');
+        final url = _getAvailableUrl(id);
+        if (url == null) {
+          Logger.i('[Loop $id] No available URLs, waiting...');
+          await Future.delayed(const Duration(seconds: 2));
+          continue;
+        }
 
         final stopwatch = Stopwatch()..start();
 
         try {
-          Logger.i('[Loop $id] Starting download from: $url');
+          Logger.i('[Loop $id] → Downloading from: $url');
+
+          DateTime lastProgressTime = DateTime.now();
 
           final response = await dio.get(
             url,
@@ -229,36 +386,141 @@ class StressorController extends GetxController {
               },
             ),
             cancelToken: cancelToken,
+            onReceiveProgress: (received, total) {
+              // Update bytes đang tải cho loop này
+              _loopCurrentBytes[id] = received;
+
+              final now = DateTime.now();
+              // Log progress mỗi 2 giây hoặc khi complete
+              if (now.difference(lastProgressTime).inSeconds >= 2 || received == total) {
+                final speed = total > 0 ? (received / total * 100).toStringAsFixed(1) : '?';
+                Logger.i('[Loop $id] 📥 Progress: $received / $total bytes ($speed%)');
+                lastProgressTime = now;
+              }
+            },
           );
 
           stopwatch.stop();
 
-          num actualBytes = response.data.length;
+          // === DETAILED DEBUG LOGGING START ===
+          final statusCode = response.statusCode;
+          final contentLength = response.headers.value('content-length');
+          final contentType = response.headers.value('content-type');
+          final redirects = response.redirects;
+
+          Logger.i('[Loop $id] 📊 RESPONSE DEBUG:');
+          Logger.i('  URL: $url');
+          Logger.i('  Status: $statusCode');
+          Logger.i('  Content-Length header: $contentLength');
+          Logger.i('  Content-Type: $contentType');
+          Logger.i('  Redirects: ${redirects.length}');
+          Logger.i('  Data null: ${response.data == null}');
+          Logger.i('  Data type: ${response.data?.runtimeType}');
+          Logger.i('  Time: ${stopwatch.elapsedMilliseconds}ms');
+
+          if (redirects.isNotEmpty) {
+            Logger.i('  Redirect chain:');
+            for (var redirect in redirects) {
+              Logger.i('    → ${redirect.location}');
+            }
+          }
+          // === DETAILED DEBUG LOGGING END ===
+
+          // Kiểm tra HTTP status code
+          if (statusCode != null && statusCode >= 400) {
+            // Lỗi HTTP 4xx/5xx - mark URL as failed
+            final errorCount = (_urlErrorCount[url] ?? 0) + 1;
+            _urlErrorCount[url] = errorCount;
+            if (errorCount >= 3) {
+              _failedUrls.add(url);
+              _urlLastFailTime[url] = DateTime.now();
+              Logger.i('[Loop $id] ❌ URL failed after $errorCount errors (Status: $statusCode)');
+            }
+            await Future.delayed(const Duration(milliseconds: 100));
+            continue;
+          }
+
+          // Get actual bytes - handle different response types
+          num actualBytes = 0;
+
+          if (response.data != null) {
+            final data = response.data;
+
+            if (data is List<int>) {
+              actualBytes = data.length;
+              Logger.i('[Loop $id] 📦 Data is List<int>, length: $actualBytes');
+            } else if (data is List) {
+              actualBytes = data.length;
+              Logger.i('[Loop $id] 📦 Data is List, length: $actualBytes');
+            } else {
+              Logger.i('[Loop $id] ⚠️ UNEXPECTED data type: ${data.runtimeType}');
+              // Try to get string representation
+              final dataStr = data.toString();
+              Logger.i('[Loop $id] Data toString: ${dataStr.substring(0, dataStr.length > 100 ? 100 : dataStr.length)}...');
+            }
+          } else {
+            Logger.i('[Loop $id] ⚠️ response.data is NULL');
+          }
 
           if (actualBytes > 0) {
             final mbps = (actualBytes * 8) / (stopwatch.elapsedMilliseconds * 1000);
-            Logger.i('[Loop $id] Download completed: '
-                '${(actualBytes / (1024 * 1024)).toStringAsFixed(2)} MB in '
-                '${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(2)}s = '
-                '${mbps.toStringAsFixed(2)} Mbps');
+            Logger.i('[Loop $id] ✓ ${(actualBytes / (1024 * 1024)).toStringAsFixed(1)}MB in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(1)}s = ${mbps.toStringAsFixed(1)} Mbps');
+
+            // Reset error count cho URL thành công
+            _urlErrorCount.remove(url);
 
             // Chỉ cập nhật totalDownloadedBytes, speedMbps sẽ được tính trong _updateTotalSpeed
             totalDownloadedBytes.value += actualBytes.toInt();
 
+            // Reset bytes đang tải cho loop này (đã hoàn thành)
+            _loopCurrentBytes.remove(id);
+
             // Chỉ tăng download count khi thực sự tải được data
             downloadCount.value++;
-            Logger.i('[Loop $id] Total downloads: ${downloadCount.value}');
           } else {
-            Logger.i('[Loop $id] Warning: Received 0 bytes!');
+            // Reset bytes đang tải khi nhận 0 bytes
+            _loopCurrentBytes.remove(id);
+
+            // Debug info khi nhận 0 bytes
+            Logger.i('[Loop $id] ⚠️ 0 bytes | URL: $url | Status: $statusCode | Data type: ${response.data?.runtimeType} | Data null: ${response.data == null}');
+
+            // Mark URL as potentially problematic
+            final errorCount = (_urlErrorCount[url] ?? 0) + 1;
+            _urlErrorCount[url] = errorCount;
+            if (errorCount >= 5) {
+              _failedUrls.add(url);
+              _urlLastFailTime[url] = DateTime.now();
+              Logger.i('[Loop $id] URL marked as failed (0 bytes) after $errorCount tries: $url');
+            }
           }
         } catch (e) {
-          Logger.i('[Loop $id] Download error: ${e.toString()}');
+          // Xử lý lỗi network/timeout
+          stopwatch.stop();
+
+          // Reset bytes đang tải khi có lỗi
+          _loopCurrentBytes.remove(id);
+
+          Logger.i('[Loop $id] 💥 EXCEPTION CAUGHT:');
+          Logger.i('  URL: $url');
+          Logger.i('  Exception type: ${e.runtimeType}');
+          Logger.i('  Exception: $e');
+
           if (e is DioException) {
-            Logger.i('[Loop $id] Dio error type: ${e.type}');
-            Logger.i('[Loop $id] Dio error message: ${e.message}');
-            if (e.response != null) {
-              Logger.i('[Loop $id] Response status: ${e.response!.statusCode}');
-            }
+            Logger.i('  DioException details:');
+            Logger.i('    Type: ${e.type}');
+            Logger.i('    Message: ${e.message}');
+            Logger.i('    Status code: ${e.response?.statusCode}');
+            Logger.i('    Response data: ${e.response?.data?.runtimeType}');
+          }
+
+          final errorCount = (_urlErrorCount[url] ?? 0) + 1;
+          _urlErrorCount[url] = errorCount;
+          if (errorCount >= 3) {
+            _failedUrls.add(url);
+            _urlLastFailTime[url] = DateTime.now();
+            Logger.i('[Loop $id] ❌ URL marked as failed after $errorCount errors');
+          } else {
+            Logger.i('[Loop $id] ⚠️ Error $errorCount/3 - will retry');
           }
         }
 
