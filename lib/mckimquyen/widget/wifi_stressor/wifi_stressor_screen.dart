@@ -10,6 +10,7 @@ import 'widgets/status_indicator_widget.dart';
 import 'widgets/status_text_widget.dart';
 import 'widgets/control_panel_widget.dart';
 import 'widgets/control_button_widget.dart';
+import 'presentation/history_screen.dart';
 
 /// Widget chính cho ứng dụng kiểm tra sức chịu tải WiFi
 /// Sử dụng StatelessWidget để tối ưu hiệu suất
@@ -147,6 +148,11 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.history, color: Colors.white),
+          onPressed: _navigateToHistory,
+          tooltip: 'History & Statistics',
+        ),
+        IconButton(
           icon: const Icon(Icons.language, color: Colors.white),
           onPressed: _showLanguageDialog,
         ),
@@ -156,6 +162,11 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
         ),
       ],
     );
+  }
+
+  /// Navigate to history screen
+  void _navigateToHistory() {
+    Get.to(() => const HistoryScreen());
   }
 
   /// Hiển thị dialog chọn ngôn ngữ

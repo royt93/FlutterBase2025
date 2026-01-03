@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
+import 'package:get/get.dart';
 
 /// Chart tối ưu performance với caching và reduced complexity
 class SpeedChart extends StatelessWidget {
@@ -30,16 +30,16 @@ class SpeedChart extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Biểu đồ tốc độ',
-                  style: TextStyle(
+                Text(
+                  'speed_chart'.tr,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: ColorConstants.appColor,
+                    color: Colors.grey,
                     fontSize: 16,
                   ),
                 ),
                 Text(
-                  '${speeds.length} điểm',
+                  'data_points'.trParams({'count': '${speeds.length}'}),
                   style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 14,
@@ -70,9 +70,11 @@ class SpeedChart extends StatelessWidget {
                           return FlSpot(e.key.toDouble(), e.value);
                         }).toList(),
                         isCurved: true,
-                        curveSmoothness: 0.4, // Thêm độ smooth
+                        curveSmoothness: 0.4,
+                        // Thêm độ smooth
                         color: Colors.green,
-                        barWidth: 2, // Tăng độ dày line
+                        barWidth: 2,
+                        // Tăng độ dày line
                         belowBarData: BarAreaData(
                           show: true,
                           gradient: LinearGradient(

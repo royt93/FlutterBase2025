@@ -19,6 +19,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   get: ^4.7.3
   shared_preferences: ^2.5.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
   # Network & Performance
   dio: ^5.9.0

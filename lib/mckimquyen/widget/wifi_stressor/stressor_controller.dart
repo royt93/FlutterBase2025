@@ -7,6 +7,9 @@ import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/string_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
+import 'models/test_result.dart';
+import 'models/network_info.dart';
+import 'services/test_history_storage.dart';
 
 class StressorController extends GetxController {
   final isRunning = false.obs;
@@ -20,6 +23,9 @@ class StressorController extends GetxController {
   final totalBytesIncludingProgress = 0.obs; // Bao gồm cả bytes đang tải
   final testDuration = Duration.zero.obs;
   final startTime = Rx<DateTime?>(null);
+
+  // Track xem test đã được save chưa (prevent duplicate save)
+  bool _testSaved = false;
 
   // Throttle mechanism để giảm chart updates
   DateTime _lastChartUpdate = DateTime.now();
@@ -90,6 +96,9 @@ class StressorController extends GetxController {
   Timer? _updateTimer;
   Timer? _retryTimer;
 
+  // Storage để lưu test history - SINGLETON
+  final TestHistoryStorage _storage = TestHistoryStorage.instance;
+
   // Track failed URLs để tránh retry liên tục
   final Set<String> _failedUrls = {};
   final Map<String, int> _urlErrorCount = {};
@@ -110,6 +119,9 @@ class StressorController extends GetxController {
     // Shuffle URLs để phân tán load tốt hơn
     _shuffledUrls = List.from(urls)..shuffle();
 
+    // Initialize storage
+    _initStorage();
+
     // Add progress interceptor
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
@@ -128,14 +140,54 @@ class StressorController extends GetxController {
     ));
   }
 
+  /// Initialize storage
+  Future<void> _initStorage() async {
+    try {
+      await _storage.init();
+      Logger.i('Storage initialized successfully');
+    } catch (e) {
+      Logger.i('Failed to initialize storage: $e');
+    }
+  }
+
   @override
   void onClose() {
     Logger.i('Controller onClose called');
+
+    // CRITICAL FIX: Save test nếu đang chạy (prevent data loss khi app closed)
+    if (isRunning.value && startTime.value != null && !_testSaved) {
+      Logger.i('Test was running, saving before dispose...');
+
+      // Save bytes đang progress trước khi dispose
+      final bytesInProgress = _loopCurrentBytes.values.fold<int>(0, (sum, bytes) => sum + bytes);
+      if (bytesInProgress > 0) {
+        Logger.i('💾 Saving in-progress bytes on dispose: ${(bytesInProgress / (1024 * 1024)).toStringAsFixed(2)} MB');
+        totalDownloadedBytes.value += bytesInProgress;
+      }
+
+      // Call async method but don't await (controller disposing)
+      // The save will complete in background
+      _saveTestResult('interrupted').catchError((e) {
+        Logger.i('Failed to save on dispose: $e');
+      });
+      // Give it a moment to start the save operation
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _cleanup();
+      });
+    } else {
+      _cleanup();
+    }
+
+    super.onClose();
+  }
+
+  void _cleanup() {
     _cancelAllTasks();
     _updateTimer?.cancel();
     _retryTimer?.cancel();
+    // KHÔNG close shared singleton storage
+    // _storage.close();
     dio.close(); // Close Dio to prevent memory leak
-    super.onClose();
   }
 
   void startStressTest() {
@@ -204,6 +256,7 @@ class StressorController extends GetxController {
     startTime.value = DateTime.now();
     _lastTotalBytes = 0;
     _lastSpeedUpdate = DateTime.now();
+    _testSaved = false; // Reset save flag
 
     // Reset failed URLs tracking
     _failedUrls.clear();
@@ -258,14 +311,77 @@ class StressorController extends GetxController {
     }
   }
 
-  void stopStressTest() {
+  Future<void> stopStressTest() async {
     Logger.i('Stopping stress test');
+
+    // CRITICAL FIX: Save bytes đang progress trước khi clear
+    final bytesInProgress = _loopCurrentBytes.values.fold<int>(0, (sum, bytes) => sum + bytes);
+    if (bytesInProgress > 0) {
+      Logger.i('💾 Saving in-progress bytes: ${(bytesInProgress / (1024 * 1024)).toStringAsFixed(2)} MB');
+      totalDownloadedBytes.value += bytesInProgress;
+    }
+
     _cancelAllTasks();
     isRunning.value = false;
     _loopCurrentBytes.clear(); // Clear in-progress bytes
     _updateTotalSpeed();
     _updateTimer?.cancel();
     _retryTimer?.cancel();
+
+    // CRITICAL FIX: AWAIT để đảm bảo save xong trước khi return
+    await _saveTestResult('stopped');
+  }
+
+  /// Save test result to storage
+  Future<void> _saveTestResult(String status) async {
+    final start = startTime.value;
+    if (start == null) {
+      Logger.i('❌ Cannot save: startTime is null');
+      return;
+    }
+
+    // Prevent duplicate save
+    if (_testSaved) {
+      Logger.i('Test already saved, skipping duplicate save');
+      return;
+    }
+
+    try {
+      // CRITICAL FIX: Ensure storage is initialized before saving
+      if (_storage.box == null) {
+        Logger.i('⏳ Storage not ready, waiting for init...');
+        await _storage.init();
+        Logger.i('✅ Storage initialized on-demand');
+      }
+
+      // DEBUG: Log các giá trị trước khi save
+      Logger.i('💾 Saving test result...');
+      Logger.i('  - Status: $status');
+      Logger.i('  - Total Downloaded: ${(totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(2)} MB');
+      Logger.i('  - Download Count: ${downloadCount.value}');
+      Logger.i('  - Speed History: ${speedHistory.length} points');
+
+      final result = TestResult.fromControllerData(
+        startTime: start,
+        endTime: DateTime.now(),
+        speedHistory: List.from(speedHistory),
+        totalDownloadedBytes: totalDownloadedBytes.value,
+        downloadCount: downloadCount.value,
+        status: status,
+        networkInfo: NetworkInfo.empty(), // TODO: Get real network info
+      );
+
+      await _storage.saveTestResult(result);
+      _testSaved = true; // Mark as saved
+      Logger.i('✅ Test result saved: ${result.avgSpeed.toStringAsFixed(1)} Mbps (ID: ${result.id})');
+      Logger.i('📊 Total tests in storage: ${_storage.totalCount}');
+    } catch (e) {
+      Logger.i('❌ Failed to save test result: $e');
+      // Print stack trace for debugging
+      if (e is Error) {
+        Logger.i('Stack trace: ${e.stackTrace}');
+      }
+    }
   }
 
   void _cancelAllTasks() {
