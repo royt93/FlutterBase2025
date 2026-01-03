@@ -49,5 +49,10 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<true/>
+		<!-- Location permissions for WiFi network info -->
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>This app needs location access to identify WiFi network information during speed tests</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>This app needs location access to identify WiFi network information during speed tests</string>
 	</dict>
 </plist>

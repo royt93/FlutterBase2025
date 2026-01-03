@@ -8,8 +8,8 @@ import 'package:saigonphantomlabs/mckimquyen/common/const/string_constants.dart'
 import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'models/test_result.dart';
-import 'models/network_info.dart';
 import 'services/test_history_storage.dart';
+import 'services/network_info_service.dart';
 
 class StressorController extends GetxController {
   final isRunning = false.obs;
@@ -98,6 +98,9 @@ class StressorController extends GetxController {
 
   // Storage để lưu test history - SINGLETON
   final TestHistoryStorage _storage = TestHistoryStorage.instance;
+
+  // Network info service để lấy thông tin mạng
+  final NetworkInfoService _networkInfoService = NetworkInfoService();
 
   // Track failed URLs để tránh retry liên tục
   final Set<String> _failedUrls = {};
@@ -361,6 +364,10 @@ class StressorController extends GetxController {
       Logger.i('  - Download Count: ${downloadCount.value}');
       Logger.i('  - Speed History: ${speedHistory.length} points');
 
+      // Lấy thông tin mạng thực tế
+      final networkInfo = await _networkInfoService.getCurrentNetworkInfo();
+      Logger.i('  - Network Info: $networkInfo');
+
       final result = TestResult.fromControllerData(
         startTime: start,
         endTime: DateTime.now(),
@@ -368,7 +375,7 @@ class StressorController extends GetxController {
         totalDownloadedBytes: totalDownloadedBytes.value,
         downloadCount: downloadCount.value,
         status: status,
-        networkInfo: NetworkInfo.empty(), // TODO roy93~: Get real network info
+        networkInfo: networkInfo,
       );
 
       await _storage.saveTestResult(result);
