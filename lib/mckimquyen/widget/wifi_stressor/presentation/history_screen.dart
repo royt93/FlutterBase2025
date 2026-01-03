@@ -99,7 +99,7 @@ class HistoryScreen extends StatelessWidget {
                     const Icon(Icons.history, color: Colors.white70, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      'Recent Tests',
+                      'recent_tests'.tr,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 16,

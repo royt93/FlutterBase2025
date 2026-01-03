@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:toastification/toastification.dart';
 import '../models/test_result.dart';
 import '../models/test_statistics.dart';
@@ -259,14 +262,97 @@ class HistoryController extends GetxController {
         .toList();
   }
 
-  /// Export history data (placeholder for future implementation)
+  /// Export history data to CSV and share
   Future<void> exportData() async {
-    //TODO roy93~ check
-    UIUtils.showToast(
-      'Info',
-      'Export feature coming soon',
-      type: ToastificationType.info,
-    );
+    try {
+      if (allResults.isEmpty) {
+        UIUtils.showToast(
+          'info'.tr,
+          'export_no_data'.tr,
+          type: ToastificationType.info,
+        );
+        return;
+      }
+
+      Logger.i('📤 Starting export of ${allResults.length} tests...');
+
+      // Generate CSV content
+      final csvContent = _generateCSV();
+      Logger.i('CSV Preview:\n${csvContent.substring(0, csvContent.length > 500 ? 500 : csvContent.length)}...');
+
+      // Create filename with timestamp
+      final now = DateTime.now();
+      final timestamp = '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}';
+      final filename = 'wifi_test_history_$timestamp.csv';
+
+      // Get temporary directory (no permission needed)
+      final directory = await getTemporaryDirectory();
+      final filePath = '${directory.path}/$filename';
+
+      // Write CSV to file
+      final file = File(filePath);
+      await file.writeAsString(csvContent);
+      Logger.i('✅ File created: $filePath');
+
+      // Share file using share_plus (user can choose where to save)
+      await Share.shareXFiles(
+        [XFile(filePath, mimeType: 'text/csv')],
+        subject: 'WiFi Test History Export',
+        text: 'Exported ${allResults.length} WiFi stress test results',
+      );
+
+      Logger.i('✅ Export completed successfully');
+      UIUtils.showToast(
+        'success'.tr,
+        'export_success'.trParams({'count': '${allResults.length}', 'file': filename}),
+        type: ToastificationType.success,
+      );
+    } catch (e) {
+      Logger.i('❌ Export failed: $e');
+      UIUtils.showToast(
+        'error'.tr,
+        'export_failed'.trParams({'error': e.toString()}),
+        type: ToastificationType.error,
+      );
+    }
+  }
+
+  /// Generate CSV content from test results
+  String _generateCSV() {
+    final buffer = StringBuffer();
+
+    // CSV Header
+    buffer.writeln('ID,Start Time,End Time,Duration (s),Status,Avg Speed (Mbps),Peak Speed (Mbps),Min Speed (Mbps),Median Speed (Mbps),Downloaded (MB),Download Count,SSID,Signal (dBm),Frequency,IP Address');
+
+    // CSV Rows
+    for (final result in allResults) {
+      final downloadedMB = (result.totalDownloadedBytes / (1024 * 1024)).toStringAsFixed(2);
+      final durationSeconds = result.endTime != null ? result.endTime!.difference(result.startTime).inSeconds : 0;
+
+      buffer.write('${result.id},');
+      buffer.write('${_formatDateTimeForCSV(result.startTime)},');
+      buffer.write('${result.endTime != null ? _formatDateTimeForCSV(result.endTime!) : ""},');
+      buffer.write('$durationSeconds,');
+      buffer.write('${result.status},');
+      buffer.write('${result.avgSpeed.toStringAsFixed(2)},');
+      buffer.write('${result.peakSpeed.toStringAsFixed(2)},');
+      buffer.write('${result.minSpeed.toStringAsFixed(2)},');
+      buffer.write('${result.medianSpeed.toStringAsFixed(2)},');
+      buffer.write('$downloadedMB,');
+      buffer.write('${result.downloadCount},');
+      buffer.write('${result.networkInfo?.ssid ?? ""},');
+      buffer.write('${result.networkInfo?.signalStrength ?? ""},');
+      buffer.write('${result.networkInfo?.frequency ?? ""},');
+      buffer.write(result.networkInfo?.ipAddress ?? "");
+      buffer.writeln();
+    }
+
+    return buffer.toString();
+  }
+
+  /// Format DateTime for CSV (ISO 8601)
+  String _formatDateTimeForCSV(DateTime dateTime) {
+    return dateTime.toIso8601String();
   }
 
   @override

@@ -368,7 +368,7 @@ class StressorController extends GetxController {
         totalDownloadedBytes: totalDownloadedBytes.value,
         downloadCount: downloadCount.value,
         status: status,
-        networkInfo: NetworkInfo.empty(), // TODO: Get real network info
+        networkInfo: NetworkInfo.empty(), // TODO roy93~: Get real network info
       );
 
       await _storage.saveTestResult(result);

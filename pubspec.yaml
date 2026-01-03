@@ -38,6 +38,8 @@ dependencies:
   # Core platform
   intl:
   path:
+  path_provider: ^2.1.4
+  share_plus: ^10.1.2
 
   # AdMob integration
   google_mobile_ads: ^6.0.0

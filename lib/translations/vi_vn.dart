@@ -89,6 +89,9 @@ const Map<String, String> viVN = {
   'data_points': '@count điểm',
   'share': 'Chia sẻ',
   'retest': 'Test lại',
+  'recent_tests': 'Các test gần đây',
+  'download_count': 'Số lần tải',
+  'confirm_delete_test': 'Bạn có chắc chắn muốn xóa test này?',
 
   // Empty States
   'no_history': 'Chưa có lịch sử test',
@@ -104,4 +107,14 @@ const Map<String, String> viVN = {
   'filter_failed': 'Thất bại',
   'reset': 'Đặt lại',
   'apply': 'Áp dụng',
+
+  // Export
+  'export_no_data': 'Không có dữ liệu để xuất',
+  'export_success': 'Đã xuất @count tests vào @file',
+  'export_failed': 'Xuất thất bại: @error',
+
+  // Common
+  'info': 'Thông tin',
+  'error': 'Lỗi',
+  'success': 'Thành công',
 };

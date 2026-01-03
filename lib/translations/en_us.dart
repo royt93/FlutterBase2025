@@ -89,6 +89,9 @@ const Map<String, String> enUS = {
   'data_points': '@count data points',
   'share': 'Share',
   'retest': 'Retest',
+  'recent_tests': 'Recent Tests',
+  'download_count': 'Download Count',
+  'confirm_delete_test': 'Are you sure you want to delete this test?',
 
   // Empty States
   'no_history': 'No test history yet',
@@ -104,4 +107,14 @@ const Map<String, String> enUS = {
   'filter_failed': 'Failed',
   'reset': 'Reset',
   'apply': 'Apply',
+
+  // Export
+  'export_no_data': 'No data to export',
+  'export_success': 'Exported @count tests to @file',
+  'export_failed': 'Export failed: @error',
+
+  // Common
+  'info': 'Info',
+  'error': 'Error',
+  'success': 'Success',
 };

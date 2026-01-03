@@ -194,7 +194,7 @@ class TestDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _buildInfoRow('data_downloaded'.tr, result.downloadedFormatted),
           const SizedBox(height: 8),
-          _buildInfoRow('Downloads', '${result.downloadCount}'),
+          _buildInfoRow('download_count'.tr, '${result.downloadCount}'),
         ],
       ),
     );
@@ -405,7 +405,7 @@ class TestDetailScreen extends StatelessWidget {
 
   /// Share result
   void _shareResult() {
-    // TODO: Implement share functionality
+    // TODO roy93~ Implement share functionality
     UIUtils.showToast(
       'Info',
       'Share feature coming soon',
@@ -418,7 +418,7 @@ class TestDetailScreen extends StatelessWidget {
     Get.dialog(
       AlertDialog(
         title: Text('delete'.tr),
-        content: const Text('Are you sure you want to delete this test?'),
+        content: Text('confirm_delete_test'.tr),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
