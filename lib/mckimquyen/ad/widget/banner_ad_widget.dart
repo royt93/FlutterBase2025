@@ -52,19 +52,27 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   }
 
   void _initBanner(BuildContext context) {
-    // ══ BUG FIX #2: VIP check (giống native loadBanner line 329-336) ══
+    // ══ VIP check ══
     if (AdManager().isVIPMember()) {
       SafeLogger.d(_tag, 'loadBanner ⏭️ skipped due to whitelist device');
-      _hasError.value = true; // Ẩn widget hoàn toàn
+      _hasError.value = true;
       return;
     }
 
-    // ══ BUG FIX #3: Network check (giống native loadBanner line 337-344) ══
+    // ══ Network check ══
     if (!AdManager().isConnected) {
       SafeLogger.d(_tag, 'loadBanner ⏭️ no internet connection');
-      _hasError.value = true; // Ẩn widget hoàn toàn
+      _hasError.value = true;
       return;
     }
+
+    // ══ Navigation spam guard: chống load banner quá nhanh khi navigate ══
+    if (!AdManager().canLoadBanner()) {
+      SafeLogger.d(_tag, 'loadBanner ⏭️ cooldown active, skipping this navigation');
+      _hasError.value = true; // Ẩn widget, không hiện shimmer mãi mãi
+      return;
+    }
+    AdManager().recordBannerLoad();
 
     SafeLogger.d(_tag, 'loadBanner 🔄 creating ad view and loading...');
 

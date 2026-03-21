@@ -69,6 +69,10 @@ class AdManager with WidgetsBindingObserver {
   bool _isAppOpenLoading = false;
   bool _isAppOpenShowing = false;
 
+  // Banner — Navigation spam guard (5s cooldown per screen)
+  int _lastBannerLoadTime = 0;
+  static const int _bannerLoadCooldown = 5000; // 5 giây
+
   // ════════════════ APPLOVIN MAX STATE ════════════════
   bool _isMaxInterReady = false;
   bool _isMaxAppOpenReady = false;
@@ -597,12 +601,18 @@ class AdManager with WidgetsBindingObserver {
     if (adReady && !isShowing) {
       SafeLogger.d(_tag, 'ProcessLifecycle 🚀 Conditions met & Ad is ready -> SHOWING NOW');
       showAppOpenAd(
-        onAdDismiss: (result) {
-          SafeLogger.d(
-            _tag,
-            'ProcessLifecycle ✅ Ad dismissed by user, preloading next ad...',
-          );
-          // Sau khi show xong, preload ad mới
+        onAdDismiss: (wasActuallyShown) {
+          if (wasActuallyShown) {
+            SafeLogger.d(
+              _tag,
+              'ProcessLifecycle ✅ Ad dismissed by user, preloading next ad...',
+            );
+          } else {
+            SafeLogger.d(
+              _tag,
+              'ProcessLifecycle 🔄 Ad blocked/skipped before show, preloading for next resume...',
+            );
+          }
           loadAppOpenAd();
         },
         bypassSafety: false,
@@ -1013,6 +1023,31 @@ class AdManager with WidgetsBindingObserver {
   bool isVIPMember() {
     SafeLogger.d(_tag, 'isVIPMember() = $_isVipMember, GAID=$_currentDeviceGAID');
     return _isVipMember;
+  }
+
+  // ════════════════════════════════════════════════════
+  // BANNER GUARD — chống spam load khi navigate nhanh
+  // ════════════════════════════════════════════════════
+  /// Trả về true nếu được phép load banner mới.
+  /// Cooldown 5s kể từ lần load cuối để tránh spam khi user navigate nhanh.
+  bool canLoadBanner() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final elapsed = now - _lastBannerLoadTime;
+    if (_lastBannerLoadTime > 0 && elapsed < _bannerLoadCooldown) {
+      final remaining = (_bannerLoadCooldown - elapsed) ~/ 1000;
+      SafeLogger.d(
+        _tag,
+        'canLoadBanner ⏭️ cooldown active, remaining=${remaining}s',
+      );
+      return false;
+    }
+    return true;
+  }
+
+  /// Ghi nhận thời điểm banner được load.
+  void recordBannerLoad() {
+    _lastBannerLoadTime = DateTime.now().millisecondsSinceEpoch;
+    SafeLogger.d(_tag, 'canLoadBanner ✅ load allowed, timer reset');
   }
 
   // ════════════════════════════════════════════════════
