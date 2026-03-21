@@ -1,5 +1,5 @@
 -renamesourcefileattribute SourceFile
--keepattributes SourceFile,LineNumberTable
+-keepattributes SourceFile,LineNumberTable,InnerClasses,EnclosingMethod
 
 # Kotlin
 #https://stackoverflow.com/questions/33547643/how-to-use-kotlin-with-proguard
