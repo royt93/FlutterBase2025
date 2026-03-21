@@ -153,11 +153,10 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
               SafeLogger.d(_tag, 'BannerAd UI rendering: isLoaded=$isLoaded');
               return Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start, // Label is top-left aligned relative to the ad
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ════════ LABEL AD AREA ════════
                   !isLoaded
-                      // Shimmer label matching the native badge
                       ? Container(
                           margin: const EdgeInsets.only(bottom: 4),
                           child: const ShimmerView(
@@ -166,12 +165,11 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
                             height: 13,
                           ),
                         )
-                      // Real Native Android "Ad" badge
                       : Container(
                           margin: const EdgeInsets.only(bottom: 4),
                           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFCCC3C), // Màu vàng đặc trưng Native AdMob
+                            color: const Color(0xFFFCCC3C),
                             borderRadius: BorderRadius.circular(2),
                           ),
                           child: const Text(
@@ -185,19 +183,32 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
                           ),
                         ),
 
-                  // ════════ BANNER AD AREA (ADAPTIVE FULL WIDTH) ════════
+                  // ════════ BANNER AD AREA ════════
                   SizedBox(
                     width: double.infinity,
                     height: isLoaded && _bannerAd != null ? _bannerAd!.size.height.toDouble() : 50,
-                    child: !isLoaded
-                        // Banner shimmer Full Width
-                        ? const ShimmerView(
-                            cornerRadius: 0,
-                            width: double.infinity,
-                            height: 50,
-                          )
-                        // Real Ad Widget adaptive size
-                        : _buildAdWidget(),
+                    child: kIsEnableAdmob
+                        // AdMob: async load, render once callback fires
+                        ? (!isLoaded
+                            ? const ShimmerView(cornerRadius: 0, width: double.infinity, height: 50)
+                            : _buildAdWidget())
+                        // AppLovin: MaxAdView MUST always stay in tree so it can mount and fire onAdLoaded
+                        // Shimmer sits on top via Stack and is removed once isLoaded=true
+                        : Stack(
+                            children: [
+                              // MaxAdView always mounted (loads when widget is in tree)
+                              _buildAdWidget(),
+                              // Shimmer overlaid on top until ad is loaded
+                              if (!isLoaded)
+                                const Positioned.fill(
+                                  child: ShimmerView(
+                                    cornerRadius: 0,
+                                    width: double.infinity,
+                                    height: 50,
+                                  ),
+                                ),
+                            ],
+                          ),
                   ),
                 ],
               );
@@ -223,6 +234,8 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     }
 
     // ════════ APPLOVIN MAX BANNER ════════
+    // Note: MaxAdView MUST always stay mounted — DO NOT conditionally render it.
+    // The widget itself initiates loading once mounted. Shimmer overlays via Stack.
     SafeLogger.d(_tag, '_buildAdWidget: creating MaxAdView, id=$kAppLovinBannerId');
     return SizedBox(
       width: double.infinity,
@@ -252,10 +265,10 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
             AdSafetyConfig.recordAdClick();
           },
           onAdExpandedCallback: (ad) {
-            SafeLogger.d(_tag, '📐 [AppLovin] Banner Ad Expanded');
+            SafeLogger.d(_tag, '📀 [AppLovin] Banner Ad Expanded');
           },
           onAdCollapsedCallback: (ad) {
-            SafeLogger.d(_tag, '📐 [AppLovin] Banner Ad Collapsed');
+            SafeLogger.d(_tag, '📁 [AppLovin] Banner Ad Collapsed');
           },
         ),
       ),

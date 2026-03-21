@@ -451,7 +451,7 @@ class AdManager with WidgetsBindingObserver {
     );
     if (_isVipMember) {
       SafeLogger.d(_tag, 'showAppOpenAd ⏭️ skipped - Device in whitelist');
-      onAdDismiss(true);
+      onAdDismiss(false); // not shown
       return;
     }
 
@@ -459,7 +459,7 @@ class AdManager with WidgetsBindingObserver {
     final isShowing = kIsEnableAdmob ? _isAppOpenShowing : _isMaxAppOpenShowing;
     if (isShowing) {
       SafeLogger.d(_tag, 'showAppOpenAd ⏭️ already showing');
-      onAdDismiss(true);
+      onAdDismiss(false); // not shown (was already showing)
       return;
     }
 
@@ -471,7 +471,7 @@ class AdManager with WidgetsBindingObserver {
           _tag,
           'showAppOpenAd 🛡️ blocked by AdSafety: ${safetyResult.reason}',
         );
-        onAdDismiss(true);
+        onAdDismiss(false); // blocked, not shown
         return;
       }
     } else {
@@ -489,7 +489,7 @@ class AdManager with WidgetsBindingObserver {
     final ad = _appOpenAd; // local var avoids race condition
     if (ad == null) {
       SafeLogger.d(_tag, 'showAppOpenAd ⏭️ Ad not ready (null), skipping');
-      onAdDismiss(true);
+      onAdDismiss(false); // not shown
       return;
     }
     // Check ad validity (4 giờ)
@@ -536,7 +536,7 @@ class AdManager with WidgetsBindingObserver {
   void _showAppOpenAdAppLovin(void Function(bool) onAdDismiss) {
     if (!_isMaxAppOpenReady) {
       SafeLogger.d(_tag, 'showAppOpenAd [AppLovin] ⏭️ Ad not ready');
-      onAdDismiss(true);
+      onAdDismiss(false); // not shown
       return;
     }
     SafeLogger.d(_tag, 'showAppOpenAd [AppLovin] 🔄 showing ad');
@@ -691,6 +691,11 @@ class AdManager with WidgetsBindingObserver {
         ),
       );
     } else {
+      // AppLovin path
+      if (_isMaxInterReady) {
+        SafeLogger.d(_tag, 'loadInterstitial [AppLovin] ⏭️ ad already ready, no need to reload');
+        return;
+      }
       SafeLogger.d(
         _tag,
         'loadInterstitial [AppLovin] 🔄 requesting ad, id=$kAppLovinInterstitialId',
