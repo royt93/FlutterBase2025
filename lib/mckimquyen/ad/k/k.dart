@@ -9,7 +9,7 @@ const String kAppLovinSdkKey = "e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5
 const String kAppLovinBannerId = "55145203d74b7bb0";
 const String kAppLovinInterstitialId = "f8c4de38486cdb76";
 const String kAppLovinAppOpenId = "9309d90308be99c1";
-const String kAppLovinRewardedId = ""; // Chưa có trong Android native config
+const String kAppLovinRewardedId = "e50710c6caa75a33"; // Chưa có trong Android native config
 
 // ═══════ ADMOB CONFIG (auto-switch debug/release) ═══════
 const String kAdmobBannerAdUnitId =
