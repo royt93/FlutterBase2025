@@ -646,7 +646,15 @@ class AdManager with WidgetsBindingObserver {
     }
 
     if (kIsEnableAdmob) {
-      if (_isInterLoading) return;
+      // Nếu ad còn tồn tại và chưa được show → skip reload
+      if (_interstitialAd != null) {
+        SafeLogger.d(_tag, 'loadInterstitial ⏭️ ad already in memory, no need to reload');
+        return;
+      }
+      if (_isInterLoading) {
+        SafeLogger.d(_tag, 'loadInterstitial ⏭️ already loading, skip request');
+        return;
+      }
       _isInterLoading = true;
       SafeLogger.d(_tag, 'loadInterstitial 🔄 requesting ad from AdMob...');
       InterstitialAd.load(
@@ -790,7 +798,15 @@ class AdManager with WidgetsBindingObserver {
     }
 
     if (kIsEnableAdmob) {
-      if (_isRewardedLoading) return;
+      // Nếu ad còn tồn tại và chưa được show → skip reload
+      if (_rewardedAd != null) {
+        SafeLogger.d(_tag, 'loadRewardedAd ⏭️ ad already in memory, no need to reload');
+        return;
+      }
+      if (_isRewardedLoading) {
+        SafeLogger.d(_tag, 'loadRewardedAd ⏭️ already loading, skip request');
+        return;
+      }
       _isRewardedLoading = true;
       SafeLogger.d(_tag, 'loadRewardedAd 🔄 requesting ad from AdMob...');
       RewardedAd.load(
