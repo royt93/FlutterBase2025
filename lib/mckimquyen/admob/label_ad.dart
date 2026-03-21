@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 
 class LabelAd extends StatelessWidget {
   const LabelAd({
