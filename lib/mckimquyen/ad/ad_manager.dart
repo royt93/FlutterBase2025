@@ -61,6 +61,8 @@ class AdManager with WidgetsBindingObserver {
   AppOpenAd? _appOpenAd;
   InterstitialAd? _interstitialAd;
   bool _isInterLoading = false;
+  bool _isInterstitialShowing = false; // Guard: chống App Open Resume khi Inter đang hiện
+  bool _isRewardedShowing = false;     // Guard: chống App Open Resume khi Rewarded đang hiện
   DateTime? _appOpenAdLoadTime;
   int _lastAppOpenErrorTime = 0;
   int _lastInterErrorTime = 0;
@@ -560,6 +562,16 @@ class AdManager with WidgetsBindingObserver {
       return;
     }
 
+    // Chống xung đột: nếu có full-screen ad khác đang hiện thì bỏ qua hoàn toàn
+    if (_isInterstitialShowing) {
+      SafeLogger.d(_tag, 'showAppOpenAdOnResume ⏭️ ignored: Interstitial Ad is currently showing');
+      return;
+    }
+    if (_isRewardedShowing) {
+      SafeLogger.d(_tag, 'showAppOpenAdOnResume ⏭️ ignored: Rewarded Ad is currently showing');
+      return;
+    }
+
     // Check with AdSafetyConfig.canShowAppOpenOnResume()
     if (!AdSafetyConfig.canShowAppOpenOnResume()) {
       SafeLogger.d(
@@ -727,6 +739,7 @@ class AdManager with WidgetsBindingObserver {
       return;
     }
     SafeLogger.d(_tag, 'showInterstitial 🔄 showing ad');
+    _isInterstitialShowing = true;
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (a) {
         SafeLogger.d(_tag, 'showInterstitial ✅ Ad Shown full screen');
@@ -736,6 +749,7 @@ class AdManager with WidgetsBindingObserver {
         SafeLogger.d(_tag, 'showInterstitial ✅ Ad Dismissed by user');
         a.dispose();
         _interstitialAd = null;
+        _isInterstitialShowing = false;
         // Preload next ad
         loadInterstitial();
         onDoneFlow(true);
@@ -747,6 +761,7 @@ class AdManager with WidgetsBindingObserver {
         );
         a.dispose();
         _interstitialAd = null;
+        _isInterstitialShowing = false;
         onDoneFlow(false);
       },
       onAdClicked: (a) {
@@ -880,6 +895,7 @@ class AdManager with WidgetsBindingObserver {
     }
     SafeLogger.d(_tag, 'showRewardedAd 🔄 showing ad');
     bool hasEarned = false;
+    _isRewardedShowing = true;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (a) {
@@ -890,6 +906,7 @@ class AdManager with WidgetsBindingObserver {
         SafeLogger.d(_tag, 'showRewardedAd ✅ Ad Dismissed by user');
         a.dispose();
         _rewardedAd = null;
+        _isRewardedShowing = false;
         loadRewardedAd(); // Preload next
         if (!hasEarned) onEarnedReward(false);
       },
@@ -900,6 +917,7 @@ class AdManager with WidgetsBindingObserver {
         );
         a.dispose();
         _rewardedAd = null;
+        _isRewardedShowing = false;
         onEarnedReward(false);
       },
       onAdClicked: (a) {
