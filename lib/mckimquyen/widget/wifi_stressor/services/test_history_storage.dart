@@ -2,7 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/test_result.dart';
 import '../models/network_info_adapter.dart';
 import '../models/test_result_adapter.dart';
-import '../../../admob/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
 
 /// Service để quản lý lưu trữ test history với Hive
 /// SINGLETON pattern để đảm bảo chỉ có 1 instance và 1 box
@@ -27,42 +27,42 @@ class TestHistoryStorage {
   Future<void> init() async {
     // Nếu đã init rồi, skip
     if (_isInitialized && _box != null) {
-      Logger.i('✅ Storage already initialized, skipping...');
+      SafeLogger.d('Log', '✅ Storage already initialized, skipping...');
       return;
     }
 
     try {
-      Logger.i('🔧 Initializing TestHistoryStorage...');
+      SafeLogger.d('Log', '🔧 Initializing TestHistoryStorage...');
 
       // Init Hive (chỉ init một lần)
       if (!Hive.isBoxOpen(_boxName)) {
         await Hive.initFlutter();
-        Logger.i('✅ Hive.initFlutter() completed');
+        SafeLogger.d('Log', '✅ Hive.initFlutter() completed');
       }
 
       // Register adapters nếu chưa register
       if (!Hive.isAdapterRegistered(0)) {
         Hive.registerAdapter(NetworkInfoAdapter());
-        Logger.i('✅ NetworkInfoAdapter registered');
+        SafeLogger.d('Log', '✅ NetworkInfoAdapter registered');
       }
       if (!Hive.isAdapterRegistered(1)) {
         Hive.registerAdapter(TestResultAdapter());
-        Logger.i('✅ TestResultAdapter registered');
+        SafeLogger.d('Log', '✅ TestResultAdapter registered');
       }
 
       // Open box (hoặc get existing box nếu đã mở)
       if (Hive.isBoxOpen(_boxName)) {
         _box = Hive.box<TestResult>(_boxName);
-        Logger.i('✅ Reusing existing box');
+        SafeLogger.d('Log', '✅ Reusing existing box');
       } else {
         _box = await Hive.openBox<TestResult>(_boxName);
-        Logger.i('✅ Box opened: $_boxName');
+        SafeLogger.d('Log', '✅ Box opened: $_boxName');
       }
 
       _isInitialized = true;
-      Logger.i('✅ Storage initialized successfully. Total items: ${_box?.length ?? 0}');
+      SafeLogger.d('Log', '✅ Storage initialized successfully. Total items: ${_box?.length ?? 0}');
     } catch (e) {
-      Logger.i('❌ Failed to initialize TestHistoryStorage: $e');
+      SafeLogger.d('Log', '❌ Failed to initialize TestHistoryStorage: $e');
       throw Exception('Failed to initialize TestHistoryStorage: $e');
     }
   }
@@ -221,7 +221,7 @@ class TestHistoryStorage {
   Future<void> close() async {
     // KHÔNG close box vì có thể controller khác đang dùng
     // Box sẽ tự động close khi app shutdown
-    Logger.i('⚠️ Storage.close() called - box will remain open for other controllers');
+    SafeLogger.d('Log', '⚠️ Storage.close() called - box will remain open for other controllers');
   }
 
   /// Compact database để giảm file size

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/ad_manager.dart';
 import '../stressor_controller.dart';
 
 /// Widget hiển thị control button (Start/Stop)

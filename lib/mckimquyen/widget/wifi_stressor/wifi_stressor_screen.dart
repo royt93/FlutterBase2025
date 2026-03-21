@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/language_service.dart';
 
-import '../../admob/ad_screen.dart';
+import '../../ad/ad_screen.dart';
 import 'stressor_controller.dart';
 import 'speed_chart.dart';
 import 'widgets/status_indicator_widget.dart';
@@ -54,18 +54,10 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   }
 
   /// Khởi tạo quảng cáo bất đồng bộ để không block UI
+  /// AdScreenState.initState() đã tự load interstitial.
+  /// Không cần gọi loadInterstitialAd(), loadBannerAd() nữa.
   Future<void> _initializeAdsAsync() async {
-    try {
-      // Load song song các loại quảng cáo để tối ưu thời gian
-      await Future.wait([
-        loadInterstitialAd(),
-        // loadRewardedAd(), // Tạm thời disable để giảm memory usage
-      ]);
-      // Load banner cuối cùng vì ít quan trọng nhất
-      loadBannerAd();
-    } catch (e) {
-      debugPrint('Lỗi khởi tạo quảng cáo: $e');
-    }
+    // Ads được tự động load bởi AdScreenState
   }
 
   @override
@@ -289,7 +281,9 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           ControlButtonWidget(
             isRunning: isRunning,
             controller: controller,
-            showInterstitialAd: showInterstitialAd,
+            showInterstitialAd: (Function(bool) callback) {
+              showInterstitialAd(onDone: callback);
+            },
           ),
         ],
       ),

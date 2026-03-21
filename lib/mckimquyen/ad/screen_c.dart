@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/ad_screen.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/ad_screen.dart';
 
 class ScreenC extends AdScreen {
   const ScreenC({super.key});

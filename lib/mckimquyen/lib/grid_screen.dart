@@ -16,7 +16,7 @@ class GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Logger.i("paint");
+    // SafeLogger.d('Log', "paint");
     // Color c;
     // if (isShowGrid) {
     //   c = Colors.red.withOpacity(0.25);
@@ -45,7 +45,7 @@ class GridPainter extends CustomPainter {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 
-    // Logger.i("columnWidth x rowHeight $columnWidth x $rowHeight");
+    // SafeLogger.d('Log', "columnWidth x rowHeight $columnWidth x $rowHeight");
     WidgetsBinding.instance.addPostFrameCallback((_) {
       callback.call(columnWidth, rowHeight);
     });
@@ -54,7 +54,7 @@ class GridPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    // Logger.i("shouldRepaint");
+    // SafeLogger.d('Log', "shouldRepaint");
     return false; // Không cần vẽ lại nếu không có thay đổi
   }
 }
@@ -69,7 +69,7 @@ class GridScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Logger.i("GridScreen build");
+    // SafeLogger.d('Log', "GridScreen build");
     return IgnorePointer(
       child: Scaffold(
         backgroundColor: Colors.transparent, // Nền trong suốt

@@ -1,7 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:network_info_plus/network_info_plus.dart' as network_info_plugin;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
 import '../models/network_info.dart';
 
 /// Service để lấy thông tin mạng thực tế
@@ -15,28 +15,28 @@ class NetworkInfoService {
       final status = await Permission.location.status;
 
       if (status.isGranted) {
-        Logger.i('📍 Location permission already granted');
+        SafeLogger.d('Log', '📍 Location permission already granted');
         return true;
       }
 
       if (status.isDenied) {
-        Logger.i('📍 Requesting location permission...');
+        SafeLogger.d('Log', '📍 Requesting location permission...');
         final result = await Permission.location.request();
 
         if (result.isGranted) {
-          Logger.i('✅ Location permission granted');
+          SafeLogger.d('Log', '✅ Location permission granted');
           return true;
         } else if (result.isPermanentlyDenied) {
-          Logger.i('❌ Location permission permanently denied');
+          SafeLogger.d('Log', '❌ Location permission permanently denied');
           return false;
         } else {
-          Logger.i('❌ Location permission denied');
+          SafeLogger.d('Log', '❌ Location permission denied');
           return false;
         }
       }
 
       if (status.isPermanentlyDenied) {
-        Logger.i('⚠️ Location permission permanently denied, opening settings...');
+        SafeLogger.d('Log', '⚠️ Location permission permanently denied, opening settings...');
         // User có thể mở settings để enable permission
         await openAppSettings();
         return false;
@@ -44,7 +44,7 @@ class NetworkInfoService {
 
       return false;
     } catch (e) {
-      Logger.i('❌ Error requesting location permission: $e');
+      SafeLogger.d('Log', '❌ Error requesting location permission: $e');
       return false;
     }
   }
@@ -55,7 +55,7 @@ class NetworkInfoService {
       // Request location permission trước
       final hasPermission = await _requestLocationPermission();
       if (!hasPermission) {
-        Logger.i('⚠️ No location permission, WiFi SSID will be unavailable');
+        SafeLogger.d('Log', '⚠️ No location permission, WiFi SSID will be unavailable');
       }
 
       // Kiểm tra loại kết nối
@@ -63,7 +63,7 @@ class NetworkInfoService {
 
       // Chỉ lấy info khi kết nối WiFi
       if (!connectivityResult.contains(ConnectivityResult.wifi)) {
-        Logger.i('📡 Not connected to WiFi, using mobile/other connection');
+        SafeLogger.d('Log', '📡 Not connected to WiFi, using mobile/other connection');
         return NetworkInfo(
           ssid: 'Mobile/Other',
           signalStrength: null,
@@ -78,7 +78,7 @@ class NetworkInfoService {
       String? ipAddress = await _getIpAddress();
       String? frequency = await _estimateFrequency();
 
-      Logger.i('📡 Network Info - SSID: $ssid, IP: $ipAddress, Freq: $frequency');
+      SafeLogger.d('Log', '📡 Network Info - SSID: $ssid, IP: $ipAddress, Freq: $frequency');
 
       return NetworkInfo(
         ssid: ssid ?? 'Unknown',
@@ -88,7 +88,7 @@ class NetworkInfoService {
         channel: null, // Không thể lấy từ Flutter, cần platform channel
       );
     } catch (e) {
-      Logger.i('❌ Error getting network info: $e');
+      SafeLogger.d('Log', '❌ Error getting network info: $e');
       return NetworkInfo.empty();
     }
   }
@@ -100,14 +100,14 @@ class NetworkInfoService {
 
       // iOS và Android >= 9 trả về null nếu không có location permission
       if (ssid == null) {
-        Logger.i('⚠️ WiFi SSID is null - permission may be denied or unavailable');
+        SafeLogger.d('Log', '⚠️ WiFi SSID is null - permission may be denied or unavailable');
         return 'Unknown';
       }
 
       // Android thường trả về SSID với quotes, remove chúng
       return ssid.replaceAll('"', '');
     } catch (e) {
-      Logger.i('❌ Error getting SSID: $e');
+      SafeLogger.d('Log', '❌ Error getting SSID: $e');
       return 'Unknown';
     }
   }
@@ -118,7 +118,7 @@ class NetworkInfoService {
       final ip = await _networkInfo.getWifiIP();
       return ip;
     } catch (e) {
-      Logger.i('❌ Error getting IP: $e');
+      SafeLogger.d('Log', '❌ Error getting IP: $e');
       return null;
     }
   }
@@ -132,7 +132,7 @@ class NetworkInfoService {
       // Tạm thời return null
       return null;
     } catch (e) {
-      Logger.i('❌ Error estimating frequency: $e');
+      SafeLogger.d('Log', '❌ Error estimating frequency: $e');
       return null;
     }
   }
@@ -143,7 +143,7 @@ class NetworkInfoService {
       final connectivityResult = await _connectivity.checkConnectivity();
       return connectivityResult.contains(ConnectivityResult.wifi);
     } catch (e) {
-      Logger.i('❌ Error checking WiFi connection: $e');
+      SafeLogger.d('Log', '❌ Error checking WiFi connection: $e');
       return false;
     }
   }
@@ -162,7 +162,7 @@ class NetworkInfoService {
         return 'Unknown';
       }
     } catch (e) {
-      Logger.i('❌ Error getting connection type: $e');
+      SafeLogger.d('Log', '❌ Error getting connection type: $e');
       return 'Unknown';
     }
   }

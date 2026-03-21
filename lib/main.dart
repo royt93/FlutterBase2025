@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
 import 'package:saigonphantomlabs/mckimquyen/core/base_stateful_state.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:toastification/toastification.dart';
@@ -34,7 +33,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AdMobManager().initialize();
+  // AdManager init is now handled in SplashScreen
   WakelockPlus.enable();
   UIUtils.initEdgeToEdge();
   if (Platform.isAndroid) {
@@ -121,11 +120,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends BaseStatefulState<MyApp> {
   // final ControllerMain _controllerMain = Get.find();
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  // }
 
   @override
   Widget build(BuildContext context) {

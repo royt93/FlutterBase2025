@@ -8,7 +8,7 @@ import '../models/test_result.dart';
 import '../models/test_statistics.dart';
 import '../services/test_history_storage.dart';
 import '../../../util/ui_utils.dart';
-import '../../../admob/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
 
 /// Controller để quản lý History screen với GetX
 /// Không dùng late, không force null, không memory leak
@@ -52,25 +52,25 @@ class HistoryController extends GetxController {
       isLoading.value = true;
 
       // DEBUG: Check storage state
-      Logger.i('📖 Loading history...');
-      Logger.i('📦 Storage box null? ${_storage.box == null}');
-      Logger.i('📦 Storage total count: ${_storage.totalCount}');
+      SafeLogger.d('Log', '📖 Loading history...');
+      SafeLogger.d('Log', '📦 Storage box null? ${_storage.box == null}');
+      SafeLogger.d('Log', '📦 Storage total count: ${_storage.totalCount}');
 
       // Load all results
       final results = _storage.getAllResults();
-      Logger.i('📊 Loaded ${results.length} results from storage');
+      SafeLogger.d('Log', '📊 Loaded ${results.length} results from storage');
 
       allResults.value = results;
 
       // Apply current filter
       _applyTimeRangeFilter();
-      Logger.i('🔍 After filter: ${filteredResults.length} results');
+      SafeLogger.d('Log', '🔍 After filter: ${filteredResults.length} results');
 
       // Calculate statistics
       _calculateStatistics();
-      Logger.i('✅ History loaded successfully');
+      SafeLogger.d('Log', '✅ History loaded successfully');
     } catch (e) {
-      Logger.i('❌ Failed to load history: $e');
+      SafeLogger.d('Log', '❌ Failed to load history: $e');
       UIUtils.showToast(
         'Error',
         'Failed to load history: $e',
@@ -274,11 +274,11 @@ class HistoryController extends GetxController {
         return;
       }
 
-      Logger.i('📤 Starting export of ${allResults.length} tests...');
+      SafeLogger.d('Log', '📤 Starting export of ${allResults.length} tests...');
 
       // Generate CSV content
       final csvContent = _generateCSV();
-      Logger.i('CSV Preview:\n${csvContent.substring(0, csvContent.length > 500 ? 500 : csvContent.length)}...');
+      SafeLogger.d('Log', 'CSV Preview:\n${csvContent.substring(0, csvContent.length > 500 ? 500 : csvContent.length)}...');
 
       // Create filename with timestamp
       final now = DateTime.now();
@@ -292,7 +292,7 @@ class HistoryController extends GetxController {
       // Write CSV to file
       final file = File(filePath);
       await file.writeAsString(csvContent);
-      Logger.i('✅ File created: $filePath');
+      SafeLogger.d('Log', '✅ File created: $filePath');
 
       // Share file using share_plus (user can choose where to save)
       await Share.shareXFiles(
@@ -301,14 +301,14 @@ class HistoryController extends GetxController {
         text: 'Exported ${allResults.length} WiFi stress test results',
       );
 
-      Logger.i('✅ Export completed successfully');
+      SafeLogger.d('Log', '✅ Export completed successfully');
       UIUtils.showToast(
         'success'.tr,
         'export_success'.trParams({'count': '${allResults.length}', 'file': filename}),
         type: ToastificationType.success,
       );
     } catch (e) {
-      Logger.i('❌ Export failed: $e');
+      SafeLogger.d('Log', '❌ Export failed: $e');
       UIUtils.showToast(
         'error'.tr,
         'export_failed'.trParams({'error': e.toString()}),
@@ -359,7 +359,7 @@ class HistoryController extends GetxController {
   void onClose() {
     // KHÔNG close shared singleton storage
     // Storage sẽ được giữ mở cho StressorController và các controllers khác
-    Logger.i('HistoryController.onClose() - storage kept open');
+    SafeLogger.d('Log', 'HistoryController.onClose() - storage kept open');
     super.onClose();
   }
 }

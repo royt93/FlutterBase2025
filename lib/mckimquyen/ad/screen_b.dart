@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/ad_screen.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/screen_c.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/ad_screen.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/screen_c.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
 
 class ScreenB extends AdScreen {
   const ScreenB({super.key});
@@ -12,22 +12,6 @@ class ScreenB extends AdScreen {
 }
 
 class _ScreenBState extends AdScreenState<ScreenB> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initAd();
-    });
-  }
-
-  Future<void> _initAd() async {
-    await Future.wait([
-      loadInterstitialAd(),
-      loadRewardedAd(),
-    ]);
-    loadBannerAd();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,17 +32,14 @@ class _ScreenBState extends AdScreenState<ScreenB> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      showInterstitialAd((value) {
-                        Logger.i("roy93~ showInterstitialAd value $value");
+                      showInterstitialAd(onDone: (value) {
+                        SafeLogger.d(
+                            'ScreenB', 'showInterstitialAd result: $value');
                         Get.to(const ScreenC());
                       });
                     },
-                    child: const Text('Show Interstitial Ad\n(Ads may appear)'),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => showRewardedAd(onReward: () {}),
-                    child: const Text('Show Rewarded Ad'),
+                    child: const Text(
+                        'Show Interstitial Ad\n(Ads may appear)'),
                   ),
                 ],
               ),

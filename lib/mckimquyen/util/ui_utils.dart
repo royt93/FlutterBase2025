@@ -613,7 +613,7 @@ class UIUtils {
 
   static void showBottomSheetNotification(Function onDismiss) {
     Permission.notification.isGranted.then((isGrantedPermissionNotification) {
-      // Logger.i("isGrantedPermissionNotification $isGrantedPermissionNotification");
+      // SafeLogger.d('Log', "isGrantedPermissionNotification $isGrantedPermissionNotification");
 
       void show() {
         var c = Get.context;
@@ -676,7 +676,7 @@ class UIUtils {
             ),
           ),
         ).then((value) {
-          // Logger.i("then value $value");
+          // SafeLogger.d('Log', "then value $value");
           onDismiss.call();
         });
       }
@@ -685,7 +685,7 @@ class UIUtils {
         show();
       } else {
         Permission.notification.request().then((value) {
-          // Logger.i("request value $value");
+          // SafeLogger.d('Log', "request value $value");
           if (value == PermissionStatus.granted) {
             show();
           } else if (value == PermissionStatus.permanentlyDenied) {
@@ -893,7 +893,7 @@ class UIUtils {
         );
       },
     ).then((value) {
-      // Logger.i("then $value");
+      // SafeLogger.d('Log', "then $value");
       onDismiss.call();
     });
   }

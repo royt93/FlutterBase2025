@@ -5,15 +5,15 @@ class SharedPreferencesUtil {
   static String keyHasConfigNotificationForAndroidBelow33 = "keyHasConfigNotificationForAndroidBelow33";
 
   static void resetAllData() async {
-    // Logger.i("resetAllData");
+    // SafeLogger.d('Log', "resetAllData");
     var valueTimestampDismissBottomSheetNotification =
         await SharedPreferencesUtil.getInt(SharedPreferencesUtil.keyTimestampDismissBottomSheetNotification) ?? 0;
     var valueHasConfigNotificationForAndroidBelow33 =
         await SharedPreferencesUtil.getBool(SharedPreferencesUtil.keyHasConfigNotificationForAndroidBelow33) ?? true;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    // Logger.i("valueTimestampDismissBottomSheetNotification $valueTimestampDismissBottomSheetNotification");
-    // Logger.i("valueHasConfigNotificationForAndroidBelow33 $valueHasConfigNotificationForAndroidBelow33");
+    // SafeLogger.d('Log', "valueTimestampDismissBottomSheetNotification $valueTimestampDismissBottomSheetNotification");
+    // SafeLogger.d('Log', "valueHasConfigNotificationForAndroidBelow33 $valueHasConfigNotificationForAndroidBelow33");
     SharedPreferencesUtil.setInt(
         SharedPreferencesUtil.keyTimestampDismissBottomSheetNotification, valueTimestampDismissBottomSheetNotification);
     await SharedPreferencesUtil.setBool(

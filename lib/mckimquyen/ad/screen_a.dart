@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/ad_screen.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/screen_b.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/ad_screen.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/screen_b.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
 
 class ScreenA extends AdScreen {
   const ScreenA({super.key});
@@ -12,40 +12,19 @@ class ScreenA extends AdScreen {
 }
 
 class _ScreenAState extends AdScreenState<ScreenA> {
-  int _coins = 0;
+  final ValueNotifier<int> _coinsNotifier = ValueNotifier<int>(0);
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initAd();
-    });
+  void dispose() {
+    _coinsNotifier.dispose();
+    super.dispose();
   }
-
-  Future<void> _initAd() async {
-    await Future.wait([
-      loadInterstitialAd(),
-      loadRewardedAd(),
-    ]);
-    loadBannerAd();
-  }
-
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Screen A'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.ads_click),
-            onPressed: showAppOpenAd,
-          ),
-        ],
       ),
       body: SafeArea(
         child: Column(
@@ -56,7 +35,13 @@ class _ScreenAState extends AdScreenState<ScreenA> {
                 alignment: Alignment.center,
                 child: Column(
                   children: [
-                    Text('Coins: $_coins', style: const TextStyle(fontSize: 24)),
+                    ValueListenableBuilder<int>(
+                      valueListenable: _coinsNotifier,
+                      builder: (context, coins, _) {
+                        return Text('Coins: $coins',
+                            style: const TextStyle(fontSize: 24));
+                      },
+                    ),
                     const SizedBox(height: 16),
                     _buildControlButtons(),
                     const SizedBox(height: 16),
@@ -76,8 +61,8 @@ class _ScreenAState extends AdScreenState<ScreenA> {
       children: [
         ElevatedButton(
           onPressed: () {
-            showInterstitialAd((value) {
-              Logger.i("roy93~ showInterstitialAd value $value");
+            showInterstitialAd(onDone: (value) {
+              SafeLogger.d('ScreenA', 'showInterstitialAd result: $value');
               Get.to(const ScreenB());
             });
           },
@@ -85,11 +70,21 @@ class _ScreenAState extends AdScreenState<ScreenA> {
         ),
         const SizedBox(height: 16),
         ElevatedButton(
-          onPressed: () => showRewardedAd(
-            onReward: () => setState(() => _coins += 10),
-          ),
-          child: const Text('Watch Video for 10 Coins'),
+          onPressed: () {
+            showRewardedAd(
+              onEarnedReward: (earned) {
+                if (earned) {
+                  SafeLogger.d('ScreenA', '🎉 User fully watched the ad. Rewarding 10 coins!');
+                  _coinsNotifier.value += 10;
+                } else {
+                  SafeLogger.d('ScreenA', '❌ Ad dismissed early or failed to load. No reward.');
+                }
+              },
+            );
+          },
+          child: const Text('Watch Ad for 10 Coins'),
         ),
+
       ],
     );
   }

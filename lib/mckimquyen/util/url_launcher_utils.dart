@@ -2,7 +2,7 @@ import 'package:saigonphantomlabs/mckimquyen/util/shared_preferences_util.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../admob/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
 
 class UrlLauncherUtils {
   static String getLinkGit(String path) {
@@ -17,7 +17,7 @@ class UrlLauncherUtils {
         mode: LaunchMode.externalApplication,
       );
     } else {
-      Logger.i("Could not launch $url");
+      SafeLogger.d('Log', "Could not launch $url");
     }
   }
 
@@ -50,8 +50,8 @@ class UrlLauncherUtils {
     var prevTimestamp = await SharedPreferencesUtil.getInt(key) ?? 0;
     var nowTimestamp = DateTime.now().millisecondsSinceEpoch;
     var limit = 1000 * 60 * 60 * 24 * 7; //7 days
-    // Logger.i("prevTimestamp $prevTimestamp");
-    // Logger.i("nowTimestamp $nowTimestamp");
+    // SafeLogger.d('Log', "prevTimestamp $prevTimestamp");
+    // SafeLogger.d('Log', "nowTimestamp $nowTimestamp");
     if (nowTimestamp - prevTimestamp > limit) {
       final InAppReview inAppReview = InAppReview.instance;
       if (await inAppReview.isAvailable()) {

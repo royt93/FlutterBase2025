@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:connection_notifier/connection_notifier.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/ad_manager.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/string_constants.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'models/test_result.dart';
 import 'services/test_history_storage.dart';
@@ -128,16 +128,16 @@ class StressorController extends GetxController {
     // Add progress interceptor
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
-        Logger.i('[DIO] Request: ${options.uri}');
+        SafeLogger.d('Log', '[DIO] Request: ${options.uri}');
         return handler.next(options);
       },
       onResponse: (response, handler) {
         final length = response.data is List ? (response.data as List).length : 0;
-        Logger.i('[DIO] Response: ${response.requestOptions.uri} | Status: ${response.statusCode} | Bytes: $length');
+        SafeLogger.d('Log', '[DIO] Response: ${response.requestOptions.uri} | Status: ${response.statusCode} | Bytes: $length');
         return handler.next(response);
       },
       onError: (error, handler) {
-        Logger.i('[DIO] Error: ${error.requestOptions.uri} | ${error.type}');
+        SafeLogger.d('Log', '[DIO] Error: ${error.requestOptions.uri} | ${error.type}');
         return handler.next(error);
       },
     ));
@@ -147,31 +147,31 @@ class StressorController extends GetxController {
   Future<void> _initStorage() async {
     try {
       await _storage.init();
-      Logger.i('Storage initialized successfully');
+      SafeLogger.d('Log', 'Storage initialized successfully');
     } catch (e) {
-      Logger.i('Failed to initialize storage: $e');
+      SafeLogger.d('Log', 'Failed to initialize storage: $e');
     }
   }
 
   @override
   void onClose() {
-    Logger.i('Controller onClose called');
+    SafeLogger.d('Log', 'Controller onClose called');
 
     // CRITICAL FIX: Save test nếu đang chạy (prevent data loss khi app closed)
     if (isRunning.value && startTime.value != null && !_testSaved) {
-      Logger.i('Test was running, saving before dispose...');
+      SafeLogger.d('Log', 'Test was running, saving before dispose...');
 
       // Save bytes đang progress trước khi dispose
       final bytesInProgress = _loopCurrentBytes.values.fold<int>(0, (sum, bytes) => sum + bytes);
       if (bytesInProgress > 0) {
-        Logger.i('💾 Saving in-progress bytes on dispose: ${(bytesInProgress / (1024 * 1024)).toStringAsFixed(2)} MB');
+        SafeLogger.d('Log', '💾 Saving in-progress bytes on dispose: ${(bytesInProgress / (1024 * 1024)).toStringAsFixed(2)} MB');
         totalDownloadedBytes.value += bytesInProgress;
       }
 
       // Call async method but don't await (controller disposing)
       // The save will complete in background
       _saveTestResult('interrupted').catchError((e) {
-        Logger.i('Failed to save on dispose: $e');
+        SafeLogger.d('Log', 'Failed to save on dispose: $e');
       });
       // Give it a moment to start the save operation
       Future.delayed(const Duration(milliseconds: 100), () {
@@ -195,8 +195,8 @@ class StressorController extends GetxController {
 
   void startStressTest() {
     if (isRunning.value) return;
-    bool isConnected = ConnectionNotifierTools.isConnected;
-    Logger.i('Showing start confirmation dialog isConnected $isConnected');
+    bool isConnected = AdManager().isConnected;
+    SafeLogger.d('Log', 'Showing start confirmation dialog isConnected $isConnected');
     if (isConnected) {
       Get.defaultDialog(
         titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -212,7 +212,7 @@ class StressorController extends GetxController {
         actions: [
           TextButton(
             onPressed: () {
-              Logger.i('User canceled stress test');
+              SafeLogger.d('Log', 'User canceled stress test');
               Get.back();
             },
             child: Text(
@@ -225,7 +225,7 @@ class StressorController extends GetxController {
           ),
           FilledButton(
             onPressed: () {
-              Logger.i('User confirmed stress test');
+              SafeLogger.d('Log', 'User confirmed stress test');
               Get.back();
               _startTest();
             },
@@ -249,7 +249,7 @@ class StressorController extends GetxController {
   }
 
   void _startTest() {
-    Logger.i('Starting stress test with ${parallelDownloads.value} parallel downloads');
+    SafeLogger.d('Log', 'Starting stress test with ${parallelDownloads.value} parallel downloads');
     isRunning.value = true;
     downloadCount.value = 0;
     speedMbps.value = 0.0;
@@ -269,20 +269,20 @@ class StressorController extends GetxController {
     // Reset in-progress bytes tracking
     _loopCurrentBytes.clear();
 
-    Logger.i('Starting update timer (500ms interval)');
+    SafeLogger.d('Log', 'Starting update timer (500ms interval)');
     _updateTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       _updateTotalSpeed();
       // Loại bỏ update() để tránh rebuild toàn bộ controller
     });
 
     // Start retry timer để thử lại failed URLs sau 2 phút
-    Logger.i('Starting retry timer (120s interval)');
+    SafeLogger.d('Log', 'Starting retry timer (120s interval)');
     _retryTimer = Timer.periodic(const Duration(seconds: 120), (_) {
       _retryFailedUrls();
     });
 
     for (int i = 0; i < parallelDownloads.value; i++) {
-      Logger.i('Starting download loop #$i');
+      SafeLogger.d('Log', 'Starting download loop #$i');
       _runDownloadLoop(i);
     }
   }
@@ -305,7 +305,7 @@ class StressorController extends GetxController {
     }
 
     if (urlsToRetry.isNotEmpty) {
-      Logger.i('Retrying ${urlsToRetry.length} failed URLs');
+      SafeLogger.d('Log', 'Retrying ${urlsToRetry.length} failed URLs');
       for (final url in urlsToRetry) {
         _failedUrls.remove(url);
         _urlErrorCount.remove(url);
@@ -315,12 +315,12 @@ class StressorController extends GetxController {
   }
 
   Future<void> stopStressTest() async {
-    Logger.i('Stopping stress test');
+    SafeLogger.d('Log', 'Stopping stress test');
 
     // CRITICAL FIX: Save bytes đang progress trước khi clear
     final bytesInProgress = _loopCurrentBytes.values.fold<int>(0, (sum, bytes) => sum + bytes);
     if (bytesInProgress > 0) {
-      Logger.i('💾 Saving in-progress bytes: ${(bytesInProgress / (1024 * 1024)).toStringAsFixed(2)} MB');
+      SafeLogger.d('Log', '💾 Saving in-progress bytes: ${(bytesInProgress / (1024 * 1024)).toStringAsFixed(2)} MB');
       totalDownloadedBytes.value += bytesInProgress;
     }
 
@@ -339,34 +339,34 @@ class StressorController extends GetxController {
   Future<void> _saveTestResult(String status) async {
     final start = startTime.value;
     if (start == null) {
-      Logger.i('❌ Cannot save: startTime is null');
+      SafeLogger.d('Log', '❌ Cannot save: startTime is null');
       return;
     }
 
     // Prevent duplicate save
     if (_testSaved) {
-      Logger.i('Test already saved, skipping duplicate save');
+      SafeLogger.d('Log', 'Test already saved, skipping duplicate save');
       return;
     }
 
     try {
       // CRITICAL FIX: Ensure storage is initialized before saving
       if (_storage.box == null) {
-        Logger.i('⏳ Storage not ready, waiting for init...');
+        SafeLogger.d('Log', '⏳ Storage not ready, waiting for init...');
         await _storage.init();
-        Logger.i('✅ Storage initialized on-demand');
+        SafeLogger.d('Log', '✅ Storage initialized on-demand');
       }
 
       // DEBUG: Log các giá trị trước khi save
-      Logger.i('💾 Saving test result...');
-      Logger.i('  - Status: $status');
-      Logger.i('  - Total Downloaded: ${(totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(2)} MB');
-      Logger.i('  - Download Count: ${downloadCount.value}');
-      Logger.i('  - Speed History: ${speedHistory.length} points');
+      SafeLogger.d('Log', '💾 Saving test result...');
+      SafeLogger.d('Log', '  - Status: $status');
+      SafeLogger.d('Log', '  - Total Downloaded: ${(totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(2)} MB');
+      SafeLogger.d('Log', '  - Download Count: ${downloadCount.value}');
+      SafeLogger.d('Log', '  - Speed History: ${speedHistory.length} points');
 
       // Lấy thông tin mạng thực tế
       final networkInfo = await _networkInfoService.getCurrentNetworkInfo();
-      Logger.i('  - Network Info: $networkInfo');
+      SafeLogger.d('Log', '  - Network Info: $networkInfo');
 
       final result = TestResult.fromControllerData(
         startTime: start,
@@ -380,19 +380,19 @@ class StressorController extends GetxController {
 
       await _storage.saveTestResult(result);
       _testSaved = true; // Mark as saved
-      Logger.i('✅ Test result saved: ${result.avgSpeed.toStringAsFixed(1)} Mbps (ID: ${result.id})');
-      Logger.i('📊 Total tests in storage: ${_storage.totalCount}');
+      SafeLogger.d('Log', '✅ Test result saved: ${result.avgSpeed.toStringAsFixed(1)} Mbps (ID: ${result.id})');
+      SafeLogger.d('Log', '📊 Total tests in storage: ${_storage.totalCount}');
     } catch (e) {
-      Logger.i('❌ Failed to save test result: $e');
+      SafeLogger.d('Log', '❌ Failed to save test result: $e');
       // Print stack trace for debugging
       if (e is Error) {
-        Logger.i('Stack trace: ${e.stackTrace}');
+        SafeLogger.d('Log', 'Stack trace: ${e.stackTrace}');
       }
     }
   }
 
   void _cancelAllTasks() {
-    Logger.i('Canceling all download tasks (${_cancelTokens.length} tokens)');
+    SafeLogger.d('Log', 'Canceling all download tasks (${_cancelTokens.length} tokens)');
     for (var token in _cancelTokens) {
       token.cancel();
     }
@@ -432,7 +432,7 @@ class StressorController extends GetxController {
         }
       }
 
-      Logger.i('Updated total speed: ${totalSpeedMbps.value.toStringAsFixed(2)} Mbps (Downloaded: ${(totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(1)}MB, In-progress: ${(bytesInProgress / (1024 * 1024)).toStringAsFixed(1)}MB)');
+      SafeLogger.d('Log', 'Updated total speed: ${totalSpeedMbps.value.toStringAsFixed(2)} Mbps (Downloaded: ${(totalDownloadedBytes.value / (1024 * 1024)).toStringAsFixed(1)}MB, In-progress: ${(bytesInProgress / (1024 * 1024)).toStringAsFixed(1)}MB)');
     }
   }
 
@@ -448,7 +448,7 @@ class StressorController extends GetxController {
       speedHistory.value = newHistory;
     }
 
-    Logger.i('Speed history updated (${speedHistory.length} points)');
+    SafeLogger.d('Log', 'Speed history updated (${speedHistory.length} points)');
   }
 
   /// Tìm URL khả dụng (không bị failed)
@@ -457,7 +457,7 @@ class StressorController extends GetxController {
 
     // Nếu tất cả URLs đều failed, reset lại
     if (_failedUrls.length >= urlList.length) {
-      Logger.i('[Loop $loopId] All URLs failed, resetting failed list');
+      SafeLogger.d('Log', '[Loop $loopId] All URLs failed, resetting failed list');
       _failedUrls.clear();
       _urlErrorCount.clear();
       _urlLastFailTime.clear();
@@ -476,7 +476,7 @@ class StressorController extends GetxController {
   }
 
   Future<void> _runDownloadLoop(int id) async {
-    Logger.i('[Loop $id] Starting download loop');
+    SafeLogger.d('Log', '[Loop $id] Starting download loop');
     final cancelToken = CancelToken();
     _cancelTokens.add(cancelToken);
 
@@ -484,7 +484,7 @@ class StressorController extends GetxController {
       while (isRunning.value) {
         final url = _getAvailableUrl(id);
         if (url == null) {
-          Logger.i('[Loop $id] No available URLs, waiting...');
+          SafeLogger.d('Log', '[Loop $id] No available URLs, waiting...');
           await Future.delayed(const Duration(seconds: 2));
           continue;
         }
@@ -492,7 +492,7 @@ class StressorController extends GetxController {
         final stopwatch = Stopwatch()..start();
 
         try {
-          Logger.i('[Loop $id] → Downloading from: $url');
+          SafeLogger.d('Log', '[Loop $id] → Downloading from: $url');
 
           DateTime lastProgressTime = DateTime.now();
 
@@ -517,7 +517,7 @@ class StressorController extends GetxController {
               // Log progress mỗi 2 giây hoặc khi complete
               if (now.difference(lastProgressTime).inSeconds >= 2 || received == total) {
                 final speed = total > 0 ? (received / total * 100).toStringAsFixed(1) : '?';
-                Logger.i('[Loop $id] 📥 Progress: $received / $total bytes ($speed%)');
+                SafeLogger.d('Log', '[Loop $id] 📥 Progress: $received / $total bytes ($speed%)');
                 lastProgressTime = now;
               }
             },
@@ -531,20 +531,20 @@ class StressorController extends GetxController {
           final contentType = response.headers.value('content-type');
           final redirects = response.redirects;
 
-          Logger.i('[Loop $id] 📊 RESPONSE DEBUG:');
-          Logger.i('  URL: $url');
-          Logger.i('  Status: $statusCode');
-          Logger.i('  Content-Length header: $contentLength');
-          Logger.i('  Content-Type: $contentType');
-          Logger.i('  Redirects: ${redirects.length}');
-          Logger.i('  Data null: ${response.data == null}');
-          Logger.i('  Data type: ${response.data?.runtimeType}');
-          Logger.i('  Time: ${stopwatch.elapsedMilliseconds}ms');
+          SafeLogger.d('Log', '[Loop $id] 📊 RESPONSE DEBUG:');
+          SafeLogger.d('Log', '  URL: $url');
+          SafeLogger.d('Log', '  Status: $statusCode');
+          SafeLogger.d('Log', '  Content-Length header: $contentLength');
+          SafeLogger.d('Log', '  Content-Type: $contentType');
+          SafeLogger.d('Log', '  Redirects: ${redirects.length}');
+          SafeLogger.d('Log', '  Data null: ${response.data == null}');
+          SafeLogger.d('Log', '  Data type: ${response.data?.runtimeType}');
+          SafeLogger.d('Log', '  Time: ${stopwatch.elapsedMilliseconds}ms');
 
           if (redirects.isNotEmpty) {
-            Logger.i('  Redirect chain:');
+            SafeLogger.d('Log', '  Redirect chain:');
             for (var redirect in redirects) {
-              Logger.i('    → ${redirect.location}');
+              SafeLogger.d('Log', '    → ${redirect.location}');
             }
           }
           // === DETAILED DEBUG LOGGING END ===
@@ -557,7 +557,7 @@ class StressorController extends GetxController {
             if (errorCount >= 3) {
               _failedUrls.add(url);
               _urlLastFailTime[url] = DateTime.now();
-              Logger.i('[Loop $id] ❌ URL failed after $errorCount errors (Status: $statusCode)');
+              SafeLogger.d('Log', '[Loop $id] ❌ URL failed after $errorCount errors (Status: $statusCode)');
             }
             await Future.delayed(const Duration(milliseconds: 100));
             continue;
@@ -571,23 +571,23 @@ class StressorController extends GetxController {
 
             if (data is List<int>) {
               actualBytes = data.length;
-              Logger.i('[Loop $id] 📦 Data is List<int>, length: $actualBytes');
+              SafeLogger.d('Log', '[Loop $id] 📦 Data is List<int>, length: $actualBytes');
             } else if (data is List) {
               actualBytes = data.length;
-              Logger.i('[Loop $id] 📦 Data is List, length: $actualBytes');
+              SafeLogger.d('Log', '[Loop $id] 📦 Data is List, length: $actualBytes');
             } else {
-              Logger.i('[Loop $id] ⚠️ UNEXPECTED data type: ${data.runtimeType}');
+              SafeLogger.d('Log', '[Loop $id] ⚠️ UNEXPECTED data type: ${data.runtimeType}');
               // Try to get string representation
               final dataStr = data.toString();
-              Logger.i('[Loop $id] Data toString: ${dataStr.substring(0, dataStr.length > 100 ? 100 : dataStr.length)}...');
+              SafeLogger.d('Log', '[Loop $id] Data toString: ${dataStr.substring(0, dataStr.length > 100 ? 100 : dataStr.length)}...');
             }
           } else {
-            Logger.i('[Loop $id] ⚠️ response.data is NULL');
+            SafeLogger.d('Log', '[Loop $id] ⚠️ response.data is NULL');
           }
 
           if (actualBytes > 0) {
             final mbps = (actualBytes * 8) / (stopwatch.elapsedMilliseconds * 1000);
-            Logger.i('[Loop $id] ✓ ${(actualBytes / (1024 * 1024)).toStringAsFixed(1)}MB in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(1)}s = ${mbps.toStringAsFixed(1)} Mbps');
+            SafeLogger.d('Log', '[Loop $id] ✓ ${(actualBytes / (1024 * 1024)).toStringAsFixed(1)}MB in ${(stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(1)}s = ${mbps.toStringAsFixed(1)} Mbps');
 
             // Reset error count cho URL thành công
             _urlErrorCount.remove(url);
@@ -605,7 +605,7 @@ class StressorController extends GetxController {
             _loopCurrentBytes.remove(id);
 
             // Debug info khi nhận 0 bytes
-            Logger.i('[Loop $id] ⚠️ 0 bytes | URL: $url | Status: $statusCode | Data type: ${response.data?.runtimeType} | Data null: ${response.data == null}');
+            SafeLogger.d('Log', '[Loop $id] ⚠️ 0 bytes | URL: $url | Status: $statusCode | Data type: ${response.data?.runtimeType} | Data null: ${response.data == null}');
 
             // Mark URL as potentially problematic
             final errorCount = (_urlErrorCount[url] ?? 0) + 1;
@@ -613,7 +613,7 @@ class StressorController extends GetxController {
             if (errorCount >= 5) {
               _failedUrls.add(url);
               _urlLastFailTime[url] = DateTime.now();
-              Logger.i('[Loop $id] URL marked as failed (0 bytes) after $errorCount tries: $url');
+              SafeLogger.d('Log', '[Loop $id] URL marked as failed (0 bytes) after $errorCount tries: $url');
             }
           }
         } catch (e) {
@@ -623,17 +623,17 @@ class StressorController extends GetxController {
           // Reset bytes đang tải khi có lỗi
           _loopCurrentBytes.remove(id);
 
-          Logger.i('[Loop $id] 💥 EXCEPTION CAUGHT:');
-          Logger.i('  URL: $url');
-          Logger.i('  Exception type: ${e.runtimeType}');
-          Logger.i('  Exception: $e');
+          SafeLogger.d('Log', '[Loop $id] 💥 EXCEPTION CAUGHT:');
+          SafeLogger.d('Log', '  URL: $url');
+          SafeLogger.d('Log', '  Exception type: ${e.runtimeType}');
+          SafeLogger.d('Log', '  Exception: $e');
 
           if (e is DioException) {
-            Logger.i('  DioException details:');
-            Logger.i('    Type: ${e.type}');
-            Logger.i('    Message: ${e.message}');
-            Logger.i('    Status code: ${e.response?.statusCode}');
-            Logger.i('    Response data: ${e.response?.data?.runtimeType}');
+            SafeLogger.d('Log', '  DioException details:');
+            SafeLogger.d('Log', '    Type: ${e.type}');
+            SafeLogger.d('Log', '    Message: ${e.message}');
+            SafeLogger.d('Log', '    Status code: ${e.response?.statusCode}');
+            SafeLogger.d('Log', '    Response data: ${e.response?.data?.runtimeType}');
           }
 
           final errorCount = (_urlErrorCount[url] ?? 0) + 1;
@@ -641,9 +641,9 @@ class StressorController extends GetxController {
           if (errorCount >= 3) {
             _failedUrls.add(url);
             _urlLastFailTime[url] = DateTime.now();
-            Logger.i('[Loop $id] ❌ URL marked as failed after $errorCount errors');
+            SafeLogger.d('Log', '[Loop $id] ❌ URL marked as failed after $errorCount errors');
           } else {
-            Logger.i('[Loop $id] ⚠️ Error $errorCount/3 - will retry');
+            SafeLogger.d('Log', '[Loop $id] ⚠️ Error $errorCount/3 - will retry');
           }
         }
 
@@ -651,7 +651,7 @@ class StressorController extends GetxController {
       }
     } finally {
       _cancelTokens.remove(cancelToken);
-      Logger.i('[Loop $id] Download loop exited');
+      SafeLogger.d('Log', '[Loop $id] Download loop exited');
     }
   }
 }

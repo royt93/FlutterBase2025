@@ -1,14 +1,13 @@
 import 'dart:async';
 
-// Removed unused dependency: animated_text_kit
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/ad_mob_manager.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/event_bus.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/ad_manager.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/event_bus.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
-import 'package:saigonphantomlabs/mckimquyen/admob/logger.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 
@@ -26,36 +25,101 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends BaseStatefulState<SplashScreen> {
-  // final ControllerMain _controllerMain = Get.find();
   int _durationCountdown = 10;
   Color _containerColor = ColorConstants.appColor;
   StreamSubscription? _subscription;
+  Timer? _hardCapTimer;
+  bool _hasNavigated = false;
 
   @override
   void initState() {
     super.initState();
-    _subscription = SimpleEventBus().onBoolEvent.listen((event) {
-      Logger.i("roy93~ >>>>>>>>>>>>>>onBoolEvent listen event ${event.value}");
-      _goToMainScreen();
+    AdManager().markSplashActive();
+    AdManager().incrementSplashCount();
+    final count = AdManager().countInitSplashScreen;
+    SafeLogger.d('Splash', 'initSplashScreen called, count=$count');
+
+    // Giống native line 991-993: nếu splash bị gọi lại lần 2+ → navigate ngay
+    if (count > 1) {
+      SafeLogger.d('Splash', 'initSplashScreen ⏭️ already called before, navigating immediately');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToMainSafely();
+      });
+      return;
+    }
+
+    // Hard cap 8s — chống treo splash (giống native MAX_TOTAL_SPLASH_MS)
+    _hardCapTimer = Timer(const Duration(seconds: 8), () {
+      SafeLogger.d('Splash', '⏰ HARD CAP 8s reached, forcing navigation');
+      _navigateToMainSafely();
     });
+
+    // Listen for ad init completion
+    _subscription = SimpleEventBus().onBoolEvent.listen((event) {
+      SafeLogger.d('Splash', 'EventBus received: ${event.value}, hasNavigated=$_hasNavigated');
+      if (event.value && !_hasNavigated) {
+        SafeLogger.d('Splash', '🔄 SDK init done, loading App Open Ad...');
+        // Tải App Open Ad trước (giống native line 1046-1066)
+        // Sau khi load xong mới show
+        AdManager().loadAppOpenAd(onAdLoaded: (result) {
+          SafeLogger.d('Splash', 'loadAppOpenAd result=$result, hasNavigated=$_hasNavigated');
+          if (_hasNavigated) {
+            SafeLogger.d('Splash', '⏭️ already navigated by hard cap, ignoring ad result');
+            return;
+          }
+          if (result) {
+            SafeLogger.d('Splash', '🔄 Ad loaded, showing App Open Ad with bypassSafety=true');
+            // Show App Open Ad with bypassSafety = true cho splash
+            AdManager().showAppOpenAd(
+              onAdDismiss: (dismissed) {
+                SafeLogger.d('Splash', 'App Open Ad dismissed=$dismissed, navigating');
+                _navigateToMainSafely();
+              },
+              bypassSafety: true,
+            );
+          } else {
+            // Ad không load được → navigate luôn
+            SafeLogger.d('Splash', '⏭️ App Open Ad not available, navigating immediately');
+            _navigateToMainSafely();
+          }
+        });
+      } else if (!event.value) {
+        SafeLogger.d('Splash', '⚠️ EventBus received false — SDK init issue');
+        _navigateToMainSafely();
+      }
+    });
+
     if (kDebugMode) {
       _durationCountdown = 1;
     }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       DurationUtils.delay(300, () async {
+        if (!mounted) return; // Gắn thêm check an toàn
         setState(() {
           _containerColor = Colors.transparent;
         });
-        var isInitializedAdmob = await checkLogicSplashScreenIsInitializedAdmob();
-        if (!isInitializedAdmob) {
-          _goToMainScreen();
-        }
+        // Khởi tạo AdManager (gọi EventBus.sendEvent khi xong)
+        AdManager().initialize(onComplete: (success, gaid) {
+          SafeLogger.d('Splash', 'AdManager init complete: success=$success, gaid=$gaid');
+        });
       });
     });
   }
 
+  void _navigateToMainSafely() {
+    if (_hasNavigated) return;
+    _hasNavigated = true;
+    _hardCapTimer?.cancel();
+    _subscription?.cancel();
+    AdManager().markSplashInactive();
+    SafeLogger.d('Splash', '✅ Navigating to MainScreen');
+    _goToMainScreen();
+  }
+
   @override
   void dispose() {
+    _hardCapTimer?.cancel();
     _subscription?.cancel();
     super.dispose();
   }
@@ -174,14 +238,14 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                     //       isTimerTextShown: true,
                     //       autoStart: true,
                     //       onStart: () {
-                    //         // Logger.i('Countdown Started');
+                    //         // SafeLogger.d('Log', 'Countdown Started');
                     //       },
                     //       onComplete: () {
-                    //         // Logger.i('Countdown Ended');
+                    //         // SafeLogger.d('Log', 'Countdown Ended');
                     //         _goToMainScreen();
                     //       },
                     //       onChange: (String timeStamp) {
-                    //         // Logger.i('Countdown Changed $timeStamp');
+                    //         // SafeLogger.d('Log', 'Countdown Changed $timeStamp');
                     //       },
                     //       timeFormatterFunction: (defaultFormatterFunction, duration) {
                     //         return Function.apply(defaultFormatterFunction, [duration]);

@@ -1,4 +1,4 @@
-import 'package:saigonphantomlabs/mckimquyen/admob/screen_a.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/screen_a.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
