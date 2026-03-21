@@ -2,7 +2,7 @@
 import 'package:flutter/foundation.dart';
 
 // ═══════ PROVIDER SWITCH ═══════
-const bool kIsEnableAdmob = true; // false = AppLovin MAX, true = AdMob
+const bool kIsEnableAdmob = false; // false = AppLovin MAX, true = AdMob
 
 // ═══════ APPLOVIN CONFIG ═══════
 const String kAppLovinSdkKey = "e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt";
