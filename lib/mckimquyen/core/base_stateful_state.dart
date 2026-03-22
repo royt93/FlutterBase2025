@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 // Removed unused dependency: lottie
 
+import '../ad/utils/safe_logger.dart';
 import '../common/const/dimen_constants.dart';
 
 abstract class BaseStatefulState<T extends StatefulWidget> extends State<T> {
@@ -9,14 +10,20 @@ abstract class BaseStatefulState<T extends StatefulWidget> extends State<T> {
 
   @override
   void initState() {
-    // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    //   statusBarColor: Colors.transparent,
-    //   statusBarIconBrightness: Brightness.light,
-    //   statusBarBrightness: Brightness.dark,
-    //   systemNavigationBarColor: Colors.white,
-    //   systemNavigationBarIconBrightness: Brightness.dark,
-    // ));
     super.initState();
+    SafeLogger.d(
+      'roy93~Router',
+      '🟢 INIT: $runtimeType',
+    );
+  }
+
+  @override
+  void dispose() {
+    SafeLogger.d(
+      'roy93~Router',
+      '🔴 DISPOSE: $runtimeType',
+    );
+    super.dispose();
   }
 
   void showAlertDialogWidget(

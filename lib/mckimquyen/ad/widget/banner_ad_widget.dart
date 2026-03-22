@@ -1,25 +1,32 @@
+import 'package:applovin_max/applovin_max.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:applovin_max/applovin_max.dart';
 
+import '../ad_route_observer.dart';
 import '../k/k.dart';
 import '../ad_manager.dart';
 import '../utils/safe_logger.dart';
-import '../ad_safety_config.dart';
 import 'shimmer_view.dart';
 
 /// Banner Ad Widget — dual provider (AdMob / AppLovin MAX)
-/// Dùng ValueNotifier thay cho setState
-/// Tự dispose tất cả resources (zero memory leak)
 ///
-/// Port logic từ loadBanner(), loadBannerAdMob(), loadBannerAppLovin()
-/// trong AdManager.kt (dòng 313–484)
+/// ## AppLovin path (kIsEnableAdmob = false)
+/// Dùng MaxAdView widget với preloaded AdViewId từ AdManager:
+/// - Native view được preload 1 lần trong AdManager.initialize()
+/// - MaxAdView(adViewId: ...) reuse native view — KHÔNG destroy khi unmount
+/// - isAutoRefreshEnabled được điều khiển bởi AdManager.bannerAutoRefreshEnabled
+/// - MaxAdView.didUpdateWidget tự gọi stopAutoRefresh()/startAutoRefresh() khi giá trị thay đổi
 ///
-/// Edge cases handled:
-/// - VIP device → ẩn hoàn toàn (BUG FIX #2)
-/// - No internet → ẩn hoàn toàn (BUG FIX #3)
-/// - Ad failed → ẩn hoàn toàn (giống native container.isVisible = false)
-/// - Widget disposed trước khi callback → check mounted
+/// ## AdMob path (kIsEnableAdmob = true)
+/// Dùng singleton BannerAd cached trong AdManager:
+/// - AdManager.loadAdmobBannerIfNeeded() gọi lần đầu khi widget mount
+/// - Các lần navigate sau reuse cùng BannerAd — KHÔNG load lại
+/// - bannerVisible ValueNotifier hide/show widget khi background/foreground
+///
+/// ## Rules
+/// - Không setState, không late, không force-null
+/// - Chỉ dispose AdWidget khi widget bị remove — KHÔNG dispose AdManager's notifiers
+/// - Adaptive size tự động via isAdaptiveBannerEnabled: true (AppLovin) / getCurrentOrientationAnchoredAdaptiveBannerAdSize (AdMob)
 class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({super.key});
 
@@ -27,258 +34,436 @@ class BannerAdWidget extends StatefulWidget {
   State<BannerAdWidget> createState() => _BannerAdWidgetState();
 }
 
-class _BannerAdWidgetState extends State<BannerAdWidget> {
+class _BannerAdWidgetState extends State<BannerAdWidget> with RouteAware {
   static const String _tag = 'roy93~Banner';
 
-  final ValueNotifier<bool> _isLoaded = ValueNotifier(false);
-  final ValueNotifier<bool> _hasError = ValueNotifier(false);
-  BannerAd? _bannerAd;
-  bool _isDisposed = false;
   bool _isInitStarted = false;
+  bool _isBannerAllowed = false;
+  bool _isRouteSubscribed = false; // Guard: subscribe RouteAware chỉ 1 lần
 
   @override
   void initState() {
     super.initState();
-    SafeLogger.d(_tag, 'initState called, isEnableAdmob=$kIsEnableAdmob');
+    SafeLogger.d(
+      _tag,
+      'initState — isEnableAdmob=$kIsEnableAdmob',
+    );
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // Subscribe RouteAware chỉ lần đầu — didChangeDependencies có thể gọi lại nhiều lần
+    // (khi MediaQuery, Theme, hay inherited widget khác thay đổi). Subscribe() lần 2
+    // sẽ không crash (idempotent) nhưng gây log spam không cần thiết.
+    if (!_isRouteSubscribed) {
+      final route = ModalRoute.of(context);
+      if (route != null) {
+        _isRouteSubscribed = true;
+        adRouteObserver.subscribe(this, route);
+        SafeLogger.d(
+          _tag,
+          'didChangeDependencies • RouteAware subscribed to '
+          '${route.settings.name ?? route.runtimeType}',
+        );
+      }
+    }
     if (!_isInitStarted) {
       _isInitStarted = true;
+      SafeLogger.d(_tag, 'didChangeDependencies → _initBanner()');
       _initBanner(context);
     }
   }
 
   void _initBanner(BuildContext context) {
+    SafeLogger.d(
+      _tag,
+      '_initBanner: isVIP=${AdManager().isVIPMember()}, '
+      'isConnected=${AdManager().isConnected}',
+    );
+
     // ══ VIP check ══
     if (AdManager().isVIPMember()) {
-      SafeLogger.d(_tag, 'loadBanner ⏭️ skipped due to whitelist device');
-      _hasError.value = true;
+      SafeLogger.d(_tag, '_initBanner ⏭️ VIP device, skip');
       return;
     }
 
     // ══ Network check ══
     if (!AdManager().isConnected) {
-      SafeLogger.d(_tag, 'loadBanner ⏭️ no internet connection');
-      _hasError.value = true;
+      SafeLogger.d(_tag, '_initBanner ⏭️ no internet, skip');
       return;
     }
 
-    // ══ Navigation spam guard: chống load banner quá nhanh khi navigate ══
+    // ══ Cooldown guard (navigation spam) ══
     if (!AdManager().canLoadBanner()) {
-      SafeLogger.d(_tag, 'loadBanner ⏭️ cooldown active, skipping this navigation');
-      _hasError.value = true; // Ẩn widget, không hiện shimmer mãi mãi
+      SafeLogger.d(_tag, '_initBanner ⏭️ cooldown active, skip');
       return;
     }
     AdManager().recordBannerLoad();
-
-    SafeLogger.d(_tag, 'loadBanner 🔄 creating ad view and loading...');
+    _isBannerAllowed = true;
+    SafeLogger.d(_tag, '_initBanner ✅ allowed, proceeding...');
 
     if (kIsEnableAdmob) {
-      _loadAdmobBanner(context);
+      final adWidth = MediaQuery.of(context).size.width;
+      SafeLogger.d(_tag, '_initBanner [AdMob] loadAdmobBannerIfNeeded, adWidth=$adWidth');
+      AdManager().loadAdmobBannerIfNeeded(adWidth);
+    } else {
+      SafeLogger.d(
+        _tag,
+        '_initBanner [AppLovin] using preloaded adViewId=${AdManager().bannerAdViewId.value}',
+      );
+      // AppLovin: preload đã được gọi trong AdManager.initialize()
+      // Widget sẽ tự render khi bannerAdViewId.value != null
     }
-    // AppLovin banner tự load qua MaxAdView widget
   }
 
-  Future<void> _loadAdmobBanner(BuildContext context) async {
-    final adWidth = MediaQuery.of(context).size.width.truncate();
-    final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(adWidth) ?? AdSize.banner;
-    SafeLogger.d(_tag, 'loadBanner [AdMob] creating BannerAd, adUnitId=$kAdmobBannerAdUnitId, size=${size.width}x${size.height}');
-    
-    _bannerAd = BannerAd(
-      adUnitId: kAdmobBannerAdUnitId,
-      size: size,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          SafeLogger.d(_tag, '✅ Banner Ad Loaded successfully');
-          if (_isDisposed) {
-            SafeLogger.d(_tag, '⚠️ Widget already disposed, disposing loaded ad');
-            ad.dispose();
-            return;
-          }
-          _isLoaded.value = true;
-          _hasError.value = false;
-        },
-        onAdFailedToLoad: (ad, error) {
-          SafeLogger.d(
-            _tag,
-            '❌ Banner Ad Failed to load: code=${error.code}, '
-            'message=${error.message}, domain=${error.domain}',
-          );
-          ad.dispose();
-          _bannerAd = null;
-          if (_isDisposed) return;
-          _isLoaded.value = false;
-          _hasError.value = true;
-        },
-        onAdOpened: (ad) {
-          SafeLogger.d(_tag, '🎯 Banner Ad Clicked/Opened');
-          AdSafetyConfig.recordAdClick();
-        },
-        onAdClosed: (ad) {
-          SafeLogger.d(_tag, '📝 Banner Ad Closed');
-        },
-        onAdImpression: (ad) {
-          SafeLogger.d(_tag, '👁️ Banner Ad Impression recorded');
-        },
-      ),
-    )..load();
-    SafeLogger.d(_tag, 'loadBanner [AdMob] loadAd() called');
+  // ═══ RouteAware hooks ═══
+
+  @override
+  void didPush() {
+    // Route này mới được push lên — banner này đang hiện và IS the top route.
+    // Cần resume vì route trước (screen có banner khác) đã set _bannerRoutePaused=true
+    // khi didPushNext() của nó fire.
+    if (!kIsEnableAdmob) {
+      AdManager().setBannerRoutePaused(false); // route này là top, banner không bị che
+      if (AdManager().bannerAdViewId.value != null &&
+          !AdManager().bannerAutoRefreshEnabled.value) {
+        SafeLogger.d(
+          _tag,
+          'RouteAware.didPush() ▶️ Banner RESUMED '
+          '(this is now top route, was paused by previous screen)',
+        );
+        AdManager().bannerAutoRefreshEnabled.value = true;
+      } else {
+        SafeLogger.d(_tag, 'RouteAware.didPush() ▶️ route containing banner is now active');
+      }
+    }
+    super.didPush();
   }
 
   @override
+  void didPushNext() {
+    // Người dùng push màn hình khác lên trên — banner này bị che khuất
+    if (!kIsEnableAdmob && AdManager().bannerAdViewId.value != null) {
+      AdManager().setBannerRoutePaused(true);
+      if (AdManager().bannerAutoRefreshEnabled.value) {
+        SafeLogger.d(
+          _tag,
+          'RouteAware.didPushNext() ⏸️ Banner PAUSED (route covered by new push)',
+        );
+        AdManager().bannerAutoRefreshEnabled.value = false;
+      } else {
+        SafeLogger.d(
+          _tag,
+          'RouteAware.didPushNext() ⏸️ _bannerRoutePaused=true '
+          '(already paused, no double-set)',
+        );
+      }
+    }
+    super.didPushNext();
+  }
+
+  @override
+  void didPopNext() {
+    // Route phía trên đã pop — banner này hiện lại
+    if (!kIsEnableAdmob && AdManager().bannerAdViewId.value != null) {
+      AdManager().setBannerRoutePaused(false);
+      if (!AdManager().bannerAutoRefreshEnabled.value) {
+        SafeLogger.d(
+          _tag,
+          'RouteAware.didPopNext() ▶️ Banner RESUMED '
+          '(top route popped, this route visible)',
+        );
+        AdManager().bannerAutoRefreshEnabled.value = true;
+      } else {
+        SafeLogger.d(
+          _tag,
+          'RouteAware.didPopNext() ▶️ _bannerRoutePaused=false '
+          '(already resumed)',
+        );
+      }
+    }
+    super.didPopNext();
+  }
+
+  @override
+  void didPop() {
+    // Route này đang bị pop — banner sẽ biến mất sau khi dispose()
+    SafeLogger.d(_tag, 'RouteAware.didPop() ⏹️ route containing banner is popping');
+    super.didPop();
+  }
+
+  // ═══ dispose ═══
+
+  @override
   void dispose() {
-    SafeLogger.d(_tag, 'dispose() called — cleaning up banner resources');
-    _isDisposed = true;
-    _isLoaded.dispose();
-    _hasError.dispose();
-    _bannerAd?.dispose();
-    _bannerAd = null;
+    // Unsubscribe RouteAware trước khi dispose
+    adRouteObserver.unsubscribe(this);
+    SafeLogger.d(
+      _tag,
+      'dispose() — isBannerAllowed=$_isBannerAllowed, '
+      'isEnableAdmob=$kIsEnableAdmob',
+    );
+    // KHÔNG dispose AdManager's ValueNotifiers — chúng được sở hữu bửi singleton AdManager
+    // KHÔNG dispose admobBannerAd — nó được cache bửi AdManager
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    SafeLogger.d(
+      _tag,
+      'build() — isBannerAllowed=$_isBannerAllowed',
+    );
+
+    if (!_isBannerAllowed) {
+      SafeLogger.d(_tag, 'build: not allowed → SizedBox.shrink()');
+      return const SizedBox.shrink();
+    }
+
+    if (kIsEnableAdmob) {
+      return _buildAdmobBanner();
+    } else {
+      return _buildAppLovinBanner();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // ADMOB PATH — singleton BannerAd từ AdManager
+  // ═══════════════════════════════════════════════════
+  Widget _buildAdmobBanner() {
     return ValueListenableBuilder<bool>(
-      valueListenable: _hasError,
+      valueListenable: AdManager().bannerHasError,
       builder: (context, hasError, _) {
-        // Nếu lỗi/VIP/no internet → ẩn hoàn toàn (giống native: container.isVisible = false)
-        if (hasError) {
-          SafeLogger.d(_tag, 'build: hasError=true, returning empty');
-          return const SizedBox.shrink();
-        }
+        SafeLogger.d(_tag, '_buildAdmobBanner: hasError=$hasError');
+        if (hasError) return const SizedBox.shrink();
 
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-          alignment: Alignment.center,
-          child: ValueListenableBuilder<bool>(
-            valueListenable: _isLoaded,
-            builder: (context, isLoaded, _) {
-              SafeLogger.d(_tag, 'BannerAd UI rendering: isLoaded=$isLoaded');
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ════════ LABEL AD AREA ════════
-                  !isLoaded
-                      ? Container(
-                          margin: const EdgeInsets.only(bottom: 4),
-                          child: const ShimmerView(
-                            cornerRadius: 2,
-                            width: 20,
-                            height: 13,
-                          ),
-                        )
-                      : Container(
-                          margin: const EdgeInsets.only(bottom: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFCCC3C),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                          child: const Text(
-                            'Ad',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              height: 1.1,
-                            ),
-                          ),
-                        ),
-
-                  // ════════ BANNER AD AREA ════════
-                  SizedBox(
-                    width: double.infinity,
-                    height: isLoaded && _bannerAd != null ? _bannerAd!.size.height.toDouble() : 50,
-                    child: kIsEnableAdmob
-                        // AdMob: async load, render once callback fires
-                        ? (!isLoaded
-                            ? const ShimmerView(cornerRadius: 0, width: double.infinity, height: 50)
-                            : _buildAdWidget())
-                        // AppLovin: MaxAdView MUST always stay in tree so it can mount and fire onAdLoaded
-                        // Shimmer sits on top via Stack and is removed once isLoaded=true
-                        : Stack(
-                            children: [
-                              // MaxAdView always mounted (loads when widget is in tree)
-                              _buildAdWidget(),
-                              // Shimmer overlaid on top until ad is loaded
-                              if (!isLoaded)
-                                const Positioned.fill(
-                                  child: ShimmerView(
-                                    cornerRadius: 0,
-                                    width: double.infinity,
-                                    height: 50,
-                                  ),
-                                ),
-                            ],
-                          ),
-                  ),
-                ],
+        return ValueListenableBuilder<bool>(
+          valueListenable: AdManager().bannerVisible,
+          builder: (context, isVisible, _) {
+            SafeLogger.d(_tag, '_buildAdmobBanner: isVisible=$isVisible');
+            if (!isVisible) {
+              // Khi background: placeholder giữ chỗ height thay vì collapse
+              return ValueListenableBuilder<Size?>(
+                valueListenable: AdManager().bannerAdSize,
+                builder: (context, size, _) {
+                  return SizedBox(height: (size?.height ?? 50) + 16);
+                },
               );
-            },
-          ),
+            }
+
+            return _buildBannerContainer(
+              isLoadedNotifier: AdManager().bannerIsLoaded,
+              adSizeNotifier: AdManager().bannerAdSize,
+              bannerChild: () {
+                final ad = AdManager().admobBannerAd;
+                if (ad == null) {
+                  SafeLogger.d(_tag, '_buildAdmobBanner: admobBannerAd is null');
+                  return const SizedBox.shrink();
+                }
+                SafeLogger.d(
+                  _tag,
+                  '_buildAdmobBanner: rendering AdWidget, '
+                  'size=${ad.size.width}x${ad.size.height}',
+                );
+                return SizedBox(
+                  width: ad.size.width.toDouble(),
+                  height: ad.size.height.toDouble(),
+                  child: AdWidget(ad: ad),
+                );
+              },
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildAdWidget() {
-    if (kIsEnableAdmob) {
-      final ad = _bannerAd;
-      if (ad != null) {
-        return SizedBox(
-          width: ad.size.width.toDouble(),
-          height: ad.size.height.toDouble(),
-          child: AdWidget(ad: ad),
-        );
-      }
-      SafeLogger.d(_tag, '_buildAdWidget: _bannerAd is null, returning empty');
-      return const SizedBox.shrink();
-    }
+  // ═══════════════════════════════════════════════════
+  // APPLOVIN PATH — MaxAdView với preloaded adViewId
+  // ═══════════════════════════════════════════════════
+  Widget _buildAppLovinBanner() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: AdManager().bannerHasError,
+      builder: (context, hasError, _) {
+        SafeLogger.d(_tag, '_buildAppLovinBanner: hasError=$hasError');
+        if (hasError) return const SizedBox.shrink();
 
-    // ════════ APPLOVIN MAX BANNER ════════
-    // Note: MaxAdView MUST always stay mounted — DO NOT conditionally render it.
-    // The widget itself initiates loading once mounted. Shimmer overlays via Stack.
-    SafeLogger.d(_tag, '_buildAdWidget: creating MaxAdView, id=$kAppLovinBannerId');
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: MaxAdView(
-        adUnitId: kAppLovinBannerId,
-        adFormat: AdFormat.banner,
-        listener: AdViewAdListener(
-          onAdLoadedCallback: (ad) {
-            SafeLogger.d(_tag, '✅ [AppLovin] Banner Ad Loaded');
-            if (_isDisposed) return;
-            _isLoaded.value = true;
-            _hasError.value = false;
-          },
-          onAdLoadFailedCallback: (id, err) {
+        return ValueListenableBuilder<AdViewId?>(
+          valueListenable: AdManager().bannerAdViewId,
+          builder: (context, adViewId, _) {
             SafeLogger.d(
               _tag,
-              '❌ [AppLovin] Banner Ad Failed: code=${err.code}, '
-              'message=${err.message}',
+              '_buildAppLovinBanner: adViewId=$adViewId, '
+              'autoRefresh=${AdManager().bannerAutoRefreshEnabled.value}',
             );
-            if (_isDisposed) return;
-            _isLoaded.value = false;
-            _hasError.value = true;
+
+            if (adViewId == null) {
+              // Preload chưa xong → shimmer placeholder
+              SafeLogger.d(_tag, '_buildAppLovinBanner: waiting for preload...');
+              return _buildShimmerContainer();
+            }
+
+            return _buildBannerContainer(
+              isLoadedNotifier: AdManager().bannerIsLoaded,
+              adSizeNotifier: AdManager().bannerAdSize,
+              bannerChild: () {
+                return ValueListenableBuilder<bool>(
+                  valueListenable: AdManager().bannerAutoRefreshEnabled,
+                  builder: (context, autoRefresh, _) {
+                    SafeLogger.d(
+                      _tag,
+                      '_buildAppLovinBanner MaxAdView: adViewId=$adViewId, '
+                      'isAutoRefreshEnabled=$autoRefresh',
+                    );
+                    return MaxAdView(
+                      adUnitId: kAppLovinBannerId,
+                      adFormat: AdFormat.banner,
+                      adViewId: adViewId,
+                      // true = Adaptive banner (default sdk 4.2.0+)
+                      isAdaptiveBannerEnabled: true,
+                      // Điều khiển pause/resume qua ValueNotifier
+                      // MaxAdView.didUpdateWidget sẽ gọi stopAutoRefresh()/startAutoRefresh() native
+                      isAutoRefreshEnabled: autoRefresh,
+                      listener: AdViewAdListener(
+                        onAdLoadedCallback: (ad) {
+                          SafeLogger.d(
+                            _tag,
+                            '✅ [AppLovin] MaxAdView onAdLoaded, '
+                            'network=${ad.networkName}, '
+                            'size=${ad.size?.width}x${ad.size?.height}',
+                          );
+                          // Không update bannerIsLoaded ở đây — đã được update từ
+                          // WidgetAdViewAdListener trong AdManager._preloadAppLovinBanner()
+                          // Tránh fire 2 lần
+                        },
+                        onAdLoadFailedCallback: (id, err) {
+                          SafeLogger.d(
+                            _tag,
+                            '❌ [AppLovin] MaxAdView onAdLoadFailed: '
+                            'code=${err.code}, message=${err.message}',
+                          );
+                        },
+                        onAdClickedCallback: (ad) {
+                          SafeLogger.d(_tag, '🎯 [AppLovin] MaxAdView clicked');
+                        },
+                        onAdExpandedCallback: (ad) {
+                          SafeLogger.d(_tag, '📀 [AppLovin] MaxAdView expanded');
+                        },
+                        onAdCollapsedCallback: (ad) {
+                          SafeLogger.d(_tag, '📁 [AppLovin] MaxAdView collapsed');
+                        },
+                      ),
+                    );
+                  },
+                );
+              },
+            );
           },
-          onAdClickedCallback: (ad) {
-            SafeLogger.d(_tag, '🎯 [AppLovin] Banner Ad Clicked');
-            AdSafetyConfig.recordAdClick();
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════
+  // SHARED BANNER CONTAINER — shimmer + label + banner
+  // ═══════════════════════════════════════════════════
+  Widget _buildBannerContainer({
+    required ValueNotifier<bool> isLoadedNotifier,
+    required ValueNotifier<Size?> adSizeNotifier,
+    required Widget Function() bannerChild,
+  }) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoadedNotifier,
+      builder: (context, isLoaded, _) {
+        return ValueListenableBuilder<Size?>(
+          valueListenable: adSizeNotifier,
+          builder: (context, adSize, _) {
+            final bannerHeight = adSize?.height ?? 50;
+            SafeLogger.d(
+              _tag,
+              '_buildBannerContainer: isLoaded=$isLoaded, '
+              'bannerHeight=$bannerHeight',
+            );
+
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // "Ad" label — shimmer khi loading
+                  if (!isLoaded)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 4),
+                      child: const ShimmerView(
+                        cornerRadius: 2,
+                        width: 20,
+                        height: 13,
+                      ),
+                    )
+                  else
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 4),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFCCC3C),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: const Text(
+                        'Ad',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                  // Banner area
+                  SizedBox(
+                    width: double.infinity,
+                    height: bannerHeight,
+                    child: !isLoaded
+                        ? ShimmerView(
+                            cornerRadius: 0,
+                            width: double.infinity,
+                            height: bannerHeight,
+                          )
+                        : bannerChild(),
+                  ),
+                ],
+              ),
+            );
           },
-          onAdExpandedCallback: (ad) {
-            SafeLogger.d(_tag, '📀 [AppLovin] Banner Ad Expanded');
-          },
-          onAdCollapsedCallback: (ad) {
-            SafeLogger.d(_tag, '📁 [AppLovin] Banner Ad Collapsed');
-          },
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShimmerContainer() {
+    SafeLogger.d(_tag, '_buildShimmerContainer: preload pending');
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 4),
+            child: const ShimmerView(cornerRadius: 2, width: 20, height: 13),
+          ),
+          const ShimmerView(
+            cornerRadius: 0,
+            width: double.infinity,
+            height: 50,
+          ),
+        ],
       ),
     );
   }

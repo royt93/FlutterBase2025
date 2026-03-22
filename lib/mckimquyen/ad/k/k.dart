@@ -4,6 +4,10 @@ import 'package:flutter/foundation.dart';
 // ═══════ PROVIDER SWITCH ═══════
 const bool kIsEnableAdmob = false; // false = AppLovin MAX, true = AdMob
 
+// ═══════ AD BUFFER ═══════
+/// Thời gian loading dialog hiện trước khi show full-screen ad (ms)
+const int kAdLoadingBufferMs = 1000;
+
 // ═══════ APPLOVIN CONFIG ═══════
 const String kAppLovinSdkKey = "e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt";
 const String kAppLovinBannerId = "55145203d74b7bb0";

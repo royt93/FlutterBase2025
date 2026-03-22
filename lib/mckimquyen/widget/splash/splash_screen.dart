@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/ad/ad_manager.dart';
 import 'package:saigonphantomlabs/mckimquyen/ad/event_bus.dart';
+import 'package:saigonphantomlabs/mckimquyen/ad/widget/ad_loading_dialog.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
 import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
@@ -26,7 +27,8 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   int _durationCountdown = 10;
-  Color _containerColor = ColorConstants.appColor;
+  // ValueNotifier thay cho setState — không trigger rebuild toàn bộ widget
+  final ValueNotifier<Color> _containerColorNotifier = ValueNotifier(ColorConstants.appColor);
   StreamSubscription? _subscription;
   Timer? _hardCapTimer;
   bool _hasNavigated = false;
@@ -68,15 +70,25 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
             return;
           }
           if (result) {
-            SafeLogger.d('Splash', '🔄 Ad loaded, showing App Open Ad with bypassSafety=true');
-            // Show App Open Ad with bypassSafety = true cho splash
-            AdManager().showAppOpenAd(
-              onAdDismiss: (dismissed) {
-                SafeLogger.d('Splash', 'App Open Ad dismissed=$dismissed, navigating');
+            SafeLogger.d('Splash', '🔄 Ad loaded, showing 300ms buffer then App Open Ad');
+            // 300ms buffer trước khi show App Open Ad
+            if (!mounted) {
+              _navigateToMainSafely();
+              return;
+            }
+            AdLoadingDialog.showAdBuffer(context, onComplete: () {
+              if (!mounted) {
                 _navigateToMainSafely();
-              },
-              bypassSafety: true,
-            );
+                return;
+              }
+              AdManager().showAppOpenAd(
+                onAdDismiss: (dismissed) {
+                  SafeLogger.d('Splash', 'App Open Ad dismissed=$dismissed, navigating');
+                  _navigateToMainSafely();
+                },
+                bypassSafety: true,
+              );
+            });
           } else {
             // Ad không load được → navigate luôn
             SafeLogger.d('Splash', '⏭️ App Open Ad not available, navigating immediately');
@@ -95,10 +107,10 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       DurationUtils.delay(300, () async {
-        if (!mounted) return; // Gắn thêm check an toàn
-        setState(() {
-          _containerColor = Colors.transparent;
-        });
+        if (!mounted) return;
+        // ValueNotifier thay cho setState — chỉ rebuild đúng widget con cần thiết
+        _containerColorNotifier.value = Colors.transparent;
+        SafeLogger.d('Splash', 'containerColor → transparent (animation started)');
         // Khởi tạo AdManager (gọi EventBus.sendEvent khi xong)
         AdManager().initialize(onComplete: (success, gaid) {
           SafeLogger.d('Splash', 'AdManager init complete: success=$success, gaid=$gaid');
@@ -119,8 +131,11 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
 
   @override
   void dispose() {
+    SafeLogger.d('Splash', 'dispose() — cancelling timers and subscriptions');
     _hardCapTimer?.cancel();
     _subscription?.cancel();
+    // Phải dispose ValueNotifier để tránh memory leak
+    _containerColorNotifier.dispose();
     super.dispose();
   }
 
@@ -135,11 +150,16 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
             height: double.infinity,
             fit: BoxFit.cover,
           ),
-          AnimatedContainer(
-            width: double.infinity,
-            height: double.infinity,
-            duration: Duration(seconds: _durationCountdown - 1),
-            color: _containerColor,
+          ValueListenableBuilder<Color>(
+            valueListenable: _containerColorNotifier,
+            builder: (context, containerColor, _) {
+              return AnimatedContainer(
+                width: double.infinity,
+                height: double.infinity,
+                duration: Duration(seconds: _durationCountdown - 1),
+                color: containerColor,
+              );
+            },
           ),
           Column(
             children: [

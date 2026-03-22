@@ -10,6 +10,7 @@ import 'package:toastification/toastification.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'mckimquyen/common/const/color_constants.dart';
+import 'mckimquyen/ad/ad_route_observer.dart';
 import 'mckimquyen/widget/controller_main.dart';
 import 'mckimquyen/widget/splash/splash_screen.dart';
 import 'mckimquyen/util/language_service.dart';
@@ -76,6 +77,10 @@ Future<void> main() async {
         },
 
         navigatorKey: navigatorKey,
+        navigatorObservers: [
+          adRouteObserver, // RouteAware cho BannerAdWidget pause/resume
+          AdScreenRouteLogger(), // Log mọi route push/pop để track navigation
+        ],
         theme: ThemeData.light().copyWith(
           primaryColor: ColorConstants.appColor,
           visualDensity: VisualDensity.adaptivePlatformDensity,
