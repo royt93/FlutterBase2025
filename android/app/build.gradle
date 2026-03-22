@@ -53,6 +53,10 @@ android {
     }
 
     namespace("com.saigonphantomlabs.base")
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
 //        applicationId "com.saigonphantomlabs.base"
         applicationId "com.roy.admobwrapper"
