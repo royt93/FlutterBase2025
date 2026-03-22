@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../ad/ad_screen.dart';
 import '../controllers/history_controller.dart';
 import 'widgets/summary_stats_card.dart';
 import 'widgets/timeline_item.dart';
@@ -7,14 +8,24 @@ import 'widgets/history_chart.dart';
 import 'test_detail_screen.dart';
 
 /// Màn hình History & Statistics
-class HistoryScreen extends StatelessWidget {
+class HistoryScreen extends AdScreen {
   const HistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Sử dụng Get.put để tạo controller
-    final controller = Get.put(HistoryController());
+  State<HistoryScreen> createState() => _HistoryScreenState();
+}
 
+class _HistoryScreenState extends AdScreenState<HistoryScreen> {
+  late final HistoryController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(HistoryController());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
@@ -31,8 +42,13 @@ class HistoryScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.download),
-            onPressed: controller.exportData,
             tooltip: 'export_data'.tr,
+            onPressed: () {
+              // Rewarded: user watches ad to unlock export
+              showRewardedAd(onEarnedReward: (earned) {
+                if (earned) controller.exportData();
+              });
+            },
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -58,116 +74,123 @@ class HistoryScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Obx(() {
-        // Loading & Empty State
-        if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.blue),
-          );
-        }
+      body: Column(
+        children: [
+          buildBanner(), // Banner Ad
+          Expanded(
+            child: Obx(() {
+              // Loading & Empty State
+              if (controller.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.blue),
+                );
+              }
 
-        if (controller.allResults.isEmpty) {
-          return _buildEmptyState();
-        }
+              if (controller.allResults.isEmpty) {
+                return _buildEmptyState();
+              }
 
-        // Main content - scrollable
-        return SingleChildScrollView(
-          physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-          padding: EdgeInsets.only(bottom: 128),
-          child: Column(
-            children: [
-              // Summary Stats Card
-              Obx(() {
-                final stats = controller.statistics.value;
-                if (stats == null) return const SizedBox();
-                return SummaryStatsCard(statistics: stats);
-              }),
-
-              // Time Range Selector
-              _buildTimeRangeSelector(controller),
-
-              // Chart
-              Obx(() {
-                return HistoryChart(results: controller.filteredResults.toList());
-              }),
-
-              // Timeline Header
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Row(
+              // Main content - scrollable
+              return SingleChildScrollView(
+                physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                padding: EdgeInsets.only(bottom: 128),
+                child: Column(
                   children: [
-                    const Icon(Icons.history, color: Colors.white70, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'recent_tests'.tr,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                    // Summary Stats Card
+                    Obx(() {
+                      final stats = controller.statistics.value;
+                      if (stats == null) return const SizedBox();
+                      return SummaryStatsCard(statistics: stats);
+                    }),
 
-              // Timeline List
-              Obx(() {
-                final grouped = controller.getGroupedResults();
-                if (grouped.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: Text(
-                        'no_data'.tr,
-                        style: const TextStyle(color: Colors.white54),
-                      ),
-                    ),
-                  );
-                }
+                    // Time Range Selector
+                    _buildTimeRangeSelector(controller),
 
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: grouped.length,
-                  itemBuilder: (context, index) {
-                    final dateKey = grouped.keys.elementAt(index);
-                    final results = grouped[dateKey] ?? [];
+                    // Chart
+                    Obx(() {
+                      return HistoryChart(results: controller.filteredResults.toList());
+                    }),
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Date Header
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Text(
-                            dateKey,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
+                    // Timeline Header
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.history, color: Colors.white70, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'recent_tests'.tr,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                        // Items for this date
-                        ...results.map((result) {
-                          return TimelineItem(
-                            result: result,
-                            onTap: () {
-                              Get.to(() => TestDetailScreen(result: result));
-                            },
-                          );
-                        }),
-                      ],
-                    );
-                  },
-                );
-              }),
+                        ],
+                      ),
+                    ),
 
-              const SizedBox(height: 20),
-            ],
-          ),
-        );
-      }),
+                    // Timeline List
+                    Obx(() {
+                      final grouped = controller.getGroupedResults();
+                      if (grouped.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Text(
+                              'no_data'.tr,
+                              style: const TextStyle(color: Colors.white54),
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: grouped.length,
+                        itemBuilder: (context, index) {
+                          final dateKey = grouped.keys.elementAt(index);
+                          final results = grouped[dateKey] ?? [];
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Date Header
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                                child: Text(
+                                  dateKey,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              // Items for this date
+                              ...results.map((result) {
+                                return TimelineItem(
+                                  result: result,
+                                  onTap: () {
+                                    Get.to(() => TestDetailScreen(result: result));
+                                  },
+                                );
+                              }),
+                            ],
+                          );
+                        },
+                      );
+                    }),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              );
+            }),
+          ), // Expanded
+        ],
+      ), // Column
     );
   }
 

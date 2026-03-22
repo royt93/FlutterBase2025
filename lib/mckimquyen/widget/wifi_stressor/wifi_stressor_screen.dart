@@ -156,9 +156,11 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
     );
   }
 
-  /// Navigate to history screen
+  /// Navigate to history screen with interstitial
   void _navigateToHistory() {
-    Get.to(() => const HistoryScreen());
+    showInterstitialAd(onDone: (_) {
+      Get.to(() => const HistoryScreen());
+    });
   }
 
   /// Hiển thị dialog chọn ngôn ngữ

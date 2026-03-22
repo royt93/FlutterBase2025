@@ -20,7 +20,12 @@ class ControlButtonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isRunning) {
       return FilledButton.icon(
-        onPressed: controller.stopStressTest,
+        onPressed: () {
+          // Show interstitial after stop — user just finished using the feature
+          showInterstitialAd((_) {
+            controller.stopStressTest();
+          });
+        },
         style: FilledButton.styleFrom(
           backgroundColor: Colors.red,
           foregroundColor: Colors.white,
