@@ -5,10 +5,10 @@ class ScreenC extends AdScreen {
   const ScreenC({super.key});
 
   @override
-  State<ScreenC> createState() => _ScreenBState();
+  State<ScreenC> createState() => _ScreenCState();
 }
 
-class _ScreenBState extends AdScreenState<ScreenC> {
+class _ScreenCState extends AdScreenState<ScreenC> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

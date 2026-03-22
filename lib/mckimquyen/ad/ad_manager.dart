@@ -96,6 +96,10 @@ class AdManager with WidgetsBindingObserver {
 
   bool get bannerRoutePaused => _bannerRoutePaused;
 
+  /// Prefix cho SafeLogger — phân biệt provider đang dùng.
+  /// Dùng trong mọi log dùng chung để trace rõ AdMob vs AppLovin.
+  String get _provider => kIsEnableAdmob ? '[AdMob]' : '[AppLovin]';
+
   // ════════════════ UNIFIED BANNER STATE (AppLovin + AdMob) ════════════════
   // AppLovin: dùng preloadWidgetAdView → adViewId → MaxAdView(adViewId: ...) reuse native view
   // AdMob:    dùng singleton BannerAd object cached trong AdManager
@@ -621,16 +625,15 @@ class AdManager with WidgetsBindingObserver {
   void loadAppOpenAd({void Function(bool)? onAdLoaded}) {
     SafeLogger.d(
       _tag,
-      'loadAppOpenAd called, isEnableAdmob=$kIsEnableAdmob, isVIP=$_isVipMember',
+      'loadAppOpenAd $_provider called, isVIP=$_isVipMember',
     );
     if (_isVipMember) {
-      SafeLogger.d(_tag, 'loadAppOpenAd ⏭️ skipped due to whitelist device');
+      SafeLogger.d(_tag, 'loadAppOpenAd $_provider ⏭️ skipped: VIP whitelist');
       onAdLoaded?.call(false);
       return;
     }
-    // Network check — tương đương NetworkUtils.isDeviceConnected(context)
     if (!isConnected) {
-      SafeLogger.d(_tag, 'loadAppOpenAd ⏭️ no internet connection');
+      SafeLogger.d(_tag, 'loadAppOpenAd $_provider ⏭️ skipped: no internet');
       onAdLoaded?.call(false);
       return;
     }
@@ -639,7 +642,7 @@ class AdManager with WidgetsBindingObserver {
           (DateTime.now().millisecondsSinceEpoch - _lastAppOpenErrorTime);
       SafeLogger.d(
         _tag,
-        'loadAppOpenAd ⏭️ cooldown, remaining=${remaining ~/ 1000}s',
+        'loadAppOpenAd $_provider ⏭️ cooldown, remaining=${remaining ~/ 1000}s',
       );
       onAdLoaded?.call(false);
       return;
@@ -672,6 +675,7 @@ class AdManager with WidgetsBindingObserver {
     }
 
     _isAppOpenLoading = true;
+    SafeLogger.d(_tag, 'loadAppOpenAd [AdMob] 🔒 _isAppOpenLoading=true');
     SafeLogger.d(_tag, 'loadAppOpenAd 🔄 requesting ad from AdMob...');
 
     AppOpenAd.load(
@@ -684,6 +688,15 @@ class AdManager with WidgetsBindingObserver {
           _appOpenAdLoadTime = DateTime.now();
           _isAppOpenLoading = false;
           onAdLoaded?.call(true);
+          // ─── Chain load: trigger Inter + Rewarded lần đầu (mirror AppLovin pattern) ───
+          if (!_isFirstAdLoadTriggered) {
+            _isFirstAdLoadTriggered = true;
+            SafeLogger.d(_tag, '###loadOrder [AdMob] App Open loaded → loading Inter + Rewarded (first time)');
+            loadInterstitial();
+            loadRewardedAd();
+          } else {
+            SafeLogger.d(_tag, '###loadOrder [AdMob] App Open reloaded → Inter+Rewarded already triggered, skip');
+          }
         },
         onAdFailedToLoad: (error) {
           SafeLogger.d(
@@ -694,6 +707,16 @@ class AdManager with WidgetsBindingObserver {
           _lastAppOpenErrorTime = DateTime.now().millisecondsSinceEpoch;
           _isAppOpenLoading = false;
           onAdLoaded?.call(false);
+          // ─── Fallback chain load: App Open thất bại nhưng Inter+Rewarded vẫn cần load ───
+          // Mirror AppLovin pattern: cả 2 path (success + fail) đều trigger chain (first time)
+          if (!_isFirstAdLoadTriggered) {
+            _isFirstAdLoadTriggered = true;
+            SafeLogger.d(_tag, '###loadOrder [AdMob] App Open failed → fallback load Inter + Rewarded (first time)');
+            loadInterstitial();
+            loadRewardedAd();
+          } else {
+            SafeLogger.d(_tag, '###loadOrder [AdMob] App Open reload failed → Inter+Rewarded already triggered, skip');
+          }
         },
       ),
     );
@@ -719,36 +742,33 @@ class AdManager with WidgetsBindingObserver {
   }) {
     SafeLogger.d(
       _tag,
-      'showAppOpenAd called, isEnableAdmob=$kIsEnableAdmob, '
-      'isVIP=$_isVipMember, bypassSafety=$bypassSafety',
+      'showAppOpenAd $_provider called, isVIP=$_isVipMember, bypassSafety=$bypassSafety',
     );
     if (_isVipMember) {
-      SafeLogger.d(_tag, 'showAppOpenAd ⏭️ skipped - Device in whitelist');
-      onAdDismiss(false); // not shown
+      SafeLogger.d(_tag, 'showAppOpenAd $_provider ⏭️ skipped: VIP whitelist');
+      onAdDismiss(false);
       return;
     }
 
-    // Chống show trùng
     final isShowing = kIsEnableAdmob ? _isAppOpenShowing : _isMaxAppOpenShowing;
     if (isShowing) {
-      SafeLogger.d(_tag, 'showAppOpenAd ⏭️ already showing');
-      onAdDismiss(false); // not shown (was already showing)
+      SafeLogger.d(_tag, 'showAppOpenAd $_provider ⏭️ already showing');
+      onAdDismiss(false);
       return;
     }
 
-    // Safety checks — CHUNG (bypass cho splash screen)
     if (!bypassSafety) {
       final safetyResult = AdSafetyConfig.canShowFullscreenAd();
       if (!safetyResult.canShow) {
         SafeLogger.d(
           _tag,
-          'showAppOpenAd 🛡️ blocked by AdSafety: ${safetyResult.reason}',
+          'showAppOpenAd $_provider 🛡️ blocked: ${safetyResult.reason}',
         );
-        onAdDismiss(false); // blocked, not shown
+        onAdDismiss(false);
         return;
       }
     } else {
-      SafeLogger.d(_tag, 'showAppOpenAd 🛡️ safety bypassed (splash screen)');
+      SafeLogger.d(_tag, 'showAppOpenAd $_provider 🛡️ safety bypassed (splash screen)');
     }
 
     if (kIsEnableAdmob) {
@@ -783,6 +803,7 @@ class AdManager with WidgetsBindingObserver {
         ad.dispose();
         _appOpenAd = null;
         _isAppOpenShowing = false;
+        SafeLogger.d(_tag, 'showAppOpenAd 🔓 _isAppOpenShowing=false (dismissed)');
         onAdDismiss(true);
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
@@ -793,6 +814,7 @@ class AdManager with WidgetsBindingObserver {
         ad.dispose();
         _appOpenAd = null;
         _isAppOpenShowing = false;
+        SafeLogger.d(_tag, 'showAppOpenAd 🔓 _isAppOpenShowing=false (fail to show)');
         onAdDismiss(true);
       },
       onAdClicked: (ad) {
@@ -835,35 +857,32 @@ class AdManager with WidgetsBindingObserver {
   void showAppOpenAdOnResume() {
     SafeLogger.d(
       _tag,
-      '▶️ showAppOpenAdOnResume triggered! isSplash=$_isSplashActive, isVIP=$_isVipMember',
+      '▶️ showAppOpenAdOnResume $_provider triggered! isSplash=$_isSplashActive, isVIP=$_isVipMember',
     );
     if (_isSplashActive) {
-      SafeLogger.d(_tag, 'showAppOpenAdOnResume ⏭️ ignored: splash is currently active');
+      SafeLogger.d(_tag, 'showAppOpenAdOnResume $_provider ⏭️ splash is currently active');
       return;
     }
     if (_isVipMember) {
-      SafeLogger.d(_tag, 'showAppOpenAdOnResume ⏭️ ignored: VIP device detected');
+      SafeLogger.d(_tag, 'showAppOpenAdOnResume $_provider ⏭️ VIP device detected');
       return;
     }
 
-    // Chống xung đột: nếu có full-screen ad khác đang hiện thì bỏ qua hoàn toàn
     if (_isInterstitialShowing) {
-      SafeLogger.d(_tag, 'showAppOpenAdOnResume ⏭️ ignored: Interstitial Ad is currently showing');
+      SafeLogger.d(_tag, 'showAppOpenAdOnResume $_provider ⏭️ Interstitial is currently showing');
       return;
     }
     if (_isRewardedShowing) {
-      SafeLogger.d(_tag, 'showAppOpenAdOnResume ⏭️ ignored: Rewarded Ad is currently showing');
+      SafeLogger.d(_tag, 'showAppOpenAdOnResume $_provider ⏭️ Rewarded is currently showing');
       return;
     }
 
-    // Check with AdSafetyConfig.canShowAppOpenOnResume()
     if (!AdSafetyConfig.canShowAppOpenOnResume()) {
       SafeLogger.d(
         _tag,
-        'showAppOpenAdOnResume 🛡️ blocked by AdSafetyConfig rules (cooldown/throttle)',
+        'showAppOpenAdOnResume $_provider 🛡️ blocked by AdSafetyConfig (cooldown/throttle)',
       );
-      // Vẫn gọi load ngầm để sẵn sàng cho lần Resume sau
-      SafeLogger.d(_tag, 'showAppOpenAdOnResume 🔄 forcing background reload for next time');
+      SafeLogger.d(_tag, 'showAppOpenAdOnResume $_provider 🔄 forcing background reload for next time');
       loadAppOpenAd();
       return;
     }
@@ -1010,15 +1029,14 @@ class AdManager with WidgetsBindingObserver {
   void loadInterstitial() {
     SafeLogger.d(
       _tag,
-      'loadInterstitial called, isEnableAdmob=$kIsEnableAdmob, isVIP=$_isVipMember',
+      'loadInterstitial $_provider called, isVIP=$_isVipMember',
     );
     if (_isVipMember) {
-      SafeLogger.d(_tag, 'loadInterstitial ⏭️ skipped due to whitelist');
+      SafeLogger.d(_tag, 'loadInterstitial $_provider ⏭️ skipped: VIP whitelist');
       return;
     }
-    // Network check — tương đương NetworkUtils.isDeviceConnected(context)
     if (!isConnected) {
-      SafeLogger.d(_tag, 'loadInterstitial ⏭️ no internet');
+      SafeLogger.d(_tag, 'loadInterstitial $_provider ⏭️ no internet');
       return;
     }
     if (_isCooldown(_lastInterErrorTime)) {
@@ -1026,7 +1044,7 @@ class AdManager with WidgetsBindingObserver {
           (DateTime.now().millisecondsSinceEpoch - _lastInterErrorTime);
       SafeLogger.d(
         _tag,
-        'loadInterstitial ⏭️ cooldown, remaining=${remaining ~/ 1000}s',
+        'loadInterstitial $_provider ⏭️ cooldown, remaining=${remaining ~/ 1000}s',
       );
       return;
     }
@@ -1090,20 +1108,19 @@ class AdManager with WidgetsBindingObserver {
   void showInterstitial({required void Function(bool) onDoneFlow}) {
     SafeLogger.d(
       _tag,
-      'showInterstitial called, isEnableAdmob=$kIsEnableAdmob, isVIP=$_isVipMember',
+      'showInterstitial $_provider called, isVIP=$_isVipMember',
     );
     if (_isVipMember) {
-      SafeLogger.d(_tag, 'showInterstitial ⏭️ skipped - VIP whitelist');
+      SafeLogger.d(_tag, 'showInterstitial $_provider ⏭️ skipped: VIP whitelist');
       onDoneFlow(false);
       return;
     }
 
-    // Safety checks — CHUNG cho cả AdMob và AppLovin
     final safetyResult = AdSafetyConfig.canShowFullscreenAd();
     if (!safetyResult.canShow) {
       SafeLogger.d(
         _tag,
-        'showInterstitial 🛡️ blocked by AdSafety: ${safetyResult.reason}',
+        'showInterstitial $_provider 🛡️ blocked: ${safetyResult.reason}',
       );
       onDoneFlow(false);
       return;
@@ -1125,6 +1142,7 @@ class AdManager with WidgetsBindingObserver {
     }
     SafeLogger.d(_tag, 'showInterstitial 🔄 showing ad');
     _isInterstitialShowing = true;
+    SafeLogger.d(_tag, 'showInterstitial [AdMob] 🔒 _isInterstitialShowing=true');
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (a) {
         SafeLogger.d(_tag, 'showInterstitial ✅ Ad Shown full screen');
@@ -1193,14 +1211,14 @@ class AdManager with WidgetsBindingObserver {
   void loadRewardedAd() {
     SafeLogger.d(
       _tag,
-      'loadRewardedAd called, isEnableAdmob=$kIsEnableAdmob, isVIP=$_isVipMember',
+      'loadRewardedAd $_provider called, isVIP=$_isVipMember',
     );
     if (_isVipMember) {
-      SafeLogger.d(_tag, 'loadRewardedAd ⏭️ skipped due to whitelist');
+      SafeLogger.d(_tag, 'loadRewardedAd $_provider ⏭️ skipped: VIP whitelist');
       return;
     }
     if (!isConnected) {
-      SafeLogger.d(_tag, 'loadRewardedAd ⏭️ no internet');
+      SafeLogger.d(_tag, 'loadRewardedAd $_provider ⏭️ no internet');
       return;
     }
     if (_isCooldown(_lastRewardedErrorTime)) {
@@ -1208,7 +1226,7 @@ class AdManager with WidgetsBindingObserver {
           (DateTime.now().millisecondsSinceEpoch - _lastRewardedErrorTime);
       SafeLogger.d(
         _tag,
-        'loadRewardedAd ⏭️ cooldown, remaining=${remaining ~/ 1000}s',
+        'loadRewardedAd $_provider ⏭️ cooldown, remaining=${remaining ~/ 1000}s',
       );
       return;
     }
@@ -1272,11 +1290,10 @@ class AdManager with WidgetsBindingObserver {
   void showRewardedAd({required void Function(bool) onEarnedReward}) {
     SafeLogger.d(
       _tag,
-      'showRewardedAd called, isEnableAdmob=$kIsEnableAdmob, isVIP=$_isVipMember',
+      'showRewardedAd $_provider called, isVIP=$_isVipMember',
     );
     if (_isVipMember) {
-      SafeLogger.d(_tag, 'showRewardedAd ⏭️ skipped - VIP whitelist');
-      // Thường VIP được auto-thưởng luôn
+      SafeLogger.d(_tag, 'showRewardedAd $_provider ⏭️ skipped: VIP whitelist (auto-reward)');
       onEarnedReward(true);
       return;
     }
@@ -1285,7 +1302,7 @@ class AdManager with WidgetsBindingObserver {
     if (!safetyResult.canShow) {
       SafeLogger.d(
         _tag,
-        'showRewardedAd 🛡️ blocked by AdSafety: ${safetyResult.reason}',
+        'showRewardedAd $_provider 🛡️ blocked: ${safetyResult.reason}',
       );
       onEarnedReward(false);
       return;
@@ -1376,11 +1393,13 @@ class AdManager with WidgetsBindingObserver {
     SafeLogger.d(_tag, 'showRewardedAd [AppLovin] 🔄 showing ad');
     _isMaxRewardedReady = false;
     _isRewardedShowing = true;
+    SafeLogger.d(_tag, 'showRewardedAd [AppLovin] 🔒 _isMaxRewardedReady=false, _isRewardedShowing=true');
     _pendingRewardedDoneFlow = (earned) {
       SafeLogger.d(_tag, 'showRewardedAd [AppLovin] 🏆 earned=$earned, clearing _isRewardedShowing');
       _isRewardedShowing = false;
       onEarnedReward(earned);
     };
+    SafeLogger.d(_tag, 'showRewardedAd [AppLovin] 🔄 calling showRewardedAd native, adUnitId=$kAppLovinRewardedId');
     AppLovinMAX.showRewardedAd(kAppLovinRewardedId);
   }
 
@@ -1485,27 +1504,25 @@ class AdManager with WidgetsBindingObserver {
   bool canShowInterstitial() {
     SafeLogger.d(
       _tag,
-      'canShowInterstitial() pre-check: '
+      'canShowInterstitial() $_provider pre-check: '
       'isVIP=$_isVipMember, '
-      'isAdmob=$kIsEnableAdmob, '
       'admobAdNull=${_interstitialAd == null}, '
       'maxInterReady=$_isMaxInterReady, '
       'isInterShowing=$_isInterstitialShowing',
     );
 
     if (_isVipMember) {
-      SafeLogger.d(_tag, 'canShowInterstitial ⏭️ VIP device');
+      SafeLogger.d(_tag, 'canShowInterstitial $_provider ⏭️ VIP device');
       return false;
     }
     if (_isInterstitialShowing) {
-      SafeLogger.d(_tag, 'canShowInterstitial ⏭️ already showing');
+      SafeLogger.d(_tag, 'canShowInterstitial $_provider ⏭️ already showing');
       return false;
     }
 
-    // Safety pre-check
     final safety = AdSafetyConfig.canShowFullscreenAd();
     if (!safety.canShow) {
-      SafeLogger.d(_tag, 'canShowInterstitial ⏭️ safety blocked: ${safety.reason}');
+      SafeLogger.d(_tag, 'canShowInterstitial $_provider ⏭️ safety blocked: ${safety.reason}');
       return false;
     }
 

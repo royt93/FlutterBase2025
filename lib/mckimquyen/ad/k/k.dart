@@ -2,7 +2,7 @@
 import 'package:flutter/foundation.dart';
 
 // ═══════ PROVIDER SWITCH ═══════
-const bool kIsEnableAdmob = false; // false = AppLovin MAX, true = AdMob
+const bool kIsEnableAdmob = true; // false = AppLovin MAX, true = AdMob
 
 // ═══════ AD BUFFER ═══════
 /// Thời gian loading dialog hiện trước khi show full-screen ad (ms)
