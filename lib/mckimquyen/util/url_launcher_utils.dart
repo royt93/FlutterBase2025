@@ -2,7 +2,7 @@ import 'package:saigonphantomlabs/mckimquyen/util/shared_preferences_util.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:ad_sdk/ad_sdk.dart';
+import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 
 
 class UrlLauncherUtils {

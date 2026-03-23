@@ -1,7 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:network_info_plus/network_info_plus.dart' as network_info_plugin;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:ad_sdk/ad_sdk.dart';
+import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 
 import '../models/network_info.dart';
 

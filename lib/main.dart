@@ -10,7 +10,7 @@ import 'package:toastification/toastification.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'mckimquyen/common/const/color_constants.dart';
-import 'package:ad_sdk/ad_sdk.dart';
+import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 import 'mckimquyen/widget/controller_main.dart';
 import 'mckimquyen/widget/splash/splash_screen.dart';
 import 'mckimquyen/util/language_service.dart';

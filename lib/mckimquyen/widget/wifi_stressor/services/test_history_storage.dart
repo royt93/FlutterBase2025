@@ -2,7 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/test_result.dart';
 import '../models/network_info_adapter.dart';
 import '../models/test_result_adapter.dart';
-import 'package:ad_sdk/ad_sdk.dart';
+import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 
 
 /// Service để quản lý lưu trữ test history với Hive

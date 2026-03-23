@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ad_sdk/ad_sdk.dart';
+import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 
 import '../controllers/history_controller.dart';
 import 'widgets/summary_stats_card.dart';
@@ -51,14 +51,8 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                 SafeLogger.d(_tag, '▶️ ACTION exportData — earned=$earned');
                 if (earned) {
                   controller.exportData();
-                } else {
-                  if (!mounted) return;
-                  TopToast.show(
-                    context,
-                    icon: Icons.hourglass_top_rounded,
-                    message: 'ad_not_ready'.tr,
-                  );
                 }
+                // else: SDK already showed TopToast automatically
               });
             },
           ),

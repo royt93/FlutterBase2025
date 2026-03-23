@@ -8,7 +8,7 @@ import '../models/test_result.dart';
 import '../models/test_statistics.dart';
 import '../services/test_history_storage.dart';
 import '../../../util/ui_utils.dart';
-import 'package:ad_sdk/ad_sdk.dart';
+import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 
 
 /// Controller để quản lý History screen với GetX

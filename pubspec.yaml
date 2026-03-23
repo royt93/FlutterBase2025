@@ -43,9 +43,10 @@ dependencies:
   path_provider: ^2.1.4
   share_plus: ^10.1.2
 
+  applovin_admob_sdk: ^1.0.3
   # Ad SDK (monorepo local package)
-  ad_sdk:
-    path: packages/ad_sdk
+#  applovin_admob_sdk:
+#    path: packages/ad_sdk
 
   # Bắt buộc ở app-level: native mediation plugin, không khai báo được trong sub-package
   gma_mediation_applovin:
