@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/language_service.dart';
 
-import '../../ad/ad_screen.dart';
+import 'package:ad_sdk/ad_sdk.dart';
 import 'stressor_controller.dart';
 import 'speed_chart.dart';
 import 'widgets/status_indicator_widget.dart';
@@ -156,15 +156,20 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
     );
   }
 
+  static const String _tag = 'StressorHome';
+
   /// Navigate to history screen with interstitial
   void _navigateToHistory() {
-    showInterstitialAd(onDone: (_) {
+    SafeLogger.d(_tag, '▶️ ACTION navigateToHistory — requesting interstitial');
+    showInterstitialAd(onDone: (shown) {
+      SafeLogger.d(_tag, '▶️ ACTION navigateToHistory — interstitialShown=$shown → navigating');
       Get.to(() => const HistoryScreen());
     });
   }
 
   /// Hiển thị dialog chọn ngôn ngữ
   void _showLanguageDialog() {
+    SafeLogger.d(_tag, '▶️ ACTION showLanguageDialog — current locale=${Get.locale}');
     Get.dialog(
       AlertDialog(
         title: Text(
@@ -214,8 +219,9 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           ? const Icon(Icons.check_circle, color: Colors.green)
           : null,
       onTap: () async {
-        // Save language preference và update locale
+        SafeLogger.d(_tag, '▶️ ACTION changeLanguage → locale=$locale (was ${Get.locale})');
         await LanguageService.changeLanguage(locale);
+        SafeLogger.d(_tag, '▶️ ACTION changeLanguage DONE → new locale=${Get.locale}');
         Get.back();
       },
     );
@@ -223,6 +229,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
 
   /// Hiển thị dialog thông tin với tối ưu performance
   void _showInfoDialog() {
+    SafeLogger.d(_tag, '▶️ ACTION showInfoDialog');
     Get.dialog(
       AlertDialog(
         title: Text(
@@ -241,7 +248,10 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
         ),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () {
+              SafeLogger.d(_tag, '▶️ ACTION infoDialog → close');
+              Get.back();
+            },
             child: Text(
               'close_button'.tr,
               style: const TextStyle(
@@ -284,7 +294,11 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
             isRunning: isRunning,
             controller: controller,
             showInterstitialAd: (Function(bool) callback) {
-              showInterstitialAd(onDone: callback);
+              SafeLogger.d(_tag, '▶️ ACTION ControlButton → showInterstitialAd, isRunning=$isRunning');
+              showInterstitialAd(onDone: (shown) {
+                SafeLogger.d(_tag, '▶️ ACTION ControlButton interstitialShown=$shown');
+                callback(shown);
+              });
             },
           ),
         ],

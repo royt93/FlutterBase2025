@@ -2,7 +2,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/test_result.dart';
 import '../models/network_info_adapter.dart';
 import '../models/test_result_adapter.dart';
-import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
+import 'package:ad_sdk/ad_sdk.dart';
+
 
 /// Service để quản lý lưu trữ test history với Hive
 /// SINGLETON pattern để đảm bảo chỉ có 1 instance và 1 box

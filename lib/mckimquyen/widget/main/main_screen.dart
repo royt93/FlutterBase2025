@@ -1,4 +1,5 @@
-import 'package:saigonphantomlabs/mckimquyen/ad/screen_a.dart';
+// screen_a/b/c moved to packages/ad_sdk/example/lib/ — use them from the example app
+
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,10 +29,14 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    if (widget.isShowMenu) {
-      //do nothing
-    } else {
-      Get.offAll(const WiFiStressorApp());
+    if (!widget.isShowMenu) {
+      // Defer navigation to AFTER the first frame is fully built.
+      // Calling Get.offAll() synchronously inside initState() triggers
+      // a navigator operation while the widget tree is still being mounted,
+      // causing the "markNeedsBuild during build" assertion.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.offAll(const WiFiStressorApp());
+      });
     }
   }
 
@@ -64,10 +69,11 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       children: [
         UIUtils.getButton(
-          "Admob demo",
+          "Ad demo (see packages/ad_sdk/example)",
           Icons.card_giftcard,
-              () {
-            Get.to(const ScreenA());
+          () {
+            // ScreenA moved to packages/ad_sdk/example/lib/screen_a.dart
+            // Run the example app from packages/ad_sdk/example/ to test ads
           },
         ),
         UIUtils.getButton(

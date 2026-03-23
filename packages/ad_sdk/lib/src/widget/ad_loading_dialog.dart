@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
 
-import '../k/k.dart';
+import '../core/ad_manager.dart';
 
-/// Dialog loading hiện trước khi show full-screen ad
-/// (Interstitial / Rewarded / App Open)
+/// Loading dialog shown before a fullscreen ad (inter / rewarded / app-open).
 ///
-/// Mục đích: tránh user bị bất ngờ và click nhầm vào ad
-/// - Không thể dismiss bằng back button, swipe, hoặc tap ngoài
-/// - Auto-dismiss sau [kAdLoadingBufferMs] ms rồi gọi [onComplete]
+/// - Cannot be dismissed via back button, swipe, or tap outside
+/// - Auto-dismisses after [durationMs] ms, then calls [onComplete]
+///
+/// The [durationMs] defaults to [AdManager]'s configured [AdConfig.loadingBufferMs].
 class AdLoadingDialog {
-
-  /// Hiện dialog loading, sau [durationMs] ms tự dismiss và gọi [onComplete].
-  ///
-  /// [context] phải là context hợp lệ và mounted.
+  /// Show the buffer dialog and call [onComplete] after the delay.
   static Future<void> showAdBuffer(
     BuildContext context, {
     required VoidCallback onComplete,
-    int durationMs = kAdLoadingBufferMs,
+    int? durationMs,
   }) async {
-    // Bắt đầu timer song song
-    final timer = Future.delayed(Duration(milliseconds: durationMs));
+    final ms = durationMs ?? 1000;
+    final timer = Future.delayed(Duration(milliseconds: ms));
 
-    // Show dialog — barrierDismissible=false, PopScope block back/swipe
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -29,26 +25,21 @@ class AdLoadingDialog {
       builder: (ctx) => const _AdLoadingDialogContent(),
     );
 
-    // Chờ đủ thời gian
     await timer;
 
-    // Dismiss dialog an toàn
     if (context.mounted) {
       Navigator.of(context, rootNavigator: true).pop();
     }
 
-    // Gọi callback show ad
     onComplete();
   }
 }
 
-/// Nội dung UI của dialog loading
 class _AdLoadingDialogContent extends StatefulWidget {
   const _AdLoadingDialogContent();
 
   @override
-  State<_AdLoadingDialogContent> createState() =>
-      _AdLoadingDialogContentState();
+  State<_AdLoadingDialogContent> createState() => _AdLoadingDialogContentState();
 }
 
 class _AdLoadingDialogContentState extends State<_AdLoadingDialogContent>
@@ -63,10 +54,7 @@ class _AdLoadingDialogContentState extends State<_AdLoadingDialogContent>
       vsync: this,
       duration: const Duration(milliseconds: 180),
     );
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOut,
-    );
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _fadeController.forward();
   }
 
@@ -78,7 +66,6 @@ class _AdLoadingDialogContentState extends State<_AdLoadingDialogContent>
 
   @override
   Widget build(BuildContext context) {
-    // Block back button
     return PopScope(
       canPop: false,
       child: FadeTransition(

@@ -1,7 +1,8 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:network_info_plus/network_info_plus.dart' as network_info_plugin;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
+import 'package:ad_sdk/ad_sdk.dart';
+
 import '../models/network_info.dart';
 
 /// Service để lấy thông tin mạng thực tế

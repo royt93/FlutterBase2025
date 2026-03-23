@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../ad/ad_screen.dart';
+import 'package:ad_sdk/ad_sdk.dart';
+
 import '../controllers/history_controller.dart';
 import 'widgets/summary_stats_card.dart';
 import 'widgets/timeline_item.dart';
@@ -16,6 +17,7 @@ class HistoryScreen extends AdScreen {
 }
 
 class _HistoryScreenState extends AdScreenState<HistoryScreen> {
+  static const String _tag = 'HistoryScreen';
   late final HistoryController controller;
 
   @override
@@ -44,15 +46,27 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
             icon: const Icon(Icons.download),
             tooltip: 'export_data'.tr,
             onPressed: () {
-              // Rewarded: user watches ad to unlock export
+              SafeLogger.d(_tag, '▶️ ACTION exportData — requesting rewarded ad');
               showRewardedAd(onEarnedReward: (earned) {
-                if (earned) controller.exportData();
+                SafeLogger.d(_tag, '▶️ ACTION exportData — earned=$earned');
+                if (earned) {
+                  controller.exportData();
+                } else {
+                  if (!mounted) return;
+                  TopToast.show(
+                    context,
+                    icon: Icons.hourglass_top_rounded,
+                    message: 'ad_not_ready'.tr,
+                  );
+                }
               });
             },
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
+              SafeLogger.d(_tag, '▶️ ACTION popupMenu selected: $value');
               if (value == 'clear') {
+                SafeLogger.d(_tag, '▶️ ACTION clearAllHistory');
                 controller.clearAllHistory();
               }
             },
@@ -173,6 +187,7 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                                 return TimelineItem(
                                   result: result,
                                   onTap: () {
+                                    SafeLogger.d(_tag, '▶️ ACTION timelineItem tap → id=${result.id}, startTime=${result.startTime}');
                                     Get.to(() => TestDetailScreen(result: result));
                                   },
                                 );
@@ -223,6 +238,7 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
           ],
           selected: {selected},
           onSelectionChanged: (Set<String> newSelection) {
+            SafeLogger.d(_tag, '▶️ ACTION changeTimeRange → ${newSelection.first} (was ${controller.selectedTimeRange.value})');
             controller.changeTimeRange(newSelection.first);
           },
           style: ButtonStyle(

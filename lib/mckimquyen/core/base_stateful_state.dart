@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 // Removed unused dependency: lottie
 
-import '../ad/utils/safe_logger.dart';
+import 'package:ad_sdk/ad_sdk.dart';
+
 import '../common/const/dimen_constants.dart';
 
 abstract class BaseStatefulState<T extends StatefulWidget> extends State<T> {

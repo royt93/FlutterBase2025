@@ -96,6 +96,7 @@ const Map<String, String> enUS = {
   // Empty States
   'no_history': 'No test history yet',
   'no_history_message': 'Run your first test to see results here',
+  'ad_not_ready': 'Ad not ready yet — please wait a moment and try again.',
   'no_data': 'No data available',
 
   // Filters

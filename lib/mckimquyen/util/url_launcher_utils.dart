@@ -2,7 +2,8 @@ import 'package:saigonphantomlabs/mckimquyen/util/shared_preferences_util.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
+import 'package:ad_sdk/ad_sdk.dart';
+
 
 class UrlLauncherUtils {
   static String getLinkGit(String path) {

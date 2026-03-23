@@ -9,8 +9,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "88.0.0"
-  advertising_id:
+  ad_sdk:
     dependency: "direct main"
+    description:
+      path: "packages/ad_sdk"
+      relative: true
+    source: path
+    version: "1.0.0"
+  advertising_id:
+    dependency: transitive
     description:
       name: advertising_id
       sha256: ab06ee85203ab500be85b7f45de2a75a629d8d9c453dba779276fbc4e97ad8d3
@@ -34,7 +41,7 @@ packages:
     source: hosted
     version: "2.0.3"
   applovin_max:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: applovin_max
       sha256: e99e6a3a504d81a9a9d99e8303ca167a294351fb80ed35469e3e2ec432a69676
@@ -178,7 +185,7 @@ packages:
     source: hosted
     version: "1.19.1"
   connection_notifier:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: connection_notifier
       sha256: fa8b1a3c19929890361a7c338e99c168514ab764d5db4033e4c3098930f23643
@@ -483,7 +490,7 @@ packages:
     source: hosted
     version: "2.5.1"
   google_mobile_ads:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: google_mobile_ads
       sha256: a4f59019f2c32769fb6c60ed8aa321e9c21a36297e2c4f23452b3e779a3e7a26

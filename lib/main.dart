@@ -10,14 +10,12 @@ import 'package:toastification/toastification.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'mckimquyen/common/const/color_constants.dart';
-import 'mckimquyen/ad/ad_route_observer.dart';
+import 'package:ad_sdk/ad_sdk.dart';
 import 'mckimquyen/widget/controller_main.dart';
 import 'mckimquyen/widget/splash/splash_screen.dart';
 import 'mckimquyen/util/language_service.dart';
 import 'translations/app_translations.dart';
 
-//TODO roy93~ multi language
-//TODO roy93~ admob
 //ic_launcher, flutter native splash, splash change bkg
 
 //done

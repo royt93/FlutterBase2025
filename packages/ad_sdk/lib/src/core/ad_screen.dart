@@ -1,23 +1,36 @@
 import 'package:flutter/material.dart';
 
-import 'ad_manager.dart';
-import 'utils/safe_logger.dart';
-import 'widget/ad_loading_dialog.dart';
-import 'widget/banner_ad_widget.dart';
-import '../core/base_stateful_state.dart';
+import '../core/ad_manager.dart';
+import '../utils/safe_logger.dart';
+import '../widget/ad_loading_dialog.dart';
+import '../widget/banner_ad_widget.dart';
 
-/// Base class cho các screen có quảng cáo
-/// Port từ AdScreen pattern trong Kotlin
+/// Base widget class for screens that use ads.
 ///
-/// Sử dụng:
-/// `class MyScreen extends AdScreen { ... }`
-/// `class MyScreenState extends AdScreenState<MyScreen> { ... }`
+/// Extend this instead of [StatefulWidget]:
+/// ```dart
+/// class HomeScreen extends AdScreen {
+///   const HomeScreen({super.key});
+///   @override State<HomeScreen> createState() => _HomeScreenState();
+/// }
+///
+/// class _HomeScreenState extends AdScreenState<HomeScreen> {
+///   @override
+///   Widget build(BuildContext context) => Column(
+///     children: [buildBanner(), ...],
+///   );
+/// }
+/// ```
 abstract class AdScreen extends StatefulWidget {
   const AdScreen({super.key});
 }
 
-abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
-  static const String _tag = 'roy93~AdScreen';
+/// Base state for [AdScreen]. Provides [buildBanner], [showInterstitialAd],
+/// and [showRewardedAd] helpers with built-in safety checks.
+///
+/// No dependency on GetX or any particular state management library.
+abstract class AdScreenState<T extends AdScreen> extends State<T> {
+  static const String _tag = 'AdScreen';
 
   bool _isDisposed = false;
 
@@ -25,21 +38,23 @@ abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
   void initState() {
     super.initState();
     SafeLogger.d(_tag, 'initState $runtimeType — preloading interstitial');
-    AdManager().loadInterstitial(); // Luôn load ready khi mở View
+    AdManager().loadInterstitial();
   }
 
-  /// Tiện ích hiển thị Banner — dual provider, tự quản shimmer
+  /// Returns a [BannerAdWidget] that manages its own lifecycle.
+  /// Place this anywhere in your widget tree (typically top or bottom of body).
   Widget buildBanner() {
     SafeLogger.d(_tag, 'buildBanner $runtimeType');
     return const BannerAdWidget();
   }
 
   // ════════════════════════════════════════════════════
-  // INTERSTITIAL — pre-check trước khi show dialog
+  // INTERSTITIAL
   // ════════════════════════════════════════════════════
 
-  /// Show interstitial ad an toàn với 300ms loading buffer.
-  /// Dialog CHỈ xuất hiện khi ad đã sẵn sàng và safety cho phép.
+  /// Show an interstitial ad with safety checks.
+  ///
+  /// [onDone] is called with `true` if the ad was shown, `false` otherwise.
   void showInterstitialAd({required void Function(bool) onDone}) {
     SafeLogger.d(
       _tag,
@@ -53,24 +68,15 @@ abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
       return;
     }
 
-    // ── PRE-CHECK: kiểm tra trước khi show dialog ──
-    // Không show dialog nếu chắc chắn ad sẽ không hiện
     final canShow = AdManager().canShowInterstitial();
-    SafeLogger.d(
-      _tag,
-      'showInterstitialAd pre-check result: canShow=$canShow',
-    );
+    SafeLogger.d(_tag, 'showInterstitialAd pre-check result: canShow=$canShow');
 
     if (!canShow) {
-      SafeLogger.d(
-        _tag,
-        'showInterstitialAd ⏭️ pre-check failed → skip dialog, call onDone(false)',
-      );
+      SafeLogger.d(_tag, 'showInterstitialAd ⏭️ pre-check failed → skip dialog');
       onDone(false);
       return;
     }
 
-    // ── AD READY → show 300ms buffer dialog ──
     SafeLogger.d(_tag, 'showInterstitialAd ✅ pre-check passed → showing dialog buffer');
     AdLoadingDialog.showAdBuffer(context, onComplete: () {
       if (!mounted || _isDisposed) {
@@ -81,19 +87,22 @@ abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
       SafeLogger.d(_tag, 'showInterstitialAd → calling AdManager.showInterstitial()');
       AdManager().showInterstitial(onDoneFlow: (result) {
         SafeLogger.d(_tag, 'showInterstitialAd onDoneFlow: result=$result');
-        if (mounted && !_isDisposed) {
-          onDone(result);
-        }
+        if (mounted && !_isDisposed) onDone(result);
       });
     });
   }
 
   // ════════════════════════════════════════════════════
-  // REWARDED — pre-check trước khi show dialog
+  // REWARDED
   // ════════════════════════════════════════════════════
 
-  /// Show rewarded ad an toàn với 300ms loading buffer.
-  /// Dialog CHỈ xuất hiện khi ad đã sẵn sàng và safety cho phép.
+  /// Show a rewarded ad with safety checks.
+  ///
+  /// Behaviour:
+  /// - Ad available → show ad → [onEarnedReward] called with `true` when reward earned.
+  /// - Ad unavailable/throttled → [onEarnedReward] called with `false`.
+  ///   The caller should notify the user (e.g. snackbar: 'Ad not ready, try again').
+  /// - Widget disposed/unmounted → [onEarnedReward] called with `false` (unsafe to act).
   void showRewardedAd({required void Function(bool) onEarnedReward}) {
     SafeLogger.d(
       _tag,
@@ -102,35 +111,28 @@ abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
     );
 
     if (_isDisposed || !mounted) {
-      SafeLogger.d(_tag, 'showRewardedAd ⏭️ widget disposed/unmounted');
+      SafeLogger.d(_tag, 'showRewardedAd ⏭️ widget disposed/unmounted → false');
       onEarnedReward(false);
       return;
     }
 
-    // ── PRE-CHECK: kiểm tra trước khi show dialog ──
-    final canShow = AdManager().canShowRewardedAd();
-    SafeLogger.d(
-      _tag,
-      'showRewardedAd pre-check result: canShow=$canShow',
-    );
-
-    if (!canShow) {
-      SafeLogger.d(
-        _tag,
-        'showRewardedAd ⏭️ pre-check failed → skip dialog, call onEarnedReward(false)',
-      );
-      onEarnedReward(false);
-      return;
-    }
-
-    // ── VIP: auto-reward, không cần ad ──
+    // VIP device: auto-grant reward without any ad or dialog
     if (AdManager().isVIPMember()) {
-      SafeLogger.d(_tag, 'showRewardedAd ✅ VIP device → auto-reward without dialog');
+      SafeLogger.d(_tag, 'showRewardedAd ✅ VIP device → auto-reward');
       onEarnedReward(true);
       return;
     }
 
-    // ── AD READY → show 300ms buffer dialog ──
+    final canShow = AdManager().canShowRewardedAd();
+    SafeLogger.d(_tag, 'showRewardedAd pre-check result: canShow=$canShow');
+
+    if (!canShow) {
+      // No valid ad or safety throttle active — notify caller to show user feedback.
+      SafeLogger.d(_tag, 'showRewardedAd ⏭️ no valid ad → earned=false');
+      onEarnedReward(false);
+      return;
+    }
+
     SafeLogger.d(_tag, 'showRewardedAd ✅ pre-check passed → showing dialog buffer');
     AdLoadingDialog.showAdBuffer(context, onComplete: () {
       if (!mounted || _isDisposed) {
@@ -141,17 +143,16 @@ abstract class AdScreenState<T extends AdScreen> extends BaseStatefulState<T> {
       SafeLogger.d(_tag, 'showRewardedAd → calling AdManager.showRewardedAd()');
       AdManager().showRewardedAd(onEarnedReward: (result) {
         SafeLogger.d(_tag, 'showRewardedAd onEarnedReward: result=$result');
-        if (mounted && !_isDisposed) {
-          onEarnedReward(result);
-        }
+        if (mounted && !_isDisposed) onEarnedReward(result);
       });
     });
   }
 
+
   @override
   void dispose() {
     SafeLogger.d(_tag, 'dispose() $runtimeType');
-    _isDisposed = true; // Tránh memory / logic crash khi pop route
+    _isDisposed = true;
     super.dispose();
   }
 }

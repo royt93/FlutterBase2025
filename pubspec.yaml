@@ -43,16 +43,16 @@ dependencies:
   path_provider: ^2.1.4
   share_plus: ^10.1.2
 
-  # AdMob + AppLovin integration
-  google_mobile_ads: ^6.0.0
+  # Ad SDK (monorepo local package)
+  ad_sdk:
+    path: packages/ad_sdk
+
+  # Bắt buộc ở app-level: native mediation plugin, không khai báo được trong sub-package
   gma_mediation_applovin:
-  applovin_max: ^4.6.3
-  connection_notifier: ^2.0.1
 
   # Essential UI feedback
   vibration: ^3.1.5
   flutter_easyloading: ^3.0.5
-  advertising_id: ^2.7.1
 
 #  dart run rename_app:main all="My App Name"
 #  rename_app: ^1.6.2

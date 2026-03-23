@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:saigonphantomlabs/mckimquyen/ad/ad_manager.dart';
+import 'package:ad_sdk/ad_sdk.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/string_constants.dart';
-import 'package:saigonphantomlabs/mckimquyen/ad/utils/safe_logger.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'models/test_result.dart';
 import 'services/test_history_storage.dart';
 import 'services/network_info_service.dart';
+
 
 class StressorController extends GetxController {
   final isRunning = false.obs;

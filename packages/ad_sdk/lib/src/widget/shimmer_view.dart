@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Custom Shimmer animation — port từ ShimmerView.kt
-/// Dùng AnimationController + ShaderMask, không cần thư viện bên ngoài
-/// Tự dispose AnimationController khi widget bị huỷ (zero memory leak)
+// ignore_for_file: unused_field
+
+/// Shimmer placeholder shown while the banner ad is loading.
+/// Uses AnimationController + ShaderMask — no external library needed.
 class ShimmerView extends StatefulWidget {
   final double cornerRadius;
   final double width;
@@ -21,7 +22,7 @@ class ShimmerView extends StatefulWidget {
 
 class _ShimmerViewState extends State<ShimmerView>
     with SingleTickerProviderStateMixin {
-  AnimationController? _controller; // Nullable safe — không dùng late
+  AnimationController? _controller;
 
   @override
   void initState() {
@@ -34,7 +35,7 @@ class _ShimmerViewState extends State<ShimmerView>
 
   @override
   void dispose() {
-    _controller?.dispose(); // TRÁNH MEMORY LEAK
+    _controller?.dispose();
     _controller = null;
     super.dispose();
   }
@@ -54,9 +55,9 @@ class _ShimmerViewState extends State<ShimmerView>
               begin: Alignment(-1.0 + (value * 3), -0.3),
               end: Alignment(1.0 + (value * 3), 0.3),
               colors: const [
-                Color(0xFFE0E0E0), // baseColor
-                Color(0xFFF8F8F8), // highlightColor
-                Color(0xFFE0E0E0), // baseColor
+                Color(0xFFE0E0E0),
+                Color(0xFFF8F8F8),
+                Color(0xFFE0E0E0),
               ],
               stops: const [0.0, 0.5, 1.0],
             ).createShader(bounds);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:saigonphantomlabs/mckimquyen/ad/ad_screen.dart';
+import 'package:ad_sdk/ad_sdk.dart';
 
+/// Demo Screen C — final screen in the demo flow, shows a banner.
 class ScreenC extends AdScreen {
   const ScreenC({super.key});
 
@@ -13,24 +14,25 @@ class _ScreenCState extends AdScreenState<ScreenC> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Screen C'),
+        title: const Text('Screen C — Final'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
-        child: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(16),
-          child: const Text(
-            "Nothing",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              fontSize: 16,
+        child: Column(
+          children: [
+            const Expanded(
+              child: Center(
+                child: Text(
+                  '🎉 End of demo flow',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
-          ),
+            buildBanner(),
+          ],
         ),
       ),
     );
