@@ -9,11 +9,11 @@ import 'package:flutter/material.dart';
 // SDK Key (86 chars): dash.applovin.com/o/account
 // Ad Unit IDs (16 chars): dash.applovin.com/o/mediation/ad_units
 const _kAppLovinSdkKey =
-    'e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt';
-const _kAppLovinBannerId       = '55145203d74b7bb0';
-const _kAppLovinInterstitialId = 'f8c4de38486cdb76';
-const _kAppLovinAppOpenId      = '9309d90308be99c1';
-const _kAppLovinRewardedId     = 'e50710c6caa75a33';
+    'YOUR_86_CHAR_SDK_KEY_FROM_APPLOVIN_DASHBOARD';
+const _kAppLovinBannerId       = 'YOUR_BANNER_AD_UNIT_ID';
+const _kAppLovinInterstitialId = 'YOUR_INTERSTITIAL_AD_UNIT_ID';
+const _kAppLovinAppOpenId      = 'YOUR_APP_OPEN_AD_UNIT_ID';
+const _kAppLovinRewardedId     = 'YOUR_REWARDED_AD_UNIT_ID';
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── AdMob credentials (Google test IDs — replace with real ones for prod) ────
