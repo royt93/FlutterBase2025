@@ -80,6 +80,9 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                 _navigateToMainSafely();
                 return;
               }
+              // Cancel hard cap BEFORE showing ad — timer must not interrupt an active ad
+              _hardCapTimer?.cancel();
+              _hardCapTimer = null;
               AdManager().showAppOpenAd(
                 onAdDismiss: (dismissed) {
                   SafeLogger.d('Splash', 'App Open Ad dismissed=$dismissed, navigating');
