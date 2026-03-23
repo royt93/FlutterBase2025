@@ -97,6 +97,7 @@ const Map<String, String> viVN = {
   'no_history': 'Chưa có lịch sử test',
   'no_history_message': 'Chạy test đầu tiên để xem kết quả tại đây',
   'ad_not_ready': 'Quảng cáo chưa sẵn sàng — vui lòng chờ và thử lại sau.',
+  'loading': 'Đang tải…',
   'no_data': 'Không có dữ liệu',
 
   // Filters

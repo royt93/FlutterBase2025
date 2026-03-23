@@ -114,16 +114,16 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
         SafeLogger.d('Splash', 'containerColor → transparent (animation started)');
         // Khởi tạo AdManager (gọi EventBus.sendEvent khi xong)
         AdManager().initialize(
-          config: const AdConfig(
+          config: AdConfig(
             provider: AdProvider.appLovin,
-            appLovin: AppLovinConfig(
+            appLovin: const AppLovinConfig(
               sdkKey: 'e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt',
               bannerId: '55145203d74b7bb0',
               interstitialId: 'f8c4de38486cdb76',
               appOpenId: '9309d90308be99c1',
               rewardedId: 'e50710c6caa75a33',
             ),
-            vipDeviceGaids: [
+            vipDeviceGaids: const [
               '9ad0127d-04be-4b6c-937a-ca3ed7f650b9', // vsmart iris
               '9b6499f2-d4de-4b9e-afdf-ac2a2b127fb1', // ss a50
               'c09b2f04-e145-490c-96f9-dab620074104', // oppo f7
@@ -146,6 +146,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
               '66e652de-79ef-4889-8074-9b482fd81b5a', // redmi a3
               '4ed22dd8-e8fb-442e-a75e-081a3d977957', // ss s24u
             ],
+            adNotReadyMessage: 'ad_not_ready'.tr,
+            adLoadingMessage: 'loading'.tr,
           ),
           onComplete: (success, gaid) {
             SafeLogger.d('Splash', 'AdManager init complete: success=$success, gaid=$gaid');
