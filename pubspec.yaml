@@ -1,7 +1,7 @@
 name: saigonphantomlabs
 description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 2026.03.21+20260321
+version: 2026.03.24+20260324
 
 environment:
   sdk: '>=2.19.6 <4.0.0'
@@ -43,10 +43,10 @@ dependencies:
   path_provider: ^2.1.4
   share_plus: ^10.1.2
 
-#  applovin_admob_sdk: ^1.0.14
+  applovin_admob_sdk: ^1.0.14
   # Ad SDK (monorepo local package)
-  applovin_admob_sdk:
-    path: packages/ad_sdk
+#  applovin_admob_sdk:
+#    path: packages/ad_sdk
 
   # Bắt buộc ở app-level: native mediation plugin, không khai báo được trong sub-package
   gma_mediation_applovin:
