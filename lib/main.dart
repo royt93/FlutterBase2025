@@ -32,6 +32,8 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Register navigator key so SDK can show loading dialogs from lifecycle observer
+  AdManager().setNavigatorKey(navigatorKey);
   // AdManager init is now handled in SplashScreen
   WakelockPlus.enable();
   UIUtils.initEdgeToEdge();
