@@ -39,7 +39,7 @@ packages:
       path: "packages/ad_sdk"
       relative: true
     source: path
-    version: "1.0.13"
+    version: "1.0.14"
   applovin_max:
     dependency: transitive
     description:
