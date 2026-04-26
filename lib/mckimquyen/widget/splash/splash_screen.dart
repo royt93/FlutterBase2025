@@ -253,7 +253,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
       body: Stack(
         children: [
           Image.asset(
-            "assets/images/bkg_2.jpg",
+            "assets/images/bkg_2.webp",
             width: double.infinity,
             height: double.infinity,
             fit: BoxFit.cover,
@@ -313,7 +313,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                     //       child: Padding(
                     //         padding: const EdgeInsets.all(16),
                     //         child: Image.asset(
-                    //           "assets/images/ic_go.png",
+                    //           "assets/images/ic_go.webp",
                     //           width: double.infinity,
                     //           height: double.infinity,
                     //           fit: BoxFit.contain,

@@ -89,7 +89,7 @@ flutter:
   uses-material-design: true
   assets:
     # Only essential images - remove unused assets
-    - assets/images/bkg_2.jpg
+    - assets/images/bkg_2.webp
     - assets/images/ic_launcher.png
-    - assets/images/ic_go.png
-    - assets/images/ic_check_mark_green.png
+    - assets/images/ic_go.webp
+    - assets/images/ic_check_mark_green.webp

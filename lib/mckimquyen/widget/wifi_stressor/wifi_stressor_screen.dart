@@ -85,7 +85,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   /// Xây dựng background image với cache tối ưu
   Widget _buildBackgroundImage() {
     return Image.asset(
-      "assets/images/bkg_2.jpg",
+      "assets/images/bkg_2.webp",
       width: double.infinity,
       height: double.infinity,
       fit: BoxFit.cover,
