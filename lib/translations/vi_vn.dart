@@ -119,4 +119,52 @@ const Map<String, String> viVN = {
   'info': 'Thông tin',
   'error': 'Lỗi',
   'success': 'Thành công',
+
+  // Consent dialog (auto-shown ~1s sau splash; nguồn: ConsentDialogStrings)
+  'consent_title': 'Quảng cáo cá nhân hoá',
+  'consent_message':
+      'Ứng dụng hiển thị quảng cáo để duy trì miễn phí. Nếu bạn đồng ý, '
+          'chúng tôi sẽ hiển thị quảng cáo phù hợp với sở thích của bạn '
+          'thay vì quảng cáo chung. Bạn có thể thay đổi bất cứ lúc nào trong Cài đặt.',
+  'consent_allow': 'Đồng ý',
+  'consent_reject': 'Từ chối',
+  'consent_privacy_label': 'Chính sách bảo mật',
+
+  // VIP — màn hình quản lý
+  'vip_title': 'VIP',
+  'vip_status_active': 'VIP đang kích hoạt',
+  'vip_status_inactive': 'Chưa kích hoạt VIP',
+  'vip_status_inactive_tagline':
+      'Trải nghiệm hoàn toàn không quảng cáo với gói VIP.',
+  'vip_expires_at': 'Hiệu lực đến @date',
+  'vip_remaining_days': 'Còn @days ngày',
+  'vip_remaining_hours': 'Còn @hours giờ',
+  'vip_remaining_extra_hours': 'thêm @hours giờ',
+  'vip_redeem_title': 'Nhập mã VIP',
+  'vip_redeem_subtitle':
+      'Nhập mã kích hoạt để mở khoá trải nghiệm không quảng cáo.',
+  'vip_key_hint': 'Nhập mã kích hoạt của bạn',
+  'vip_activate_button': 'Kích hoạt',
+  'vip_active_entries': 'Mã đang hoạt động (@count)',
+  'vip_revoke': 'Thu hồi',
+  'vip_revoke_all': 'Thu hồi tất cả',
+  'vip_revoke_confirm': 'Bạn có chắc muốn thu hồi mã VIP này?',
+  'vip_revoke_all_confirm':
+      'Bạn có chắc muốn thu hồi toàn bộ mã VIP đang hoạt động?',
+  'vip_no_entries': 'Chưa có mã VIP nào đang hoạt động.',
+  'vip_first_install': 'Quà tặng cài đặt mới',
+  'vip_legacy_device': 'Thiết bị QA',
+  'vip_enter_key_first': 'Vui lòng nhập mã trước khi kích hoạt.',
+  'vip_sdk_not_ready': 'SDK quảng cáo chưa sẵn sàng. Vui lòng thử lại sau.',
+  'vip_privacy_policy': 'Chính sách bảo mật & điều khoản',
+
+  // VIP dialog (Cupertino — SDK redeem flow)
+  'vip_verifying_title': 'Đang xác thực',
+  'vip_verifying_message': 'Vui lòng chờ trong giây lát…',
+  'vip_success_title': 'Kích hoạt thành công',
+  'vip_success_message': 'VIP của bạn có hiệu lực đến @until.',
+  'vip_failed_title': 'Mã không hợp lệ',
+  'vip_failed_message': 'Mã VIP bạn nhập không đúng hoặc đã hết hạn.',
+  'vip_network_error': 'Lỗi mạng — vui lòng thử lại.',
+  'vip_confirm': 'OK',
 };

@@ -1,16 +1,19 @@
 import 'dart:async';
 
+import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
-
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
+import 'package:saigonphantomlabs/mckimquyen/widget/vip/vip_keys.dart';
 
 import '../../core/base_stateful_state.dart';
+
+const String _kPrivacyPolicyUrl =
+    'https://loitp.notion.site/Term-Privacy-Policy-Disclaimer-319b1cd8783942fa8923d2a3c9bce60';
 
 class SplashScreen extends StatefulWidget {
   static String screenName = "/SplashScreen";
@@ -25,8 +28,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   int _durationCountdown = 10;
+
   // ValueNotifier thay cho setState — không trigger rebuild toàn bộ widget
   final ValueNotifier<Color> _containerColorNotifier = ValueNotifier(ColorConstants.appColor);
+
   // Callback listener giữ reference để remove đúng khi dispose/navigate
   void Function(BoolEvent)? _eventListener;
   Timer? _hardCapTimer;
@@ -43,6 +48,9 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
     // Giống native line 991-993: nếu splash bị gọi lại lần 2+ → navigate ngay
     if (count > 1) {
       SafeLogger.d('Splash', 'initSplashScreen ⏭️ already called before, navigating immediately');
+      // Mark inactive synchronously so any concurrent lifecycle resume in the
+      // 1-frame postFrame gap doesn't see splash as still active.
+      AdManager().markSplashInactive();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _navigateToMainSafely();
       });
@@ -69,8 +77,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
             return;
           }
           if (result) {
-            SafeLogger.d('Splash', '🔄 Ad loaded, showing 300ms buffer then App Open Ad');
-            // 300ms buffer trước khi show App Open Ad
+            SafeLogger.d('Splash',
+                '🔄 Ad loaded, showing AdLoadingDialog buffer (default loadingBufferMs=1000) then App Open Ad');
             if (!mounted) {
               _navigateToMainSafely();
               return;
@@ -104,7 +112,6 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
     }; // end _eventListener
     SimpleEventBus().listen(_eventListener!);
 
-
     if (kDebugMode) {
       _durationCountdown = 1;
     }
@@ -115,6 +122,24 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
         // ValueNotifier thay cho setState — chỉ rebuild đúng widget con cần thiết
         _containerColorNotifier.value = Colors.transparent;
         SafeLogger.d('Splash', 'containerColor → transparent (animation started)');
+
+        // ─── UMP consent (Q3C: Global) ────────────────────────────────────
+        // Phải gọi TRƯỚC initialize() — Google policy yêu cầu form consent
+        // hiện trước first ad request cho user EEA. Non-EEA trả về tức thì.
+        // Q12B: KHÔNG force EEA trong debug — để geo thật quyết định.
+        // Q11A: dù canRequestAds==false vẫn init bình thường, SDK đã buffer
+        // AdConsent (non-personalized) qua setConsent ở bên trong.
+        try {
+          final umpResult = await AdManager().requestUmpConsent(
+            testMode: false,
+          );
+          SafeLogger.d('Splash',
+              'UMP done: canRequestAds=${umpResult.canRequestAds}, status=${umpResult.status.name}, formShown=${umpResult.formShown}');
+        } catch (e) {
+          SafeLogger.w('Splash', 'UMP threw, continuing init anyway: $e');
+        }
+        if (!mounted || _hasNavigated) return;
+
         // Khởi tạo AdManager (gọi EventBus.sendEvent khi xong)
         AdManager().initialize(
           config: AdConfig(
@@ -126,6 +151,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
               appOpenId: '9309d90308be99c1',
               rewardedId: 'e50710c6caa75a33',
             ),
+            // Q16B: keep legacy GAID list — SDK auto-migrates to VipManager
+            // entries (year-2099) for the matching device only.
             vipDeviceGaids: const [
               '9ad0127d-04be-4b6c-937a-ca3ed7f650b9', // vsmart iris
               '9b6499f2-d4de-4b9e-afdf-ac2a2b127fb1', // ss a50
@@ -151,12 +178,43 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
             ],
             adNotReadyMessage: 'ad_not_ready'.tr,
             adLoadingMessage: 'loading'.tr,
+
+            // Q5: production-quiet logging.
+            logLevel: kDebugMode ? AdLogLevel.verbose : AdLogLevel.warning,
+
+            // Q1A + Q9B: Cupertino consent dialog strings từ translations
+            // (đồng bộ với vi/en đang chạy trong app).
+            consentDialogStrings: ConsentDialogStrings(
+              title: 'consent_title'.tr,
+              message: 'consent_message'.tr,
+              allowButton: 'consent_allow'.tr,
+              rejectButton: 'consent_reject'.tr,
+              privacyPolicyLabel: 'consent_privacy_label'.tr,
+              privacyPolicyUrl: _kPrivacyPolicyUrl,
+            ),
+
+            // Q14: validator chỉ accept key trong kVipKeyMap (30d).
+            vipKeyValidator: vipKeyValidator,
+
+            // VIP redeem Cupertino dialog strings từ translations.
+            vipDialogStrings: VipDialogStrings(
+              verifyingTitle: 'vip_verifying_title'.tr,
+              verifyingMessage: 'vip_verifying_message'.tr,
+              successTitle: 'vip_success_title'.tr,
+              successMessageBuilder: (until) => 'vip_success_message'.trParams({'until': until}),
+              failedTitle: 'vip_failed_title'.tr,
+              failedMessage: 'vip_failed_message'.tr,
+              networkErrorMessage: 'vip_network_error'.tr,
+              confirmButton: 'vip_confirm'.tr,
+            ),
+
+            // Q2B: keep default firstInstallVipGrace (auto = 30s debug / 24h
+            // release) — well-documented retention boost. Not overridden.
           ),
           onComplete: (success, gaid) {
             SafeLogger.d('Splash', 'AdManager init complete: success=$success, gaid=$gaid');
           },
         );
-
       });
     });
   }

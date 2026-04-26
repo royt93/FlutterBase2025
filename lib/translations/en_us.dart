@@ -119,4 +119,50 @@ const Map<String, String> enUS = {
   'info': 'Info',
   'error': 'Error',
   'success': 'Success',
+
+  // Consent dialog (auto-shown ~1s after splash; sourced via ConsentDialogStrings)
+  'consent_title': 'Privacy & Personalized Ads',
+  'consent_message':
+      'This app shows ads to keep it free. With your permission, we '
+          'can show ads matched to your interests instead of generic ones. '
+          'You can change this anytime in Settings.',
+  'consent_allow': 'Allow personalized ads',
+  'consent_reject': 'No thanks',
+  'consent_privacy_label': 'Privacy Policy',
+
+  // VIP — management screen
+  'vip_title': 'VIP',
+  'vip_status_active': 'VIP active',
+  'vip_status_inactive': 'No active VIP',
+  'vip_status_inactive_tagline': 'Enjoy an ad-free experience with a VIP key.',
+  'vip_expires_at': 'Valid until @date',
+  'vip_remaining_days': '@days days left',
+  'vip_remaining_hours': '@hours hours left',
+  'vip_remaining_extra_hours': '+@hours h',
+  'vip_redeem_title': 'Redeem VIP key',
+  'vip_redeem_subtitle': 'Enter your activation key to unlock an ad-free session.',
+  'vip_key_hint': 'Enter your activation key',
+  'vip_activate_button': 'Activate',
+  'vip_active_entries': 'Active keys (@count)',
+  'vip_revoke': 'Revoke',
+  'vip_revoke_all': 'Revoke all',
+  'vip_revoke_confirm': 'Are you sure you want to revoke this VIP key?',
+  'vip_revoke_all_confirm':
+      'Are you sure you want to revoke all active VIP keys?',
+  'vip_no_entries': 'No active VIP keys yet.',
+  'vip_first_install': 'New install gift',
+  'vip_legacy_device': 'QA device',
+  'vip_enter_key_first': 'Please enter a key first.',
+  'vip_sdk_not_ready': 'Ad SDK is not ready. Please try again later.',
+  'vip_privacy_policy': 'Privacy Policy & Terms',
+
+  // VIP dialog (Cupertino — SDK redeem flow)
+  'vip_verifying_title': 'Verifying',
+  'vip_verifying_message': 'Please wait a moment…',
+  'vip_success_title': 'VIP Activated',
+  'vip_success_message': 'VIP active until @until.',
+  'vip_failed_title': 'Invalid Key',
+  'vip_failed_message': 'The VIP key you entered is invalid or expired.',
+  'vip_network_error': 'Network error — please try again.',
+  'vip_confirm': 'OK',
 };

@@ -11,6 +11,7 @@ import 'widgets/status_text_widget.dart';
 import 'widgets/control_panel_widget.dart';
 import 'widgets/control_button_widget.dart';
 import 'presentation/history_screen.dart';
+import '../vip/vip_screen.dart';
 
 /// Widget chính cho ứng dụng kiểm tra sức chịu tải WiFi
 /// Sử dụng StatelessWidget để tối ưu hiệu suất
@@ -144,6 +145,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           onPressed: _navigateToHistory,
           tooltip: 'History & Statistics',
         ),
+        _buildVipAction(),
         IconButton(
           icon: const Icon(Icons.language, color: Colors.white),
           onPressed: _showLanguageDialog,
@@ -154,6 +156,38 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
         ),
       ],
     );
+  }
+
+  /// VIP icon — màu vàng nếu user đang VIP active, trắng nếu inactive.
+  /// Reactive qua `AdManager().vip!.activeListenable`. Tap → push VipScreen
+  /// (không show interstitial — VIP nav phải mượt, không quảng cáo chen vào).
+  Widget _buildVipAction() {
+    final vip = AdManager().vip;
+    if (vip == null) {
+      return IconButton(
+        icon: const Icon(Icons.workspace_premium_outlined, color: Colors.white),
+        tooltip: 'VIP',
+        onPressed: _navigateToVip,
+      );
+    }
+    return ValueListenableBuilder<bool>(
+      valueListenable: vip.activeListenable,
+      builder: (context, active, _) {
+        return IconButton(
+          icon: Icon(
+            active ? Icons.workspace_premium : Icons.workspace_premium_outlined,
+            color: active ? const Color(0xFFFFD60A) : Colors.white,
+          ),
+          tooltip: 'VIP',
+          onPressed: _navigateToVip,
+        );
+      },
+    );
+  }
+
+  void _navigateToVip() {
+    SafeLogger.d(_tag, '▶️ ACTION navigateToVip');
+    Get.to(() => const VipScreen());
   }
 
   static const String _tag = 'StressorHome';
