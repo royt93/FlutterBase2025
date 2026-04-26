@@ -34,6 +34,8 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       ValueNotifier<List<VipEntry>>(const []);
 
   AnimationController? _shimmerController;
+  AnimationController? _entryController;
+  AnimationController? _pulseController;
   StreamSubscription<bool>? _activeSubscription;
   Timer? _tickTimer;
 
@@ -44,6 +46,19 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat();
+
+    // Staggered entrance: 3 section dùng chung 1 controller, mỗi section
+    // chiếm 1 Interval khác nhau → fade-slide vào tuần tự.
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..forward();
+
+    // Pulse glow cho activate button khi user đã nhập key.
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
 
     _refreshEntries();
 
@@ -65,6 +80,8 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
     _activeSubscription?.cancel();
     _tickTimer?.cancel();
     _shimmerController?.dispose();
+    _entryController?.dispose();
+    _pulseController?.dispose();
     _keyController.dispose();
     _keyFocus.dispose();
     _isProcessing.dispose();
@@ -83,6 +100,10 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
   }
 
   Future<void> _onActivate() async {
+    // Hide keyboard NGAY trước khi check — user yêu cầu rõ. Phải gọi đầu tiên
+    // để nếu validate fail thì keyboard vẫn không bám lại.
+    FocusScope.of(context).unfocus();
+
     final raw = _keyController.text;
     if (raw.trim().isEmpty) {
       _showSnack('vip_enter_key_first'.tr);
@@ -115,7 +136,6 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
     );
 
     _isProcessing.value = true;
-    FocusScope.of(context).unfocus();
     try {
       final ok = await vip.redeemVip(
         context,
@@ -271,13 +291,13 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
                       32,
                     ),
                     children: [
-                      _buildHeroCard(active, vip.expiresAt),
+                      _staggered(0, _buildHeroCard(active, vip.expiresAt)),
                       const SizedBox(height: 24),
-                      _buildRedeemSection(),
+                      _staggered(1, _buildRedeemSection()),
                       const SizedBox(height: 24),
-                      _buildEntriesSection(entries),
+                      _staggered(2, _buildEntriesSection(entries)),
                       const SizedBox(height: 24),
-                      _buildFooter(),
+                      _staggered(3, _buildFooter()),
                     ],
                   ),
                 ],
@@ -612,60 +632,108 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
           ValueListenableBuilder<bool>(
             valueListenable: _isProcessing,
             builder: (context, processing, _) {
-              return SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFFD60A), Color(0xFFFFB200)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: processing
-                        ? null
-                        : [
-                            BoxShadow(
-                              color: const Color(0xFFFFB200)
-                                  .withValues(alpha: 0.4),
-                              blurRadius: 18,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: processing ? null : _onActivate,
-                      child: Center(
-                        child: processing
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.6,
-                                  color: Colors.black,
-                                ),
-                              )
-                            : Text(
-                                'vip_activate_button'.tr.toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.6,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-                ),
+              return ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _keyController,
+                builder: (context, value, __) {
+                  final hasKey = value.text.trim().isNotEmpty;
+                  final enabled = !processing && hasKey;
+                  return _buildActivateButton(
+                    enabled: enabled,
+                    processing: processing,
+                  );
+                },
               );
             },
           ),
         ],
+      ),
+    );
+  }
+
+  /// Activate button.
+  /// - `enabled = false` khi user chưa nhập key → disabled visual + onTap=null.
+  /// - `enabled = true` → pulse glow để thu hút mắt user.
+  /// - `processing = true` → spinner thay text, vẫn giữ visual enabled.
+  Widget _buildActivateButton({
+    required bool enabled,
+    required bool processing,
+  }) {
+    final pulseCtrl = _pulseController;
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: AnimatedBuilder(
+        animation: pulseCtrl ?? const AlwaysStoppedAnimation(0),
+        builder: (context, _) {
+          // Pulse: 0..1 sin wave; chỉ áp khi enabled & không processing.
+          final p = (enabled && !processing && pulseCtrl != null)
+              ? pulseCtrl.value
+              : 0.0;
+          final glowAlpha = enabled ? (0.32 + 0.28 * p) : 0.0;
+          final blur = enabled ? (16.0 + 14.0 * p) : 0.0;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: enabled
+                    ? const [Color(0xFFFFD60A), Color(0xFFFFB200)]
+                    : [
+                        Colors.white.withValues(alpha: 0.10),
+                        Colors.white.withValues(alpha: 0.04),
+                      ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: enabled
+                  ? null
+                  : Border.all(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      width: 1,
+                    ),
+              boxShadow: enabled
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFFFB200)
+                            .withValues(alpha: glowAlpha),
+                        blurRadius: blur,
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: enabled ? _onActivate : null,
+                child: Center(
+                  child: processing
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.6,
+                            color: Colors.black,
+                          ),
+                        )
+                      : Text(
+                          'vip_activate_button'.tr.toUpperCase(),
+                          style: TextStyle(
+                            color: enabled
+                                ? Colors.black
+                                : Colors.white.withValues(alpha: 0.4),
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -760,7 +828,8 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       displayName = 'vip_legacy_device'.tr;
     } else {
       icon = Icons.confirmation_number_outlined;
-      displayName = entry.key;
+      // Che giấu key: 3 ký tự đầu plaintext, phần còn lại thay bằng `*`.
+      displayName = _maskKey(entry.key);
     }
 
     final remainingLabel = daysLeft > 0
@@ -841,6 +910,39 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
         ),
       ),
     );
+  }
+
+  /// Stagger fade + slide-up entrance cho section thứ `index` (0..N-1).
+  /// Mỗi section delay 120ms so với section trước, duration 520ms.
+  Widget _staggered(int index, Widget child) {
+    final ctrl = _entryController;
+    if (ctrl == null) return child;
+    final start = (index * 0.15).clamp(0.0, 1.0);
+    final end = (start + 0.55).clamp(0.0, 1.0);
+    final anim = CurvedAnimation(
+      parent: ctrl,
+      curve: Interval(start, end, curve: Curves.easeOutCubic),
+    );
+    return AnimatedBuilder(
+      animation: anim,
+      builder: (context, c) {
+        final t = anim.value;
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, (1 - t) * 28),
+            child: c,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+
+  /// Giữ 3 ký tự đầu plaintext, phần còn lại thay bằng dấu `*`.
+  String _maskKey(String key) {
+    if (key.length <= 3) return key;
+    return key.substring(0, 3) + '*' * (key.length - 3);
   }
 
   String _fmtDateTime(DateTime dt) {
