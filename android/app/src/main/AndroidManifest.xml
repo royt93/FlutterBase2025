@@ -42,6 +42,8 @@
         android:name="${applicationName}"
         android:allowBackup="true"
         android:fullBackupOnly="true"
+        android:fullBackupContent="@xml/full_backup_content"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:hasFragileUserData="true"
         android:icon="@mipmap/launcher_icon"
         android:label="FastNet Speed Test"

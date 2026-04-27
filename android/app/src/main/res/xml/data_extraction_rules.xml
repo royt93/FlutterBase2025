@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup + Device Transfer rules (Android 12+, API 31+).
+
+  Required by `applovin_admob_sdk` v1.0.17+ anti-uninstall-bypass guard:
+  the `prefs.isFirstInstallGraceApplied()` flag (in `FlutterSharedPreferences.xml`)
+  must be cloud-backed up so a reinstall on the same Google account restores
+  the flag and short-circuits a fresh first-install grace grant.
+
+  Excludes `FlutterSecureStorage.xml` because its EncryptedSharedPreferences
+  ciphertext is unrecoverable without the device-bound Keystore key (which is
+  not part of any backup), so restoring that file produces garbage.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="FlutterSharedPreferences.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="FlutterSharedPreferences.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+    </device-transfer>
+</data-extraction-rules>

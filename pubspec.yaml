@@ -43,8 +43,8 @@ dependencies:
   path_provider: ^2.1.4
   share_plus: ^10.1.2
 
-  applovin_admob_sdk: ^1.0.16
-  # Ad SDK (monorepo local package)
+  applovin_admob_sdk: ^1.0.17
+  # Local path for SDK development (uncomment + comment line above to use):
 #  applovin_admob_sdk:
 #    path: packages/ad_sdk
 
