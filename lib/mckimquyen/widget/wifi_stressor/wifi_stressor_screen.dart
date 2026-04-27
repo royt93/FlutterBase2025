@@ -113,12 +113,19 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       appBar: _buildAppBar(),
       body: Column(
         children: [
+          // Banner sits below the AppBar; we wrap the bottom in SafeArea so
+          // the main content doesn't overlap the gesture nav bar in
+          // edge-to-edge mode (`UIUtils.initEdgeToEdge()` is called from
+          // `main.dart`).
           buildBanner(),
           Expanded(
-            child: Obx(() {
-              final isRunning = controller.isRunning.value;
-              return _buildMainContent(context, isRunning);
-            }),
+            child: SafeArea(
+              top: false,
+              child: Obx(() {
+                final isRunning = controller.isRunning.value;
+                return _buildMainContent(context, isRunning);
+              }),
+            ),
           ),
         ],
       ),

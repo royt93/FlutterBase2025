@@ -4,6 +4,7 @@ import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:saigonphantomlabs/mckimquyen/common/const/ad_keys.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
@@ -11,9 +12,6 @@ import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/vip/vip_keys.dart';
 
 import '../../core/base_stateful_state.dart';
-
-const String _kPrivacyPolicyUrl =
-    'https://loitp.notion.site/Term-Privacy-Policy-Disclaimer-319b1cd8783942fa8923d2a3c9bce60';
 
 class SplashScreen extends StatefulWidget {
   static String screenName = "/SplashScreen";
@@ -144,13 +142,10 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
         AdManager().initialize(
           config: AdConfig(
             provider: AdProvider.appLovin,
-            appLovin: const AppLovinConfig(
-              sdkKey: 'e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt',
-              bannerId: '55145203d74b7bb0',
-              interstitialId: 'f8c4de38486cdb76',
-              appOpenId: '9309d90308be99c1',
-              rewardedId: 'e50710c6caa75a33',
-            ),
+            appLovin: AdKey.appLovin,
+            // AdMob populated for swap-readiness (currently unused — provider
+            // is appLovin). See `lib/mckimquyen/common/const/ad_keys.dart`.
+            admob: AdKey.adMob,
             // Q16B: keep legacy GAID list — SDK auto-migrates to VipManager
             // entries (year-2099) for the matching device only.
             vipDeviceGaids: const [
@@ -190,7 +185,7 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
               allowButton: 'consent_allow'.tr,
               rejectButton: 'consent_reject'.tr,
               privacyPolicyLabel: 'consent_privacy_label'.tr,
-              privacyPolicyUrl: _kPrivacyPolicyUrl,
+              privacyPolicyUrl: AdKey.privacyPolicyUrl,
             ),
 
             // Q14: validator chỉ accept key trong kVipKeyMap (30d).
@@ -404,10 +399,10 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                     const SizedBox(height: 32),
                     Container(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                      child: const Text(
-                        adPlsNoteEn,
+                      child: Text(
+                        'splash_ads_notice'.tr,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                           color: Colors.white,

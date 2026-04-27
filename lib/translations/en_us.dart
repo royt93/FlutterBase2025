@@ -3,6 +3,18 @@ const Map<String, String> enUS = {
   // App Title
   'app_title': 'FastNet Speed Test',
 
+  // Splash
+  'splash_ads_notice': 'Please note: this action may show ads',
+
+  // VIP — buy section (placeholders, IAP not wired yet)
+  'vip_buy_title': 'Buy VIP plan',
+  'vip_buy_30d': '30-day VIP',
+  'vip_buy_90d': '90-day VIP',
+  'vip_buy_1y': '1-year VIP',
+  'vip_buy_lifetime': 'Lifetime VIP',
+  'vip_buy_locked': 'COMING SOON',
+  'vip_restore_locked': 'Restore purchase — coming soon',
+
   // Info Dialog
   'info_dialog_title': 'App Information',
   'info_dialog_content':

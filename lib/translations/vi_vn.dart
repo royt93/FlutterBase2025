@@ -3,6 +3,18 @@ const Map<String, String> viVN = {
   // App Title
   'app_title': 'FastNet Speed Test',
 
+  // Splash
+  'splash_ads_notice': 'Lưu ý: ứng dụng có thể hiển thị quảng cáo',
+
+  // VIP — buy section (placeholders, IAP chưa wire)
+  'vip_buy_title': 'Mua gói VIP',
+  'vip_buy_30d': 'VIP 30 ngày',
+  'vip_buy_90d': 'VIP 90 ngày',
+  'vip_buy_1y': 'VIP 1 năm',
+  'vip_buy_lifetime': 'VIP trọn đời',
+  'vip_buy_locked': 'SẮP CÓ',
+  'vip_restore_locked': 'Khôi phục mua hàng — sắp có',
+
   // Info Dialog
   'info_dialog_title': 'Thông tin ứng dụng',
   'info_dialog_content':

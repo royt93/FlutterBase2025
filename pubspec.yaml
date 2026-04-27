@@ -1,7 +1,7 @@
 name: saigonphantomlabs
 description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 2026.04.26+20260426
+version: 2026.04.27+20260427
 
 environment:
   sdk: '>=2.19.6 <4.0.0'
@@ -43,7 +43,7 @@ dependencies:
   path_provider: ^2.1.4
   share_plus: ^10.1.2
 
-  applovin_admob_sdk: ^1.0.17
+  applovin_admob_sdk: ^1.0.18
   # Local path for SDK development (uncomment + comment line above to use):
 #  applovin_admob_sdk:
 #    path: packages/ad_sdk
@@ -54,6 +54,8 @@ dependencies:
   # Essential UI feedback
   vibration: ^3.1.5
   flutter_easyloading: ^3.0.5
+  # Celebration animation on VIP activation success (Q18A).
+  confetti: ^0.7.0
 
 #  dart run rename_app:main all="My App Name"
 #  rename_app: ^1.6.2

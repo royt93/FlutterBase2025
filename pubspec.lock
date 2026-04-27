@@ -37,10 +37,10 @@ packages:
     dependency: "direct main"
     description:
       name: applovin_admob_sdk
-      sha256: cd5f5702959be10fc7ec534da2d8051d13c40dc5ff0c8e9dc9c6cb651963e020
+      sha256: "672b61a05212f96741db587cfdd06885bde27d22617db529a03a99f8231bcd63"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.17"
+    version: "1.0.18"
   applovin_max:
     dependency: transitive
     description:
@@ -185,6 +185,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
+  confetti:
+    dependency: "direct main"
+    description:
+      name: confetti
+      sha256: "979aafde2428c53947892c95eb244466c109c129b7eee9011f0a66caaca52267"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.0"
   connection_notifier:
     dependency: transitive
     description:

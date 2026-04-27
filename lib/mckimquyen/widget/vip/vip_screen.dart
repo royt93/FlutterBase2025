@@ -2,16 +2,15 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../common/const/ad_keys.dart';
 import '../../core/base_stateful_state.dart';
 import 'vip_keys.dart';
-
-const String _kPrivacyPolicyUrl =
-    'https://loitp.notion.site/Term-Privacy-Policy-Disclaimer-319b1cd8783942fa8923d2a3c9bce60';
 
 const String _kFirstInstallKey = '__FIRST_INSTALL__';
 const String _kLegacyKeyPrefix = 'LEGACY_';
@@ -36,8 +35,15 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
   AnimationController? _shimmerController;
   AnimationController? _entryController;
   AnimationController? _pulseController;
+  ConfettiController? _confettiController;
   StreamSubscription<bool>? _activeSubscription;
+  // Re-render entries (icons, expiry strings) every 30 s — slow channel.
   Timer? _tickTimer;
+  // Drives the per-second countdown text (`12d 03h 24m 15s`). Separate from
+  // `_tickTimer` so the high-frequency rebuilds only repaint the countdown
+  // widget, not the whole entries list.
+  Timer? _countdownTimer;
+  final ValueNotifier<DateTime> _now = ValueNotifier(DateTime.now());
 
   @override
   void initState() {
@@ -60,6 +66,10 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       duration: const Duration(milliseconds: 1600),
     )..repeat(reverse: true);
 
+    // Confetti on successful VIP activation (Q18A).
+    _confettiController =
+        ConfettiController(duration: const Duration(milliseconds: 1200));
+
     _refreshEntries();
 
     final vip = AdManager().vip;
@@ -67,11 +77,17 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       _activeSubscription = vip.activeStream.listen((_) => _refreshEntries());
     }
 
-    // Re-render every 30 s so the "remaining days/hours" text counts down
-    // smoothly without polling more often than necessary.
+    // Slow channel: re-fetch entries every 30 s (catches external add/revoke).
     _tickTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (!mounted) return;
       _refreshEntries();
+    });
+
+    // Fast channel: per-second countdown text. Only the countdown widget
+    // rebuilds on each tick (it's the only listener on `_now`).
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      _now.value = DateTime.now();
     });
   }
 
@@ -79,13 +95,16 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
   void dispose() {
     _activeSubscription?.cancel();
     _tickTimer?.cancel();
+    _countdownTimer?.cancel();
     _shimmerController?.dispose();
     _entryController?.dispose();
     _pulseController?.dispose();
+    _confettiController?.dispose();
     _keyController.dispose();
     _keyFocus.dispose();
     _isProcessing.dispose();
     _entriesNotifier.dispose();
+    _now.dispose();
     super.dispose();
   }
 
@@ -149,6 +168,7 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       if (ok) {
         _keyController.clear();
         unawaited(HapticFeedback.heavyImpact());
+        _confettiController?.play();
       }
       _refreshEntries();
     } finally {
@@ -221,7 +241,7 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
   }
 
   Future<void> _openPrivacyPolicy() async {
-    final uri = Uri.parse(_kPrivacyPolicyUrl);
+    final uri = Uri.parse(AdKey.privacyPolicyUrl);
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok) _showSnack('error'.tr);
   }
@@ -279,6 +299,9 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
             valueListenable: _entriesNotifier,
             builder: (context, entries, __) {
               final topInset = MediaQuery.of(context).padding.top;
+              // Pick the active entry that owns the latest expiry — the
+              // hero card / progress bar / countdown all reference this one.
+              final primaryEntry = _pickPrimaryActiveEntry(entries);
               return Stack(
                 children: [
                   _buildBackdrop(active),
@@ -291,15 +314,20 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
                       32,
                     ),
                     children: [
-                      _staggered(0, _buildHeroCard(active, vip.expiresAt)),
+                      _staggered(0, _buildHeroCard(active, primaryEntry)),
                       const SizedBox(height: 24),
                       _staggered(1, _buildRedeemSection()),
                       const SizedBox(height: 24),
                       _staggered(2, _buildEntriesSection(entries)),
                       const SizedBox(height: 24),
-                      _staggered(3, _buildFooter()),
+                      _staggered(3, _buildBuyVipSection()),
+                      const SizedBox(height: 24),
+                      _staggered(4, _buildFooter()),
                     ],
                   ),
+                  // Confetti — fired in `_onActivate` on success. Anchored
+                  // top-center so paper falls down across the hero card.
+                  _buildConfettiOverlay(),
                 ],
               );
             },
@@ -341,7 +369,8 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
     );
   }
 
-  Widget _buildHeroCard(bool active, DateTime? expiresAt) {
+  Widget _buildHeroCard(bool active, VipEntry? primaryEntry) {
+    final expiresAt = primaryEntry?.expiresAt;
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.85, end: 1.0),
       duration: const Duration(milliseconds: 600),
@@ -409,12 +438,126 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
                 height: 1.4,
               ),
             ),
-            if (active && expiresAt != null) ...[
+            if (active && primaryEntry != null) ...[
               const SizedBox(height: 18),
-              _buildRemainingBadge(expiresAt),
+              _buildRemainingBadge(primaryEntry.expiresAt),
+              const SizedBox(height: 14),
+              // Per-second countdown text "12d 03h 24m 15s" — listens only
+              // to `_now`, so it's the only widget that rebuilds every tick.
+              _buildCountdownText(primaryEntry.expiresAt),
+              const SizedBox(height: 14),
+              _buildProgressBar(primaryEntry),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// Format the gap between [now] and [expiresAt] as `12d 03h 24m 15s`.
+  /// Trims leading zero-units (e.g., shows `03h 24m 15s` once `days == 0`).
+  String _fmtCountdown(Duration remaining) {
+    if (remaining.isNegative || remaining == Duration.zero) {
+      return '0s';
+    }
+    final d = remaining.inDays;
+    final h = remaining.inHours % 24;
+    final m = remaining.inMinutes % 60;
+    final s = remaining.inSeconds % 60;
+    if (d > 0) return '${d}d ${_pad2(h)}h ${_pad2(m)}m ${_pad2(s)}s';
+    if (h > 0) return '${_pad2(h)}h ${_pad2(m)}m ${_pad2(s)}s';
+    if (m > 0) return '${_pad2(m)}m ${_pad2(s)}s';
+    return '${s}s';
+  }
+
+  String _pad2(int v) => v.toString().padLeft(2, '0');
+
+  Widget _buildCountdownText(DateTime expiresAt) {
+    return ValueListenableBuilder<DateTime>(
+      valueListenable: _now,
+      builder: (context, now, _) {
+        final remaining = expiresAt.difference(now);
+        return Text(
+          _fmtCountdown(remaining),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontFeatures: [FontFeature.tabularFigures()],
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProgressBar(VipEntry entry) {
+    return ValueListenableBuilder<DateTime>(
+      valueListenable: _now,
+      builder: (context, now, _) {
+        final total = entry.expiresAt.difference(entry.grantedAt);
+        final remaining = entry.expiresAt.difference(now);
+        // Clamp to [0, 1]; 1.0 = just granted, 0.0 = expired.
+        final progress = total.inMilliseconds <= 0
+            ? 0.0
+            : (remaining.inMilliseconds / total.inMilliseconds)
+                .clamp(0.0, 1.0)
+                .toDouble();
+        return TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: progress, end: progress),
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOut,
+          builder: (context, value, _) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: value,
+                minHeight: 10,
+                backgroundColor: Colors.white.withValues(alpha: 0.18),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Colors.white.withValues(alpha: 0.95),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Pick the active entry whose `expiresAt` is the latest — that's the
+  /// one driving the hero card / progress bar / countdown.
+  VipEntry? _pickPrimaryActiveEntry(List<VipEntry> entries) {
+    VipEntry? primary;
+    for (final e in entries) {
+      if (!e.isActive) continue;
+      if (primary == null || e.expiresAt.isAfter(primary.expiresAt)) {
+        primary = e;
+      }
+    }
+    return primary;
+  }
+
+  Widget _buildConfettiOverlay() {
+    final c = _confettiController;
+    if (c == null) return const SizedBox.shrink();
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConfettiWidget(
+        confettiController: c,
+        blastDirectionality: BlastDirectionality.explosive,
+        maxBlastForce: 18,
+        minBlastForce: 8,
+        emissionFrequency: 0.04,
+        numberOfParticles: 18,
+        gravity: 0.4,
+        shouldLoop: false,
+        colors: const [
+          Color(0xFFFFD60A),
+          Color(0xFFFFB200),
+          Color(0xFFFF6B00),
+          Colors.white,
+        ],
       ),
     );
   }
@@ -887,6 +1030,176 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
             onPressed: () => _onRevoke(entry),
           ),
         ],
+      ),
+    );
+  }
+
+  /// In-app purchase placeholders. All buttons are disabled — wiring real
+  /// IAP is a follow-up. The list is here to give the VIP screen its full
+  /// merchandising surface and to make the "VIP" feature feel commercial
+  /// even before billing is integrated.
+  Widget _buildBuyVipSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.shopping_bag_outlined,
+                  color: Color(0xFFFFB200), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'vip_buy_title'.tr,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _buildBuyOption(
+            icon: Icons.calendar_today_outlined,
+            label: 'vip_buy_30d'.tr,
+            price: '\$0.5',
+          ),
+          _buildBuyOption(
+            icon: Icons.event_outlined,
+            label: 'vip_buy_90d'.tr,
+            price: '\$1',
+          ),
+          _buildBuyOption(
+            icon: Icons.event_available_outlined,
+            label: 'vip_buy_1y'.tr,
+            price: '\$2',
+          ),
+          _buildBuyOption(
+            icon: Icons.all_inclusive,
+            label: 'vip_buy_lifetime'.tr,
+            price: '\$3',
+          ),
+          const SizedBox(height: 6),
+          // Restore-purchase row — also disabled until IAP is wired.
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              // Disabled — IAP not integrated yet.
+              onTap: null,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 10),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.restore,
+                      color: Colors.white.withValues(alpha: 0.4),
+                      size: 18,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'vip_restore_locked'.tr,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBuyOption({
+    required IconData icon,
+    required String label,
+    required String price,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          // Disabled placeholder — `onTap: null` makes the row visually
+          // greyed out via Material's built-in disabled state.
+          onTap: null,
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB200).withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: const Color(0xFFFFB200).withValues(alpha: 0.6),
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Text(
+                  price,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'vip_buy_locked'.tr,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
