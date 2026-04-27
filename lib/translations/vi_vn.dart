@@ -6,6 +6,14 @@ const Map<String, String> viVN = {
   // Splash
   'splash_ads_notice': 'Lưu ý: ứng dụng có thể hiển thị quảng cáo',
 
+  // VIP — watch ad → 3 days (rewarded + interstitial fallback)
+  'vip_watch_ad_title': 'Xem quảng cáo → VIP miễn phí',
+  'vip_watch_ad_subtitle': 'Xem 1 quảng cáo ngắn để nhận ngay 3 ngày VIP miễn phí.',
+  'vip_watch_ad_badge_free': 'MIỄN PHÍ',
+  'vip_watch_ad_button': 'Xem quảng cáo',
+  'vip_watch_ad_success': '🎉 Đã nhận 3 ngày VIP!',
+  'vip_watch_ad_failed': 'Không tải được quảng cáo — vui lòng thử lại sau.',
+
   // VIP — buy section (placeholders, IAP chưa wire)
   'vip_buy_title': 'Mua gói VIP',
   'vip_buy_30d': 'VIP 30 ngày',

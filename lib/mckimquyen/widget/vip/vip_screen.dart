@@ -176,6 +176,86 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
     }
   }
 
+  /// "Watch ad → 3 days VIP" flow.
+  ///
+  /// Per `AD_PROMPT_FLUTTER.MD` Step 4.7 + 10.3 #7:
+  ///   1. Try `showRewardedAd` first (preferred — explicit user opt-in for ads).
+  ///   2. **Fall back to interstitial only when rewarded didn't actually
+  ///      display** (load fail / VIP gate / safety throttle). The
+  ///      heuristic: if `onEarnedReward(false)` fires within
+  ///      [_rewardedShowProbeMs] of the show call, the ad never
+  ///      displayed — fallback to interstitial. If it fires later
+  ///      (`earned=false`), the user dismissed mid-watch — no fallback
+  ///      (would double-show ads).
+  ///   3. On any ad-showing path that grants → `addVip(REWARDED_<ts>, 3 days)`.
+  ///   4. Trigger confetti + heavy haptic on success, snackbar on failure.
+  ///
+  /// **No artificial timeout on the rewarded callback.** The SDK
+  /// guarantees the callback fires (it has its own 90 s hard cap), and
+  /// adding a host-side timeout creates a race where we'd try to
+  /// fall back to interstitial while rewarded is still on screen
+  /// (`fullscreenAdAlreadyShowing` error).
+  static const int _rewardedShowProbeMs = 3000;
+
+  Future<void> _onWatchAdForVip() async {
+    if (_isProcessing.value) return;
+    final vip = AdManager().vip;
+    if (vip == null) {
+      _showSnack('vip_sdk_not_ready'.tr);
+      return;
+    }
+
+    _isProcessing.value = true;
+    try {
+      // Step 1 — rewarded ad (preferred path). NO timeout — SDK guarantees
+      // the callback fires.
+      final rewardCompleter = Completer<bool>();
+      final rewardStartedAt = DateTime.now();
+      AdManager().showRewardedAd(
+        onEarnedReward: (earned) {
+          if (!rewardCompleter.isCompleted) rewardCompleter.complete(earned);
+        },
+      );
+      final earned = await rewardCompleter.future;
+      final rewardElapsedMs =
+          DateTime.now().difference(rewardStartedAt).inMilliseconds;
+      if (!mounted) return;
+
+      bool granted = earned;
+
+      // Step 2 — only fall back to interstitial if rewarded clearly didn't
+      // display (callback fired with `earned=false` very quickly = load
+      // fail, VIP gate, or safety throttle). If rewarded was on screen
+      // for more than the probe window, the user saw the ad and either
+      // earned or dismissed — no fallback.
+      if (!earned && rewardElapsedMs < _rewardedShowProbeMs) {
+        final interCompleter = Completer<bool>();
+        AdManager().showInterstitial(
+          onDoneFlow: (shown) {
+            if (!interCompleter.isCompleted) interCompleter.complete(shown);
+          },
+        );
+        granted = await interCompleter.future;
+        if (!mounted) return;
+      }
+
+      // Step 3 — grant 3 days if either ad path granted, otherwise notify.
+      if (granted) {
+        final key = 'REWARDED_${DateTime.now().millisecondsSinceEpoch}';
+        await vip.addVip(key: key, duration: const Duration(days: 3));
+        if (!mounted) return;
+        _confettiController?.play();
+        unawaited(HapticFeedback.heavyImpact());
+        _showSnack('vip_watch_ad_success'.tr);
+        _refreshEntries();
+      } else {
+        _showSnack('vip_watch_ad_failed'.tr);
+      }
+    } finally {
+      if (mounted) _isProcessing.value = false;
+    }
+  }
+
   Future<void> _onRevoke(VipEntry entry) async {
     final confirmed = await _confirmDialog(
       'vip_revoke'.tr,
@@ -317,12 +397,20 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
                       _staggered(0, _buildHeroCard(active, primaryEntry)),
                       const SizedBox(height: 24),
                       _staggered(1, _buildRedeemSection()),
+                      // Watch-ad section is hidden when VIP is already
+                      // active — both rewarded and interstitial slots
+                      // short-circuit on VIP guard so the button would
+                      // silent-fail. Showing it would just confuse users.
+                      if (!active) ...[
+                        const SizedBox(height: 24),
+                        _staggered(2, _buildWatchAdSection()),
+                      ],
                       const SizedBox(height: 24),
-                      _staggered(2, _buildEntriesSection(entries)),
+                      _staggered(3, _buildEntriesSection(entries)),
                       const SizedBox(height: 24),
-                      _staggered(3, _buildBuyVipSection()),
+                      _staggered(4, _buildBuyVipSection()),
                       const SizedBox(height: 24),
-                      _staggered(4, _buildFooter()),
+                      _staggered(5, _buildFooter()),
                     ],
                   ),
                   // Confetti — fired in `_onActivate` on success. Anchored
@@ -1030,6 +1118,157 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
             onPressed: () => _onRevoke(entry),
           ),
         ],
+      ),
+    );
+  }
+
+  /// "Watch ad → 3 days VIP" — free way for non-paying users to get a VIP
+  /// window. Implements the rewarded → interstitial fallback flow from
+  /// `AD_PROMPT_FLUTTER.MD` Step 4.7 + 10.3 #7. The button pulses (Step
+  /// 10.4 #1) to draw attention.
+  Widget _buildWatchAdSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFFFB200).withValues(alpha: 0.18),
+            const Color(0xFFFF6B00).withValues(alpha: 0.10),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: const Color(0xFFFFB200).withValues(alpha: 0.35),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.play_circle_outline,
+                  color: Color(0xFFFFB200), size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'vip_watch_ad_title'.tr,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFB200),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'vip_watch_ad_badge_free'.tr,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'vip_watch_ad_subtitle'.tr,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.78),
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ValueListenableBuilder<bool>(
+            valueListenable: _isProcessing,
+            builder: (context, processing, _) {
+              return _buildWatchAdButton(processing: processing);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Watch-ad CTA button with pulse animation (reuses `_pulseController`).
+  /// Disabled while another ad/redeem flow is in flight.
+  Widget _buildWatchAdButton({required bool processing}) {
+    final pulseCtrl = _pulseController;
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: AnimatedBuilder(
+        animation: pulseCtrl ?? const AlwaysStoppedAnimation(0),
+        builder: (context, _) {
+          final p = (pulseCtrl != null && !processing) ? pulseCtrl.value : 0.0;
+          final glowAlpha = processing ? 0.0 : (0.32 + 0.28 * p);
+          final blur = processing ? 0.0 : (16.0 + 14.0 * p);
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFD60A), Color(0xFFFFB200)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFB200).withValues(alpha: glowAlpha),
+                  blurRadius: blur,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: processing ? null : _onWatchAdForVip,
+                child: Center(
+                  child: processing
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.6,
+                            color: Colors.black,
+                          ),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.play_arrow_rounded,
+                                color: Colors.black, size: 22),
+                            const SizedBox(width: 6),
+                            Text(
+                              'vip_watch_ad_button'.tr.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

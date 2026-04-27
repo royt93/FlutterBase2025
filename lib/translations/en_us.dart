@@ -6,6 +6,14 @@ const Map<String, String> enUS = {
   // Splash
   'splash_ads_notice': 'Please note: this action may show ads',
 
+  // VIP — watch ad → 3 days (rewarded + interstitial fallback)
+  'vip_watch_ad_title': 'Watch ad → free VIP',
+  'vip_watch_ad_subtitle': 'Watch a short ad and unlock 3 days of VIP for free.',
+  'vip_watch_ad_badge_free': 'FREE',
+  'vip_watch_ad_button': 'Watch ad',
+  'vip_watch_ad_success': '🎉 Earned 3 days of VIP!',
+  'vip_watch_ad_failed': 'Couldn\'t load ad — please try again later.',
+
   // VIP — buy section (placeholders, IAP not wired yet)
   'vip_buy_title': 'Buy VIP plan',
   'vip_buy_30d': '30-day VIP',
