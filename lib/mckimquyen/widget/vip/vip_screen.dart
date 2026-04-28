@@ -579,35 +579,45 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
     );
   }
 
+  /// Elapsed-time progress bar.
+  ///
+  /// 3 marks on a horizontal timeline:
+  ///   - **start** = `entry.grantedAt` (left edge, 0.0)
+  ///   - **end**   = `entry.expiresAt` (right edge, 1.0)
+  ///   - **current** = `now` (the fill position)
+  ///
+  /// `progress = (now - grantedAt) / (expiresAt - grantedAt)`. Bar starts
+  /// empty when VIP is just granted and fills toward 1.0 as the entry
+  /// approaches expiry.
+  ///
+  /// We clamp to `[0, 1]` so a clock skew or already-expired entry
+  /// doesn't break the visual.
+  ///
+  /// Renders directly with `LinearProgressIndicator` — the value changes
+  /// per second from `_now`, but for typical VIP windows (24 h–1 year)
+  /// the per-second delta is < 0.001 % so smoothing animation is
+  /// unnecessary and only hides the actual progression.
   Widget _buildProgressBar(VipEntry entry) {
     return ValueListenableBuilder<DateTime>(
       valueListenable: _now,
       builder: (context, now, _) {
         final total = entry.expiresAt.difference(entry.grantedAt);
-        final remaining = entry.expiresAt.difference(now);
-        // Clamp to [0, 1]; 1.0 = just granted, 0.0 = expired.
+        final elapsed = now.difference(entry.grantedAt);
         final progress = total.inMilliseconds <= 0
-            ? 0.0
-            : (remaining.inMilliseconds / total.inMilliseconds)
+            ? 1.0
+            : (elapsed.inMilliseconds / total.inMilliseconds)
                 .clamp(0.0, 1.0)
                 .toDouble();
-        return TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: progress, end: progress),
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeOut,
-          builder: (context, value, _) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: LinearProgressIndicator(
-                value: value,
-                minHeight: 10,
-                backgroundColor: Colors.white.withValues(alpha: 0.18),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.white.withValues(alpha: 0.95),
-                ),
-              ),
-            );
-          },
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            value: progress,
+            minHeight: 10,
+            backgroundColor: Colors.white.withValues(alpha: 0.18),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Colors.white.withValues(alpha: 0.95),
+            ),
+          ),
         );
       },
     );
