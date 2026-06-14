@@ -42,13 +42,13 @@ packages:
     source: hosted
     version: "1.0.18"
   applovin_max:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: applovin_max
-      sha256: e99e6a3a504d81a9a9d99e8303ca167a294351fb80ed35469e3e2ec432a69676
+      sha256: a34f0c51781cb0ccd3246446060d7bf94d50ef74b6a83cd5611a8232bd0ebd42
       url: "https://pub.dev"
     source: hosted
-    version: "4.6.3"
+    version: "4.6.0"
   archive:
     dependency: transitive
     description:
