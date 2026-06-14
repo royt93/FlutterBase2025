@@ -42,9 +42,11 @@ class ControlButtonWidget extends StatelessWidget {
 
     return FilledButton.icon(
       onPressed: () {
-        showInterstitialAd((value) {
-          controller.startStressTest();
-        });
+        // Policy: do NOT show an interstitial when the user STARTS the test —
+        // that interrupts an action the user just requested (Google/AppLovin
+        // "interruptive placement"). Run the feature immediately; the
+        // interstitial only shows on Stop (a natural transition point).
+        controller.startStressTest();
       },
       style: FilledButton.styleFrom(
         backgroundColor: Colors.green,

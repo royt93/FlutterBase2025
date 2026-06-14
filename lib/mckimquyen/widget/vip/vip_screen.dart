@@ -178,25 +178,14 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
 
   /// "Watch ad → 3 days VIP" flow.
   ///
-  /// Per `AD_PROMPT_FLUTTER.MD` Step 4.7 + 10.3 #7:
-  ///   1. Try `showRewardedAd` first (preferred — explicit user opt-in for ads).
-  ///   2. **Fall back to interstitial only when rewarded didn't actually
-  ///      display** (load fail / VIP gate / safety throttle). The
-  ///      heuristic: if `onEarnedReward(false)` fires within
-  ///      [_rewardedShowProbeMs] of the show call, the ad never
-  ///      displayed — fallback to interstitial. If it fires later
-  ///      (`earned=false`), the user dismissed mid-watch — no fallback
-  ///      (would double-show ads).
-  ///   3. On any ad-showing path that grants → `addVip(REWARDED_<ts>, 3 days)`.
-  ///   4. Trigger confetti + heavy haptic on success, snackbar on failure.
+  /// Policy: a reward may ONLY be granted after the user completes a **rewarded**
+  /// ad (`earned == true`). We do NOT fall back to an interstitial as a reward —
+  /// granting VIP for merely viewing an interstitial blurs the rewarded /
+  /// interstitial boundary and is against Google/AppLovin rewarded policy. If no
+  /// rewarded ad is available, we ask the user to try again later.
   ///
-  /// **No artificial timeout on the rewarded callback.** The SDK
-  /// guarantees the callback fires (it has its own 90 s hard cap), and
-  /// adding a host-side timeout creates a race where we'd try to
-  /// fall back to interstitial while rewarded is still on screen
-  /// (`fullscreenAdAlreadyShowing` error).
-  static const int _rewardedShowProbeMs = 3000;
-
+  /// **No artificial timeout on the rewarded callback.** The SDK guarantees the
+  /// callback fires (it has its own 90 s hard cap).
   Future<void> _onWatchAdForVip() async {
     if (_isProcessing.value) return;
     final vip = AdManager().vip;
@@ -207,40 +196,18 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
 
     _isProcessing.value = true;
     try {
-      // Step 1 — rewarded ad (preferred path). NO timeout — SDK guarantees
-      // the callback fires.
+      // Rewarded ad — the ONLY path that grants. NO timeout (SDK guarantees the
+      // callback fires).
       final rewardCompleter = Completer<bool>();
-      final rewardStartedAt = DateTime.now();
       AdManager().showRewardedAd(
         onEarnedReward: (earned) {
           if (!rewardCompleter.isCompleted) rewardCompleter.complete(earned);
         },
       );
       final earned = await rewardCompleter.future;
-      final rewardElapsedMs =
-          DateTime.now().difference(rewardStartedAt).inMilliseconds;
       if (!mounted) return;
 
-      bool granted = earned;
-
-      // Step 2 — only fall back to interstitial if rewarded clearly didn't
-      // display (callback fired with `earned=false` very quickly = load
-      // fail, VIP gate, or safety throttle). If rewarded was on screen
-      // for more than the probe window, the user saw the ad and either
-      // earned or dismissed — no fallback.
-      if (!earned && rewardElapsedMs < _rewardedShowProbeMs) {
-        final interCompleter = Completer<bool>();
-        AdManager().showInterstitial(
-          onDoneFlow: (shown) {
-            if (!interCompleter.isCompleted) interCompleter.complete(shown);
-          },
-        );
-        granted = await interCompleter.future;
-        if (!mounted) return;
-      }
-
-      // Step 3 — grant 3 days if either ad path granted, otherwise notify.
-      if (granted) {
+      if (earned) {
         final key = 'REWARDED_${DateTime.now().millisecondsSinceEpoch}';
         await vip.addVip(key: key, duration: const Duration(days: 3));
         if (!mounted) return;
@@ -249,6 +216,8 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
         _showSnack('vip_watch_ad_success'.tr);
         _refreshEntries();
       } else {
+        // Rewarded not available or dismissed early — do NOT grant via any
+        // other ad format. Ask the user to retry.
         _showSnack('vip_watch_ad_failed'.tr);
       }
     } finally {
