@@ -1102,9 +1102,10 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
   }
 
   /// "Watch ad → 3 days VIP" — free way for non-paying users to get a VIP
-  /// window. Implements the rewarded → interstitial fallback flow from
-  /// `AD_PROMPT_FLUTTER.MD` Step 4.7 + 10.3 #7. The button pulses (Step
-  /// 10.4 #1) to draw attention.
+  /// window. Grants VIP **only** when a rewarded ad is completed
+  /// (`earned == true`); there is no interstitial-as-reward fallback (that
+  /// would violate rewarded-ad policy). The button pulses (Step 10.4 #1) to
+  /// draw attention.
   Widget _buildWatchAdSection() {
     return Container(
       padding: const EdgeInsets.all(20),
