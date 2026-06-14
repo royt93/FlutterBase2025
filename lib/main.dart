@@ -32,19 +32,33 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SafeLogger.d('AppBoot', 'WidgetsFlutterBinding.ensureInitialized done');
   // Register navigator key so SDK can show loading dialogs from lifecycle observer
   AdManager().setNavigatorKey(navigatorKey);
+  SafeLogger.d('AppBoot', 'AdManager navigator key registered');
   // AdManager init is now handled in SplashScreen
   WakelockPlus.enable();
+  SafeLogger.d('AppBoot', 'WakelockPlus.enable requested');
   UIUtils.initEdgeToEdge();
+  SafeLogger.d('AppBoot', 'UIUtils.initEdgeToEdge done');
   if (Platform.isAndroid) {
+    SafeLogger.d('AppBoot', 'Android high refresh rate request start');
     await FlutterDisplayMode.setHighRefreshRate();
+    SafeLogger.d('AppBoot', 'Android high refresh rate request done');
+  } else {
+    SafeLogger.d('AppBoot',
+        'High refresh rate skipped for platform=${Platform.operatingSystem}');
   }
   await initializePlugin();
+  SafeLogger.d('AppBoot', 'initializePlugin done');
 
   // Load saved language preference
+  SafeLogger.d('AppBoot', 'LanguageService.getSavedLanguage start');
   final savedLocale = await LanguageService.getSavedLanguage();
+  SafeLogger.d(
+      'AppBoot', 'LanguageService.getSavedLanguage done locale=$savedLocale');
 
+  SafeLogger.d('AppBoot', 'runApp start');
   runApp(
     ToastificationWrapper(
       child: GetMaterialApp(
@@ -59,7 +73,8 @@ Future<void> main() async {
 
         // Multi-language configuration
         translations: AppTranslations(),
-        locale: savedLocale ?? const Locale('vi', 'VN'), // Use saved or default to Vietnamese
+        locale: savedLocale ??
+            const Locale('vi', 'VN'), // Use saved or default to Vietnamese
         fallbackLocale: const Locale('en', 'US'),
 
         home: const MyApp(),
@@ -70,7 +85,8 @@ Future<void> main() async {
           return EasyLoading.init()(
             context,
             MediaQuery(
-              data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: const TextScaler.linear(1.0)),
               child: child!,
             ),
           );
@@ -92,6 +108,7 @@ Future<void> main() async {
       ),
     ),
   );
+  SafeLogger.d('AppBoot', 'runApp returned');
   // _configLoading();
 }
 
@@ -113,7 +130,9 @@ Future<void> main() async {
 // }
 
 Future<void> initializePlugin() async {
+  SafeLogger.d('AppBoot', 'Get.put ControllerMain start');
   Get.put(ControllerMain());
+  SafeLogger.d('AppBoot', 'Get.put ControllerMain done');
 }
 
 class MyApp extends StatefulWidget {
@@ -128,6 +147,7 @@ class _MyAppState extends BaseStatefulState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    SafeLogger.d('AppBoot', 'MyApp.build -> SplashScreen');
     return MaterialApp(
       title: 'RoyApp',
       theme: ThemeData(

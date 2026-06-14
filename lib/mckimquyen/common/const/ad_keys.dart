@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 
 /// Centralised ad-related constants for the FastNet host app.
@@ -14,13 +16,29 @@ class AdKey {
 
   // ─── AppLovin (active runtime) ────────────────────────────────────────
   // Source: AppLovin Dashboard → MAX → Account → Keys.
-  static const AppLovinConfig appLovin = AppLovinConfig(
+  static AppLovinConfig get appLovin {
+    return Platform.isIOS ? appLovinIos : appLovinAndroid;
+  }
+
+  // Android units. These are the existing IDs that were already working on
+  // Android before the iOS-specific unit IDs were provided.
+  static const AppLovinConfig appLovinAndroid = AppLovinConfig(
     sdkKey:
         'e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt',
     bannerId: '55145203d74b7bb0',
     interstitialId: 'f8c4de38486cdb76',
     appOpenId: '9309d90308be99c1',
     rewardedId: 'e50710c6caa75a33',
+  );
+
+  // iOS units for com.saigonphantomlabs.base.
+  static const AppLovinConfig appLovinIos = AppLovinConfig(
+    sdkKey:
+        'e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt',
+    bannerId: 'e68fecfb83a971b0',
+    interstitialId: 'a440723b64a3fcab',
+    appOpenId: '2fb86ee58ecea62d',
+    rewardedId: '37c26ff0ce531e75',
   );
 
   // ─── AdMob (fallback / swap-ready) ────────────────────────────────────

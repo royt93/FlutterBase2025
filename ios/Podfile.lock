@@ -1,6 +1,8 @@
 PODS:
   - advertising_id (0.0.1):
     - Flutter
+  - app_tracking_transparency (0.0.1):
+    - Flutter
   - applovin_max (4.6.0):
     - AppLovinSDK (= 13.5.0)
     - Flutter
@@ -59,6 +61,7 @@ PODS:
 
 DEPENDENCIES:
   - advertising_id (from `.symlinks/plugins/advertising_id/ios`)
+  - app_tracking_transparency (from `.symlinks/plugins/app_tracking_transparency/ios`)
   - applovin_max (from `.symlinks/plugins/applovin_max/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
@@ -91,6 +94,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   advertising_id:
     :path: ".symlinks/plugins/advertising_id/ios"
+  app_tracking_transparency:
+    :path: ".symlinks/plugins/app_tracking_transparency/ios"
   applovin_max:
     :path: ".symlinks/plugins/applovin_max/ios"
   connectivity_plus:
@@ -136,6 +141,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   advertising_id: d5de9e659986092d7ca50977dc50f4f4fcd4c30a
+  app_tracking_transparency: 3d84f147f67ca82d3c15355c36b1fa6b66ca7c92
   applovin_max: a921604ba97b0400e3cdf4768da0aa53e756978e
   AppLovinSDK: bf8974163120910e6b902e9610e7c5a2c0f577b6
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd

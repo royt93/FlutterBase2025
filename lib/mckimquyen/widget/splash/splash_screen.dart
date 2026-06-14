@@ -28,7 +28,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   int _durationCountdown = 10;
 
   // ValueNotifier thay cho setState — không trigger rebuild toàn bộ widget
-  final ValueNotifier<Color> _containerColorNotifier = ValueNotifier(ColorConstants.appColor);
+  final ValueNotifier<Color> _containerColorNotifier =
+      ValueNotifier(ColorConstants.appColor);
 
   // Callback listener giữ reference để remove đúng khi dispose/navigate
   void Function(BoolEvent)? _eventListener;
@@ -38,60 +39,92 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    SafeLogger.d('SplashTrace', 'initState start mounted=$mounted');
     AdManager().markSplashActive();
     AdManager().incrementSplashCount();
     final count = AdManager().countInitSplashScreen;
+    SafeLogger.d('SplashTrace', 'splash marked active count=$count');
     SafeLogger.d('Splash', 'initSplashScreen called, count=$count');
 
     // Giống native line 991-993: nếu splash bị gọi lại lần 2+ → navigate ngay
     if (count > 1) {
-      SafeLogger.d('Splash', 'initSplashScreen ⏭️ already called before, navigating immediately');
+      SafeLogger.w('SplashTrace',
+          'duplicate splash count=$count -> navigate immediately');
+      SafeLogger.d('Splash',
+          'initSplashScreen ⏭️ already called before, navigating immediately');
       // Mark inactive synchronously so any concurrent lifecycle resume in the
       // 1-frame postFrame gap doesn't see splash as still active.
       AdManager().markSplashInactive();
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        SafeLogger.d('SplashTrace', 'duplicate splash postFrame navigate');
         _navigateToMainSafely();
       });
       return;
     }
 
     // Hard cap 8s — chống treo splash (giống native MAX_TOTAL_SPLASH_MS)
+    SafeLogger.d('SplashTrace', 'hard cap timer armed 8s');
     _hardCapTimer = Timer(const Duration(seconds: 8), () {
+      SafeLogger.w('SplashTrace',
+          'hard cap fired hasNavigated=$_hasNavigated mounted=$mounted');
       SafeLogger.d('Splash', '⏰ HARD CAP 8s reached, forcing navigation');
       _navigateToMainSafely();
     });
 
     // Listen for ad init completion (callback-based SimpleEventBus)
     _eventListener = (event) {
-      SafeLogger.d('Splash', 'EventBus received: ${event.value}, hasNavigated=$_hasNavigated');
+      SafeLogger.d('SplashTrace',
+          'EventBus value=${event.value} hasNavigated=$_hasNavigated');
+      SafeLogger.d('Splash',
+          'EventBus received: ${event.value}, hasNavigated=$_hasNavigated');
       if (event.value && !_hasNavigated) {
+        SafeLogger.d(
+            'SplashTrace', 'SDK init event true -> loadAppOpenAd start');
         SafeLogger.d('Splash', '🔄 SDK init done, loading App Open Ad...');
         // Tải App Open Ad trước (giống native line 1046-1066)
         // Sau khi load xong mới show
         AdManager().loadAppOpenAd(onAdLoaded: (result) {
-          SafeLogger.d('Splash', 'loadAppOpenAd result=$result, hasNavigated=$_hasNavigated');
+          SafeLogger.d('SplashTrace',
+              'loadAppOpenAd done result=$result hasNavigated=$_hasNavigated mounted=$mounted');
+          SafeLogger.d('Splash',
+              'loadAppOpenAd result=$result, hasNavigated=$_hasNavigated');
           if (_hasNavigated) {
-            SafeLogger.d('Splash', '⏭️ already navigated by hard cap, ignoring ad result');
+            SafeLogger.w('SplashTrace',
+                'loadAppOpenAd ignored because already navigated');
+            SafeLogger.d('Splash',
+                '⏭️ already navigated by hard cap, ignoring ad result');
             return;
           }
           if (result) {
+            SafeLogger.d('SplashTrace', 'App Open loaded -> show buffer');
             SafeLogger.d('Splash',
                 '🔄 Ad loaded, showing AdLoadingDialog buffer (default loadingBufferMs=1000) then App Open Ad');
             if (!mounted) {
+              SafeLogger.w(
+                  'SplashTrace', 'not mounted before buffer -> navigate');
               _navigateToMainSafely();
               return;
             }
             AdLoadingDialog.showAdBuffer(context, onComplete: () {
+              SafeLogger.d('SplashTrace',
+                  'ad buffer complete mounted=$mounted hasNavigated=$_hasNavigated');
               if (!mounted) {
+                SafeLogger.w(
+                    'SplashTrace', 'not mounted after buffer -> navigate');
                 _navigateToMainSafely();
                 return;
               }
               // Cancel hard cap BEFORE showing ad — timer must not interrupt an active ad
               _hardCapTimer?.cancel();
               _hardCapTimer = null;
+              SafeLogger.d(
+                  'SplashTrace', 'hard cap cancelled -> showAppOpenAd');
               AdManager().showAppOpenAd(
                 onAdDismiss: (dismissed) {
-                  SafeLogger.d('Splash', 'App Open Ad dismissed=$dismissed, navigating');
+                  SafeLogger.d('SplashTrace',
+                      'showAppOpenAd dismissed=$dismissed -> navigate');
+                  SafeLogger.d(
+                      'Splash', 'App Open Ad dismissed=$dismissed, navigating');
                   _navigateToMainSafely();
                 },
                 bypassSafety: true,
@@ -99,27 +132,51 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
             });
           } else {
             // Ad không load được → navigate luôn
-            SafeLogger.d('Splash', '⏭️ App Open Ad not available, navigating immediately');
+            SafeLogger.w('SplashTrace', 'App Open not available -> navigate');
+            SafeLogger.d('Splash',
+                '⏭️ App Open Ad not available, navigating immediately');
             _navigateToMainSafely();
           }
         });
       } else if (!event.value) {
+        SafeLogger.w('SplashTrace', 'SDK init event false -> navigate');
         SafeLogger.d('Splash', '⚠️ EventBus received false — SDK init issue');
         _navigateToMainSafely();
       }
     }; // end _eventListener
     SimpleEventBus().listen(_eventListener!);
+    SafeLogger.d('SplashTrace', 'SimpleEventBus listener registered');
 
     if (kDebugMode) {
       _durationCountdown = 1;
+      SafeLogger.d('SplashTrace',
+          'debug mode countdown shortened to $_durationCountdown');
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      SafeLogger.d('SplashTrace', 'postFrame callback start');
       DurationUtils.delay(300, () async {
+        SafeLogger.d('SplashTrace',
+            'delayed init block start mounted=$mounted hasNavigated=$_hasNavigated');
         if (!mounted) return;
         // ValueNotifier thay cho setState — chỉ rebuild đúng widget con cần thiết
         _containerColorNotifier.value = Colors.transparent;
-        SafeLogger.d('Splash', 'containerColor → transparent (animation started)');
+        SafeLogger.d('SplashTrace', 'splash animation color transparent');
+        SafeLogger.d(
+            'Splash', 'containerColor → transparent (animation started)');
+
+        // ─── ATT (iOS App Tracking Transparency) ──────────────────────────
+        // Phải hiện TRƯỚC UMP để IDFA được quyết định trước first ad request.
+        // No-op trên Android. Yêu cầu NSUserTrackingUsageDescription trong
+        // Info.plist (đã có). SDK tự xử lý lỗi → trả denied, không throw.
+        try {
+          SafeLogger.d('SplashTrace', 'ATT request start');
+          final attResult = await AdManager().requestAtt();
+          SafeLogger.d('SplashTrace', 'ATT done status=${attResult.status.name}');
+        } catch (e) {
+          SafeLogger.w('SplashTrace', 'ATT threw -> continue error=$e');
+        }
+        if (!mounted || _hasNavigated) return;
 
         // ─── UMP consent (Q3C: Global) ────────────────────────────────────
         // Phải gọi TRƯỚC initialize() — Google policy yêu cầu form consent
@@ -128,17 +185,27 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
         // Q11A: dù canRequestAds==false vẫn init bình thường, SDK đã buffer
         // AdConsent (non-personalized) qua setConsent ở bên trong.
         try {
+          SafeLogger.d('SplashTrace', 'UMP request start testMode=false');
           final umpResult = await AdManager().requestUmpConsent(
             testMode: false,
           );
+          SafeLogger.d('SplashTrace',
+              'UMP request done canRequestAds=${umpResult.canRequestAds} status=${umpResult.status.name} formShown=${umpResult.formShown}');
           SafeLogger.d('Splash',
               'UMP done: canRequestAds=${umpResult.canRequestAds}, status=${umpResult.status.name}, formShown=${umpResult.formShown}');
         } catch (e) {
+          SafeLogger.w('SplashTrace', 'UMP threw -> continue init error=$e');
           SafeLogger.w('Splash', 'UMP threw, continuing init anyway: $e');
         }
-        if (!mounted || _hasNavigated) return;
+        if (!mounted || _hasNavigated) {
+          SafeLogger.w('SplashTrace',
+              'skip AdManager.initialize mounted=$mounted hasNavigated=$_hasNavigated');
+          return;
+        }
 
         // Khởi tạo AdManager (gọi EventBus.sendEvent khi xong)
+        SafeLogger.d(
+            'SplashTrace', 'AdManager.initialize start provider=appLovin');
         AdManager().initialize(
           config: AdConfig(
             provider: AdProvider.appLovin,
@@ -196,7 +263,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
               verifyingTitle: 'vip_verifying_title'.tr,
               verifyingMessage: 'vip_verifying_message'.tr,
               successTitle: 'vip_success_title'.tr,
-              successMessageBuilder: (until) => 'vip_success_message'.trParams({'until': until}),
+              successMessageBuilder: (until) =>
+                  'vip_success_message'.trParams({'until': until}),
               failedTitle: 'vip_failed_title'.tr,
               failedMessage: 'vip_failed_message'.tr,
               networkErrorMessage: 'vip_network_error'.tr,
@@ -207,7 +275,10 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
             // release) — well-documented retention boost. Not overridden.
           ),
           onComplete: (success, gaid) {
-            SafeLogger.d('Splash', 'AdManager init complete: success=$success, gaid=$gaid');
+            SafeLogger.d('SplashTrace',
+                'AdManager.initialize complete success=$success gaid=$gaid');
+            SafeLogger.d('Splash',
+                'AdManager init complete: success=$success, gaid=$gaid');
           },
         );
       });
@@ -215,30 +286,39 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
   }
 
   void _navigateToMainSafely() {
-    if (_hasNavigated) return;
+    if (_hasNavigated) {
+      SafeLogger.d('SplashTrace', 'navigate ignored because already navigated');
+      return;
+    }
+    SafeLogger.d('SplashTrace', 'navigateToMain start mounted=$mounted');
     _hasNavigated = true;
     _hardCapTimer?.cancel();
     // Remove EventBus listener to prevent memory leak
     if (_eventListener != null) {
       SimpleEventBus().remove(_eventListener!);
       _eventListener = null;
+      SafeLogger.d('SplashTrace', 'EventBus listener removed');
     }
     AdManager().markSplashInactive();
+    SafeLogger.d('SplashTrace', 'splash marked inactive -> go main');
     SafeLogger.d('Splash', '✅ Navigating to MainScreen');
     _goToMainScreen();
   }
 
   @override
   void dispose() {
+    SafeLogger.d('SplashTrace', 'dispose start hasNavigated=$_hasNavigated');
     SafeLogger.d('Splash', 'dispose() — cancelling timers and subscriptions');
     _hardCapTimer?.cancel();
     // Remove EventBus listener to prevent accumulation
     if (_eventListener != null) {
       SimpleEventBus().remove(_eventListener!);
       _eventListener = null;
+      SafeLogger.d('SplashTrace', 'dispose removed EventBus listener');
     }
     // Phải dispose ValueNotifier để tránh memory leak
     _containerColorNotifier.dispose();
+    SafeLogger.d('SplashTrace', 'dispose done');
     super.dispose();
   }
 
@@ -417,7 +497,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.fromLTRB(0, 16, 0, UIUtils.getPaddingBottom(context, ratio: 1.0)),
+                      padding: EdgeInsets.fromLTRB(0, 16, 0,
+                          UIUtils.getPaddingBottom(context, ratio: 1.0)),
                       child: LinearProgressIndicator(
                         backgroundColor: Colors.white.withValues(alpha: 0.1),
                         color: Colors.white,
