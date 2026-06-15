@@ -43,11 +43,20 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   // Cache cacheWidth để tránh tính toán lại mỗi lần rebuild
   late final int _cachedImageWidth;
 
+  // Banner là `const BannerAdWidget()`; cache để `buildBanner()` (và log của nó)
+  // chỉ chạy 1 lần (trong initState) thay vì mỗi lần State.build() — tránh spam
+  // khi route churn (push/pop VipScreen liên tục làm build() chạy hàng trăm
+  // lần / frame). Nullable thay cho `late` theo quy ước doc/init.md.
+  Widget? _bannerSlot;
+
   @override
   void initState() {
     super.initState();
     // Cache image width calculation
     _cachedImageWidth = (Get.width * 2).round();
+    // Build banner một lần ở đây thay vì trong build() (tránh side-effect gán
+    // field trong cây widget).
+    _bannerSlot = buildBanner();
     // Sử dụng addPostFrameCallback để tránh blocking UI render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeAdsAsync();
@@ -116,8 +125,9 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           // Banner sits below the AppBar; we wrap the bottom in SafeArea so
           // the main content doesn't overlap the gesture nav bar in
           // edge-to-edge mode (`UIUtils.initEdgeToEdge()` is called from
-          // `main.dart`).
-          buildBanner(),
+          // `main.dart`). Đã build sẵn ở initState; `?? SizedBox` chỉ là
+          // null-safe fallback (không bao giờ chạy) để khỏi dùng `!`.
+          _bannerSlot ?? const SizedBox.shrink(),
           Expanded(
             child: SafeArea(
               top: false,

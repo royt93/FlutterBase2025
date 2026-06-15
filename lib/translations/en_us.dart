@@ -151,7 +151,6 @@ const Map<String, String> enUS = {
   'consent_privacy_label': 'Privacy Policy',
 
   // VIP — management screen
-  'vip_title': 'VIP',
   'vip_status_active': 'VIP active',
   'vip_status_inactive': 'No active VIP',
   'vip_status_inactive_tagline': 'Enjoy an ad-free experience with a VIP key.',

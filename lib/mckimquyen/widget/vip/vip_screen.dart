@@ -302,8 +302,6 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       return Scaffold(
         backgroundColor: const Color(0xFF1A1A2E),
         appBar: AppBar(
-          title: Text('vip_title'.tr,
-              style: const TextStyle(color: Colors.white)),
           backgroundColor: Colors.transparent,
           iconTheme: const IconThemeData(color: Colors.white),
           elevation: 0,
@@ -328,14 +326,6 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       backgroundColor: const Color(0xFF1A1A2E),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(
-          'vip_title'.tr,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
         backgroundColor: Colors.transparent,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,

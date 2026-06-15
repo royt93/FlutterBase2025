@@ -151,7 +151,6 @@ const Map<String, String> viVN = {
   'consent_privacy_label': 'Chính sách bảo mật',
 
   // VIP — màn hình quản lý
-  'vip_title': 'VIP',
   'vip_status_active': 'VIP đang kích hoạt',
   'vip_status_inactive': 'Chưa kích hoạt VIP',
   'vip_status_inactive_tagline':
