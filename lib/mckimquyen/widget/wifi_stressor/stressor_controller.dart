@@ -79,13 +79,6 @@ class StressorController extends GetxController {
     'https://fra-de-ping.vultr.com/vultr.com.100MB.bin', // Germany Frankfurt
     'https://ams-nl-ping.vultr.com/vultr.com.100MB.bin', // Netherlands Amsterdam
 
-    // DigitalOcean Speed Test - Global CDN
-    'https://speedtest-nyc1.digitalocean.com/10mb.test', // New York
-    'https://speedtest-sfo2.digitalocean.com/10mb.test', // San Francisco
-    'https://speedtest-sgp1.digitalocean.com/10mb.test', // Singapore
-    'https://speedtest-lon1.digitalocean.com/10mb.test', // London
-    'https://speedtest-fra1.digitalocean.com/10mb.test', // Frankfurt
-
     // ThinkBroadband - UK based
     'https://ipv4.download.thinkbroadband.com/10MB.zip',
     'https://ipv4.download.thinkbroadband.com/50MB.zip',
