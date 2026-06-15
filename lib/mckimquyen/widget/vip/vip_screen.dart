@@ -168,8 +168,8 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
         duration: duration,
         validator: vipKeyValidator,
         strings: dialogStrings,
-        // Cộng dồn: nhập lại key đang còn hiệu lực sẽ +30 ngày lên hạn hiện tại
-        // thay vì reset (logic stacking nằm trong SDK addVip).
+        // Cộng dồn toàn cục: +30 ngày lên mốc hết hạn VIP cao nhất hiện có
+        // (gồm cả thời gian từ watch-ad), không reset. Logic trong SDK addVip.
         stack: true,
       );
       // Widget có thể đã unmount trong khi await — guard mọi thao tác state.
@@ -221,8 +221,8 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       if (!mounted) return;
 
       if (earned) {
-        // Cộng dồn vào MỘT entry cố định (`stack: true`): +3 ngày lên hạn hiện
-        // tại thay vì tạo entry rác mới mỗi lần xem ad.
+        // Cộng dồn toàn cục (`stack: true`): +3 ngày lên mốc hết hạn cao nhất,
+        // gom vào MỘT entry cố định thay vì tạo entry rác mới mỗi lần xem ad.
         await vip.addVip(
           key: _kRewardKey,
           duration: const Duration(days: 3),
