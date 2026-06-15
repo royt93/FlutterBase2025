@@ -15,6 +15,12 @@ import 'vip_keys.dart';
 const String _kFirstInstallKey = '__FIRST_INSTALL__';
 const String _kLegacyKeyPrefix = 'LEGACY_';
 
+/// Key cố định cho phần thưởng "xem ad → +3 ngày". Dùng MỘT key duy nhất (thay
+/// vì `REWARDED_<timestamp>` mỗi lần) để thời gian cộng dồn vào cùng 1 entry,
+/// tránh rác danh sách. `_kRewardKeyPrefix` cũng nhận diện các entry cũ.
+const String _kRewardKey = 'REWARDED_VIP';
+const String _kRewardKeyPrefix = 'REWARDED_';
+
 class VipScreen extends StatefulWidget {
   static const String screenName = '/VipScreen';
 
@@ -162,6 +168,9 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
         duration: duration,
         validator: vipKeyValidator,
         strings: dialogStrings,
+        // Cộng dồn: nhập lại key đang còn hiệu lực sẽ +30 ngày lên hạn hiện tại
+        // thay vì reset (logic stacking nằm trong SDK addVip).
+        stack: true,
       );
       // Widget có thể đã unmount trong khi await — guard mọi thao tác state.
       if (!mounted) return;
@@ -200,6 +209,10 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       // callback fires).
       final rewardCompleter = Completer<bool>();
       AdManager().showRewardedAd(
+        // bypassVipGuard: cho phép chiếu rewarded THẬT ngay cả khi đang VIP để
+        // gia hạn (cộng dồn). SDK sẽ nạp ad on-demand vì lúc VIP slot không
+        // được preload. Không auto-grant — luôn phải xem hết ad mới earn.
+        bypassVipGuard: true,
         onEarnedReward: (earned) {
           if (!rewardCompleter.isCompleted) rewardCompleter.complete(earned);
         },
@@ -208,8 +221,13 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
       if (!mounted) return;
 
       if (earned) {
-        final key = 'REWARDED_${DateTime.now().millisecondsSinceEpoch}';
-        await vip.addVip(key: key, duration: const Duration(days: 3));
+        // Cộng dồn vào MỘT entry cố định (`stack: true`): +3 ngày lên hạn hiện
+        // tại thay vì tạo entry rác mới mỗi lần xem ad.
+        await vip.addVip(
+          key: _kRewardKey,
+          duration: const Duration(days: 3),
+          stack: true,
+        );
         if (!mounted) return;
         _confettiController?.play();
         unawaited(HapticFeedback.heavyImpact());
@@ -356,14 +374,12 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
                       _staggered(0, _buildHeroCard(active, primaryEntry)),
                       const SizedBox(height: 24),
                       _staggered(1, _buildRedeemSection()),
-                      // Watch-ad section is hidden when VIP is already
-                      // active — both rewarded and interstitial slots
-                      // short-circuit on VIP guard so the button would
-                      // silent-fail. Showing it would just confuse users.
-                      if (!active) ...[
-                        const SizedBox(height: 24),
-                        _staggered(2, _buildWatchAdSection()),
-                      ],
+                      // Watch-ad section is shown even while VIP is active: the
+                      // watch-ad flow passes `bypassVipGuard: true`, so a VIP
+                      // user can still watch a real rewarded ad to EXTEND
+                      // (cộng dồn) their window. The SDK load-on-demands the ad.
+                      const SizedBox(height: 24),
+                      _staggered(2, _buildWatchAdSection()),
                       const SizedBox(height: 24),
                       _staggered(3, _buildEntriesSection(entries)),
                       const SizedBox(height: 24),
@@ -1014,6 +1030,7 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
   Widget _buildEntryCard(VipEntry entry) {
     final isFirstInstall = entry.key == _kFirstInstallKey;
     final isLegacy = entry.key.startsWith(_kLegacyKeyPrefix);
+    final isReward = entry.key.startsWith(_kRewardKeyPrefix);
     final remaining = entry.remaining;
     final daysLeft = remaining.inDays;
     final hoursLeft = remaining.inHours;
@@ -1026,6 +1043,9 @@ class _VipScreenState extends BaseStatefulState<VipScreen>
     } else if (isLegacy) {
       icon = Icons.devices_other_outlined;
       displayName = 'vip_legacy_device'.tr;
+    } else if (isReward) {
+      icon = Icons.play_circle_outline;
+      displayName = 'vip_reward_entry'.tr;
     } else {
       icon = Icons.confirmation_number_outlined;
       // Che giấu key: 3 ký tự đầu plaintext, phần còn lại thay bằng `*`.

@@ -43,10 +43,11 @@ dependencies:
   path_provider: ^2.1.4
   share_plus: ^10.1.2
 
-  applovin_admob_sdk: ^1.0.20
-  # Local path for SDK development (uncomment + comment line above to use):
-#  applovin_admob_sdk:
-#    path: packages/ad_sdk
+# Hosted (re-publish packages/ad_sdk@1.0.22 then flip these two blocks before a pub.dev release):
+#  applovin_admob_sdk: ^1.0.22
+  # Local path override — ACTIVE: ships in-repo SDK changes (VIP stacking + bypassVipGuard):
+  applovin_admob_sdk:
+    path: packages/ad_sdk
 
   # Bắt buộc ở app-level: native mediation plugin, không khai báo được trong sub-package
   gma_mediation_applovin:
@@ -91,6 +92,12 @@ dependency_overrides:
   # Bản applovin_admob_sdk 1.0.18 kéo applovin_max 4.6.3 (AppLovinSDK 13.6.1)
   # gây xung đột pod vì chưa có gma tương thích trên google_mobile_ads ^6 / Flutter 3.35.1.
   applovin_max: 4.6.0
+  # Local ad_sdk (path) khai báo google_mobile_ads ^7 / applovin_max ^4.6.4,
+  # nhưng app này build ổn định trên cụm đã ghim (gma 2.5.1 + GMA 6 + applovin_max
+  # 4.6.0). Ghim lại để path override không kéo GMA 7 (làm vỡ native registrant
+  # của gma_mediation_applovin). VIP stacking độc lập với GMA version.
+  google_mobile_ads: 6.0.0
+  gma_mediation_applovin: 2.5.1
 
 flutter:
   uses-material-design: true

@@ -258,6 +258,10 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
             // Q14: validator chỉ accept key trong kVipKeyMap (30d).
             vipKeyValidator: vipKeyValidator,
 
+            // Cap tổng thời gian VIP cộng dồn (stack) ở 90 ngày — chặn lạm dụng
+            // (vd bấm key nhiều lần / xem ad liên tục). null = không cap.
+            maxVipStackDuration: const Duration(days: 90),
+
             // VIP redeem Cupertino dialog strings từ translations.
             vipDialogStrings: VipDialogStrings(
               verifyingTitle: 'vip_verifying_title'.tr,

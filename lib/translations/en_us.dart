@@ -171,6 +171,7 @@ const Map<String, String> enUS = {
   'vip_no_entries': 'No active VIP keys yet.',
   'vip_first_install': 'New install gift',
   'vip_legacy_device': 'QA device',
+  'vip_reward_entry': 'Watch-ad reward',
   'vip_enter_key_first': 'Please enter a key first.',
   'vip_sdk_not_ready': 'Ad SDK is not ready. Please try again later.',
   'vip_privacy_policy': 'Privacy Policy & Terms',
