@@ -14,8 +14,11 @@ class TestHistoryStorage {
   // Singleton instance
   static TestHistoryStorage? _instance;
   static TestHistoryStorage get instance {
-    _instance ??= TestHistoryStorage._internal();
-    return _instance!;
+    final existing = _instance;
+    if (existing != null) return existing;
+    final created = TestHistoryStorage._internal();
+    _instance = created;
+    return created;
   }
 
   // Private constructor

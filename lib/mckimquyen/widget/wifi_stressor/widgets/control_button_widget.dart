@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
+import 'package:applovin_admob_sdk/applovin_admob_sdk.dart'; // adMayAppearEn
 
 import '../stressor_controller.dart';
 
@@ -8,13 +8,11 @@ import '../stressor_controller.dart';
 class ControlButtonWidget extends StatelessWidget {
   final bool isRunning;
   final StressorController controller;
-  final Function(Function(bool)) showInterstitialAd;
 
   const ControlButtonWidget({
     super.key,
     required this.isRunning,
     required this.controller,
-    required this.showInterstitialAd,
   });
 
   @override
@@ -22,10 +20,10 @@ class ControlButtonWidget extends StatelessWidget {
     if (isRunning) {
       return FilledButton.icon(
         onPressed: () {
-          // Show interstitial after stop — user just finished using the feature
-          showInterstitialAd((_) {
-            controller.stopStressTest();
-          });
+          // Policy: interstitials only fire on a real screen transition
+          // (opening History). Start/Stop stay on the same screen, so we run
+          // the action immediately and never interrupt the core feature.
+          controller.stopStressTest();
         },
         style: FilledButton.styleFrom(
           backgroundColor: Colors.red,
@@ -44,8 +42,8 @@ class ControlButtonWidget extends StatelessWidget {
       onPressed: () {
         // Policy: do NOT show an interstitial when the user STARTS the test —
         // that interrupts an action the user just requested (Google/AppLovin
-        // "interruptive placement"). Run the feature immediately; the
-        // interstitial only shows on Stop (a natural transition point).
+        // "interruptive placement"). Run the feature immediately. Interstitials
+        // are reserved for real screen transitions (opening History).
         controller.startStressTest();
       },
       style: FilledButton.styleFrom(

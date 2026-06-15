@@ -40,8 +40,9 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   // Sử dụng Get.put() để đảm bảo singleton controller
   final controller = Get.put(StressorController());
 
-  // Cache cacheWidth để tránh tính toán lại mỗi lần rebuild
-  late final int _cachedImageWidth;
+  // Cache cacheWidth để tránh tính toán lại mỗi lần rebuild.
+  // Plain field + default thay cho `late` (gán trong initState trước build).
+  int _cachedImageWidth = 0;
 
   // Banner là `const BannerAdWidget()`; cache để `buildBanner()` (và log của nó)
   // chỉ chạy 1 lần (trong initState) thay vì mỗi lần State.build() — tránh spam
@@ -344,13 +345,6 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           ControlButtonWidget(
             isRunning: isRunning,
             controller: controller,
-            showInterstitialAd: (Function(bool) callback) {
-              SafeLogger.d(_tag, '▶️ ACTION ControlButton → showInterstitialAd, isRunning=$isRunning');
-              showInterstitialAd(onDone: (shown) {
-                SafeLogger.d(_tag, '▶️ ACTION ControlButton interstitialShown=$shown');
-                callback(shown);
-              });
-            },
           ),
         ],
       ),

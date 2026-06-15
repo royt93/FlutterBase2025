@@ -1,0 +1,7 @@
+# Template for android/key.properties (this real file is git-ignored).
+# Copy to `key.properties` and fill in your real keystore credentials.
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=YOUR_KEY_ALIAS
+# Path relative to android/app/ (or an absolute path)
+storeFile=keystore.jks

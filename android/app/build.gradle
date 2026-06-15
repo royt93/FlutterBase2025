@@ -12,6 +12,16 @@ if (localPropertiesFile.exists()) {
     }
 }
 
+// Release signing credentials are kept out of source control in
+// android/key.properties (git-ignored). See android/key.properties.example.
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withReader('UTF-8') { reader ->
+        keystoreProperties.load(reader)
+    }
+}
+
 //def flutterRoot = localProperties.getProperty('flutter.sdk')
 //if (flutterRoot == null) {
 //    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
@@ -74,11 +84,12 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("keystore.jks")
-            storePassword "27072000"
-            keyAlias "quyenkdt"
-            keyPassword "27072000"
-            //doan thi kim quyen
+            if (keystorePropertiesFile.exists()) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
         }
     }
 

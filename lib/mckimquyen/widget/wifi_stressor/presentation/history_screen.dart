@@ -18,13 +18,9 @@ class HistoryScreen extends AdScreen {
 
 class _HistoryScreenState extends AdScreenState<HistoryScreen> {
   static const String _tag = 'HistoryScreen';
-  late final HistoryController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = Get.put(HistoryController());
-  }
+  // Field initializer (chạy trước initState) thay cho `late` — Get.put trả
+  // instance đồng bộ, giống pattern ở StressorHomePage.
+  final HistoryController controller = Get.put(HistoryController());
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +80,13 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
       ),
       body: Column(
         children: [
-          buildBanner(), // Banner Ad
+          // Banner edge-to-edge: bottom: false vì banner nằm trên cùng (dưới
+          // AppBar), chỉ cần SafeArea ngang để né cutout/notch hai bên.
+          SafeArea(
+            top: false,
+            bottom: false,
+            child: buildBanner(),
+          ), // Banner Ad
           Expanded(
             child: Obx(() {
               // Loading & Empty State

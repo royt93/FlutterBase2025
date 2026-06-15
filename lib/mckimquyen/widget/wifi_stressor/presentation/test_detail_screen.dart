@@ -422,8 +422,9 @@ class TestDetailScreen extends StatelessWidget {
     // Test Info
     buffer.writeln('📋 Test Information:');
     buffer.writeln('• Started: ${_formatDateTime(result.startTime)}');
-    if (result.endTime != null) {
-      buffer.writeln('• Ended: ${_formatDateTime(result.endTime!)}');
+    final endTime = result.endTime;
+    if (endTime != null) {
+      buffer.writeln('• Ended: ${_formatDateTime(endTime)}');
     }
     buffer.writeln('• Duration: ${result.durationFormatted}');
     buffer.writeln('• Status: ${_getStatusText()}');
@@ -432,8 +433,8 @@ class TestDetailScreen extends StatelessWidget {
     buffer.writeln();
 
     // Network Info (if available)
-    if (result.networkInfo != null) {
-      final networkInfo = result.networkInfo!;
+    final networkInfo = result.networkInfo;
+    if (networkInfo != null) {
       buffer.writeln('📶 Network Information:');
       if (networkInfo.ssid != null) {
         buffer.writeln('• SSID: ${networkInfo.ssid}');
