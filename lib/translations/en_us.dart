@@ -42,6 +42,25 @@ const Map<String, String> enUS = {
   'running_time': 'Running Time',
   'data_downloaded': 'Data Downloaded',
 
+  // Duration presets
+  'duration_label': 'Duration:',
+  'duration_unlimited': 'Unlimited',
+  'duration_custom': 'Custom',
+  'duration_custom_title': 'Custom Duration',
+  'duration_custom_hint': 'Enter seconds',
+
+  // Comparison
+  'comparison_title': 'Comparison',
+  'compare_tooltip': 'Compare tests',
+  'compare_button': 'Compare',
+  'compare_selected': '@count selected',
+  'cmp_avg_speed': 'Avg Speed',
+  'cmp_peak_speed': 'Peak Speed',
+  'cmp_min_speed': 'Min Speed',
+  'cmp_median_speed': 'Median',
+  'cmp_duration': 'Duration',
+  'cmp_downloaded': 'Downloaded',
+
   // Buttons
   'start_test': 'START TEST',
   'stop_test': 'STOP TEST',

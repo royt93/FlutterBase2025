@@ -6,16 +6,28 @@ class TimelineItem extends StatelessWidget {
   final TestResult result;
   final VoidCallback onTap;
 
+  /// Khi `true`, item ở chế độ chọn để so sánh (hiện check thay vì mũi tên).
+  final bool selectionMode;
+  final bool selected;
+
   const TimelineItem({
     super.key,
     required this.result,
     required this.onTap,
+    this.selectionMode = false,
+    this.selected = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      shape: selected
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+            )
+          : null,
       child: ListTile(
         leading: _buildLeadingIcon(),
         title: Text(
@@ -29,7 +41,12 @@ class TimelineItem extends StatelessWidget {
           '${result.durationFormatted} • ${_formatTime(result.startTime)}',
           style: const TextStyle(fontSize: 12),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: selectionMode
+            ? Icon(
+                selected ? Icons.check_circle : Icons.radio_button_unchecked,
+                color: selected ? const Color(0xFF3B82F6) : Colors.white38,
+              )
+            : const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
       ),
     );

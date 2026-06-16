@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../stressor_controller.dart';
 import 'metric_tile_widget.dart';
@@ -29,6 +30,8 @@ class ControlPanelWidget extends StatelessWidget {
             // Connection count selector
             _buildConnectionSelector(),
             const SizedBox(height: 16),
+            // Duration preset selector (ẩn khi đang chạy)
+            if (!isRunning) _buildDurationSelector(context),
             // Metrics display khi đang chạy
             if (isRunning) ..._buildMetrics(),
           ],
@@ -76,6 +79,89 @@ class ControlPanelWidget extends StatelessWidget {
     );
   }
 
+  /// Preset thời lượng test. `null` = không giới hạn (dừng thủ công).
+  static const _durationPresets = <int?>[null, 15, 30, 60, 300];
+
+  /// Selector preset thời lượng — chips chọn nhanh + 1 chip "custom".
+  Widget _buildDurationSelector(BuildContext context) {
+    return Obx(() {
+      final sel = controller.selectedDurationSec.value;
+      final isCustom = sel != null && !_durationPresets.contains(sel);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'duration_label'.tr,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final p in _durationPresets)
+                ChoiceChip(
+                  label: Text(p == null ? 'duration_unlimited'.tr : _fmtPreset(p)),
+                  selected: sel == p,
+                  onSelected: (_) => controller.selectedDurationSec.value = p,
+                ),
+              ChoiceChip(
+                label: Text(isCustom ? _fmtPreset(sel) : 'duration_custom'.tr),
+                selected: isCustom,
+                onSelected: (_) => _showCustomDurationDialog(context),
+              ),
+            ],
+          ),
+        ],
+      );
+    });
+  }
+
+  /// Dialog nhập thời lượng custom (giây). Quản lý controller cục bộ + dispose.
+  void _showCustomDurationDialog(BuildContext context) {
+    final current = controller.selectedDurationSec.value;
+    final textCtrl = TextEditingController(
+      text: current == null ? '' : '$current',
+    );
+    Get.defaultDialog(
+      titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      contentPadding: const EdgeInsets.all(16),
+      title: 'duration_custom_title'.tr,
+      content: TextField(
+        controller: textCtrl,
+        autofocus: true,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(
+          labelText: 'duration_custom_hint'.tr,
+          suffixText: 's',
+          border: const OutlineInputBorder(),
+        ),
+      ),
+      textCancel: 'cancel'.tr,
+      textConfirm: 'ok'.tr,
+      onConfirm: () {
+        final v = int.tryParse(textCtrl.text.trim());
+        if (v != null && v > 0) {
+          controller.selectedDurationSec.value = v;
+        }
+        Get.back();
+      },
+    ).then((_) => textCtrl.dispose());
+  }
+
+  /// Định dạng preset: 15s / 1m / 1m30s.
+  String _fmtPreset(int sec) {
+    if (sec < 60) return '${sec}s';
+    final m = sec ~/ 60;
+    final s = sec % 60;
+    return s == 0 ? '${m}m' : '${m}m${s}s';
+  }
+
+  /// Đồng hồ m:ss.
+  String _fmtClock(Duration d) =>
+      '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
+
   /// Tạo danh sách metrics với performance tối ưu
   List<Widget> _buildMetrics() {
     return [
@@ -105,12 +191,19 @@ class ControlPanelWidget extends StatelessWidget {
           ),
         ),
       )),
-      Obx(() => MetricTileWidget.text(
-        icon: Icons.timer,
-        title: 'running_time'.tr,
-        value: '${controller.testDuration.value.inMinutes}:'
-            '${(controller.testDuration.value.inSeconds % 60).toString().padLeft(2, '0')}',
-      )),
+      Obx(() {
+        final elapsed = _fmtClock(controller.testDuration.value);
+        final limit = controller.selectedDurationSec.value;
+        // Có preset → hiển thị "đã chạy / tổng" để user thấy còn bao lâu.
+        final value = limit == null
+            ? elapsed
+            : '$elapsed / ${_fmtClock(Duration(seconds: limit))}';
+        return MetricTileWidget.text(
+          icon: Icons.timer,
+          title: 'running_time'.tr,
+          value: value,
+        );
+      }),
       Obx(() => MetricTileWidget(
         icon: Icons.data_usage,
         title: 'data_downloaded'.tr,

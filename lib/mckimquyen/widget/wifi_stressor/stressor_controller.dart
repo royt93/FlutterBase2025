@@ -17,6 +17,9 @@ class StressorController extends GetxController {
   final speedMbps = 0.0.obs;
   final totalSpeedMbps = 0.0.obs;
   final parallelDownloads = 50.obs;
+  // Giới hạn thời lượng test (giây). `null` = không giới hạn (dừng thủ công).
+  // Khi đặt preset, test tự dừng + lưu khi đạt mốc thời gian.
+  final selectedDurationSec = Rx<int?>(null);
   // Tách speedHistory riêng để tối ưu chart updates
   final speedHistory = <double>[].obs;
   final totalDownloadedBytes = 0.obs;
@@ -384,6 +387,14 @@ class StressorController extends GetxController {
     }
   }
 
+  /// True khi đã có preset thời lượng và thời gian chạy đạt/qua mốc đó.
+  /// Tách riêng để unit-test mà không cần timer/storage.
+  @visibleForTesting
+  bool shouldAutoStop(Duration elapsed) {
+    final limit = selectedDurationSec.value;
+    return limit != null && elapsed.inSeconds >= limit;
+  }
+
   void _cancelAllTasks() {
     SafeLogger.d('Log', 'Canceling all download tasks (${_cancelTokens.length} tokens)');
     for (var token in _cancelTokens) {
@@ -399,6 +410,14 @@ class StressorController extends GetxController {
     final now = DateTime.now();
     final duration = now.difference(start);
     testDuration.value = duration;
+
+    // Auto-stop khi đạt preset thời lượng (nếu có). Guard `isRunning` tránh
+    // re-entry vì stopStressTest() cũng gọi _updateTotalSpeed sau khi set false.
+    if (isRunning.value && shouldAutoStop(duration)) {
+      SafeLogger.d('Log', '⏱️ Duration preset ${selectedDurationSec.value}s reached → auto-stop');
+      stopStressTest();
+      return;
+    }
 
     if (duration.inSeconds > 0) {
       // Tính tổng bytes = bytes đã hoàn thành + bytes đang tải

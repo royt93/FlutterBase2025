@@ -7,6 +7,7 @@ import 'widgets/summary_stats_card.dart';
 import 'widgets/timeline_item.dart';
 import 'widgets/history_chart.dart';
 import 'test_detail_screen.dart';
+import 'comparison_screen.dart';
 
 /// Màn hình History & Statistics
 class HistoryScreen extends AdScreen {
@@ -38,6 +39,17 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
           ),
         ),
         actions: [
+          // Toggle chế độ chọn nhiều để so sánh
+          Obx(() => IconButton(
+                icon: Icon(controller.selectionMode.value
+                    ? Icons.close
+                    : Icons.compare_arrows),
+                tooltip: 'compare_tooltip'.tr,
+                onPressed: () {
+                  SafeLogger.d(_tag, '▶️ ACTION toggleSelectionMode');
+                  controller.toggleSelectionMode();
+                },
+              )),
           IconButton(
             icon: const Icon(Icons.download),
             tooltip: 'export_data'.tr,
@@ -78,6 +90,7 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: _buildCompareBar(),
       body: Column(
         children: [
           // Banner edge-to-edge: bottom: false vì banner nằm trên cùng (dưới
@@ -180,13 +193,24 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                               ),
                               // Items for this date
                               ...results.map((result) {
-                                return TimelineItem(
-                                  result: result,
-                                  onTap: () {
-                                    SafeLogger.d(_tag, '▶️ ACTION timelineItem tap → id=${result.id}, startTime=${result.startTime}');
-                                    Get.to(() => TestDetailScreen(result: result));
-                                  },
-                                );
+                                return Obx(() {
+                                  final selecting = controller.selectionMode.value;
+                                  final selected =
+                                      controller.selectedIds.contains(result.id);
+                                  return TimelineItem(
+                                    result: result,
+                                    selectionMode: selecting,
+                                    selected: selected,
+                                    onTap: () {
+                                      if (selecting) {
+                                        controller.toggleSelect(result.id);
+                                      } else {
+                                        SafeLogger.d(_tag, '▶️ ACTION timelineItem tap → id=${result.id}');
+                                        Get.to(() => TestDetailScreen(result: result));
+                                      }
+                                    },
+                                  );
+                                });
                               }),
                             ],
                           );
@@ -203,6 +227,46 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
         ],
       ), // Column
     );
+  }
+
+  /// Thanh dưới hiện khi đang chọn để so sánh; bật "So sánh" khi chọn ≥ 2.
+  Widget _buildCompareBar() {
+    return Obx(() {
+      if (!controller.selectionMode.value) return const SizedBox.shrink();
+      final count = controller.selectedIds.length;
+      final canCompare = count >= 2;
+      return Container(
+        color: const Color(0xFF1E293B),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'compare_selected'.trParams({'count': '$count'}),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ),
+                FilledButton.icon(
+                  onPressed: canCompare
+                      ? () {
+                          SafeLogger.d(_tag,
+                              '▶️ ACTION compare → ${controller.selectedIds.length} tests');
+                          Get.to(() =>
+                              ComparisonScreen(results: controller.selectedResults));
+                        }
+                      : null,
+                  icon: const Icon(Icons.compare_arrows),
+                  label: Text('compare_button'.tr),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   /// Build time range selector

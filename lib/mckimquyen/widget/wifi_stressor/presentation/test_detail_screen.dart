@@ -184,7 +184,9 @@ class TestDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _buildInfoRow(
             'ended'.tr,
-            result.endTime != null ? _formatDateTime(result.endTime!) : 'N/A',
+            result.endTime == null
+                ? 'N/A'
+                : _formatDateTime(result.endTime as DateTime),
           ),
           const SizedBox(height: 8),
           _buildInfoRow('duration'.tr, result.durationFormatted),

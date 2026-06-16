@@ -10,6 +10,7 @@ import 'widgets/status_indicator_widget.dart';
 import 'widgets/status_text_widget.dart';
 import 'widgets/control_panel_widget.dart';
 import 'widgets/control_button_widget.dart';
+import 'widgets/speedometer_gauge_widget.dart';
 import 'presentation/history_screen.dart';
 import '../vip/vip_screen.dart';
 
@@ -338,7 +339,9 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           // Control panel
           ControlPanelWidget(isRunning: isRunning, controller: controller),
           const SizedBox(height: 16),
-          // Chart hiển thị nếu đang chạy
+          // Speedometer gauge + chart hiển thị nếu đang chạy
+          if (isRunning) SpeedometerGaugeWidget(controller: controller),
+          if (isRunning) const SizedBox(height: 16),
           if (isRunning) _buildSpeedChart(),
           const SizedBox(height: 16),
           // Control button

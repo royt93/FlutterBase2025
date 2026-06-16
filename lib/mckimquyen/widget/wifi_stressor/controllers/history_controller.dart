@@ -24,6 +24,29 @@ class HistoryController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString selectedTimeRange = 'all'.obs; // 'day', 'week', 'month', 'all'
 
+  // --- Comparison multi-select ---
+  final RxBool selectionMode = false.obs;
+  final RxList<String> selectedIds = <String>[].obs;
+
+  /// Bật/tắt chế độ chọn nhiều để so sánh; tắt thì clear lựa chọn.
+  void toggleSelectionMode() {
+    selectionMode.value = !selectionMode.value;
+    if (!selectionMode.value) selectedIds.clear();
+  }
+
+  /// Toggle chọn 1 test theo id.
+  void toggleSelect(String id) {
+    if (selectedIds.contains(id)) {
+      selectedIds.remove(id);
+    } else {
+      selectedIds.add(id);
+    }
+  }
+
+  /// Các test đang được chọn (giữ thứ tự theo allResults — mới nhất trước).
+  List<TestResult> get selectedResults =>
+      allResults.where((r) => selectedIds.contains(r.id)).toList();
+
   @override
   Future<void> onInit() async {
     super.onInit();
@@ -182,6 +205,7 @@ class HistoryController extends GetxController {
 
       // CRITICAL FIX: Update lists immediately (reactive update)
       allResults.removeWhere((r) => r.id == id);
+      selectedIds.remove(id);
       _applyTimeRangeFilter();
       _calculateStatistics();
 
@@ -328,11 +352,12 @@ class HistoryController extends GetxController {
     // CSV Rows
     for (final result in allResults) {
       final downloadedMB = (result.totalDownloadedBytes / (1024 * 1024)).toStringAsFixed(2);
-      final durationSeconds = result.endTime != null ? result.endTime!.difference(result.startTime).inSeconds : 0;
+      final end = result.endTime;
+      final durationSeconds = end != null ? end.difference(result.startTime).inSeconds : 0;
 
       buffer.write('${result.id},');
       buffer.write('${_formatDateTimeForCSV(result.startTime)},');
-      buffer.write('${result.endTime != null ? _formatDateTimeForCSV(result.endTime!) : ""},');
+      buffer.write('${end != null ? _formatDateTimeForCSV(end) : ""},');
       buffer.write('$durationSeconds,');
       buffer.write('${result.status},');
       buffer.write('${result.avgSpeed.toStringAsFixed(2)},');

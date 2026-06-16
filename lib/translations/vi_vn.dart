@@ -42,6 +42,25 @@ const Map<String, String> viVN = {
   'running_time': 'Thời gian chạy',
   'data_downloaded': 'Dữ liệu đã tải',
 
+  // Duration presets
+  'duration_label': 'Thời lượng:',
+  'duration_unlimited': 'Không giới hạn',
+  'duration_custom': 'Tùy chỉnh',
+  'duration_custom_title': 'Thời lượng tùy chỉnh',
+  'duration_custom_hint': 'Nhập số giây',
+
+  // Comparison
+  'comparison_title': 'So sánh',
+  'compare_tooltip': 'So sánh các lần test',
+  'compare_button': 'So sánh',
+  'compare_selected': 'Đã chọn @count',
+  'cmp_avg_speed': 'Tốc độ TB',
+  'cmp_peak_speed': 'Tốc độ đỉnh',
+  'cmp_min_speed': 'Tốc độ thấp nhất',
+  'cmp_median_speed': 'Trung vị',
+  'cmp_duration': 'Thời lượng',
+  'cmp_downloaded': 'Đã tải',
+
   // Buttons
   'start_test': 'BẮT ĐẦU KIỂM TRA',
   'stop_test': 'DỪNG KIỂM TRA',
