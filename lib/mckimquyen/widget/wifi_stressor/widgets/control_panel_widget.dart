@@ -5,7 +5,9 @@ import '../stressor_controller.dart';
 import 'metric_tile_widget.dart';
 import 'animated_number_text.dart';
 
-/// Widget hiển thị control panel với connection selector và metrics
+/// Widget hiển thị control panel với connection selector và metrics.
+/// Dark slate (đồng bộ design system History/Comparison): card #1E293B,
+/// accent #3B82F6, text trắng.
 class ControlPanelWidget extends StatelessWidget {
   final bool isRunning;
   final StressorController controller;
@@ -16,26 +18,30 @@ class ControlPanelWidget extends StatelessWidget {
     required this.controller,
   });
 
+  // Design system
+  static const _card = Color(0xFF1E293B);
+  static const _chipBg = Color(0xFF0F172A);
+  static const _accent = Color(0xFF3B82F6);
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: _card,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Connection count selector
-            _buildConnectionSelector(),
-            const SizedBox(height: 16),
-            // Duration preset selector (ẩn khi đang chạy)
-            if (!isRunning) _buildDurationSelector(context),
-            // Metrics display khi đang chạy
-            if (isRunning) ..._buildMetrics(),
-          ],
-        ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Connection count selector
+          _buildConnectionSelector(),
+          const SizedBox(height: 16),
+          // Duration preset selector (ẩn khi đang chạy)
+          if (!isRunning) _buildDurationSelector(context),
+          // Metrics display khi đang chạy
+          if (isRunning) ..._buildMetrics(),
+        ],
       ),
     );
   }
@@ -51,29 +57,45 @@ class ControlPanelWidget extends StatelessWidget {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        DropdownButton<int>(
-          value: controller.parallelDownloads.value,
-          items: connectionOptions
-              .map((val) => DropdownMenuItem<int>(
-                    value: val,
-                    child: Text(
-                      '$val',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+        Container(
+          decoration: BoxDecoration(
+            color: _chipBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: DropdownButton<int>(
+            value: controller.parallelDownloads.value,
+            dropdownColor: _card,
+            iconEnabledColor: Colors.white70,
+            iconDisabledColor: Colors.white30,
+            borderRadius: BorderRadius.circular(12),
+            underline: const SizedBox.shrink(),
+            isDense: true,
+            items: connectionOptions
+                .map((val) => DropdownMenuItem<int>(
+                      value: val,
+                      child: Text(
+                        '$val',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                  ))
-              .toList(),
-          onChanged: isRunning
-              ? null
-              : (val) {
-                  if (val != null) {
-                    controller.parallelDownloads.value = val;
-                  }
-                },
+                    ))
+                .toList(),
+            onChanged: isRunning
+                ? null
+                : (val) {
+                    if (val != null) {
+                      controller.parallelDownloads.value = val;
+                    }
+                  },
+          ),
         ),
       ],
     );
@@ -92,29 +114,68 @@ class ControlPanelWidget extends StatelessWidget {
         children: [
           Text(
             'duration_label'.tr,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               for (final p in _durationPresets)
-                ChoiceChip(
-                  label: Text(p == null ? 'duration_unlimited'.tr : _fmtPreset(p)),
+                _durationChip(
+                  label: p == null ? 'duration_unlimited'.tr : _fmtPreset(p),
                   selected: sel == p,
-                  onSelected: (_) => controller.selectedDurationSec.value = p,
+                  onTap: () => controller.selectedDurationSec.value = p,
                 ),
-              ChoiceChip(
-                label: Text(isCustom ? _fmtPreset(sel) : 'duration_custom'.tr),
+              _durationChip(
+                label: isCustom ? _fmtPreset(sel) : 'duration_custom'.tr,
                 selected: isCustom,
-                onSelected: (_) => _showCustomDurationDialog(context),
+                onTap: () => _showCustomDurationDialog(context),
               ),
             ],
           ),
         ],
       );
     });
+  }
+
+  /// Chip preset dark: selected = accent xanh đặc + trắng; còn lại = nền tối,
+  /// viền mờ, text trắng70.
+  Widget _durationChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? _accent : _chipBg,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected ? _accent : Colors.white.withValues(alpha: 0.14),
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+              color: selected ? Colors.white : Colors.white70,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   /// Dialog nhập thời lượng custom (giây). Quản lý controller cục bộ + dispose.
@@ -162,35 +223,24 @@ class ControlPanelWidget extends StatelessWidget {
   String _fmtClock(Duration d) =>
       '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
 
-  /// Tạo danh sách metrics với performance tối ưu
+  /// Metrics khi đang chạy. KHÔNG lặp "current speed" — gauge hero đã hiển thị.
   List<Widget> _buildMetrics() {
+    const valueStyle = TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+      color: Colors.white,
+    );
     return [
       Obx(() => MetricTileWidget(
-        icon: Icons.speed,
-        title: 'current_speed'.tr,
-        valueWidget: AnimatedNumberText(
-          value: controller.speedMbps.value,
-          decimals: 2,
-          suffix: ' Mbps',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      )),
-      Obx(() => MetricTileWidget(
-        icon: Icons.speed,
-        title: 'average_speed'.tr,
-        valueWidget: AnimatedNumberText(
-          value: controller.totalSpeedMbps.value,
-          decimals: 2,
-          suffix: ' Mbps',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      )),
+            icon: Icons.speed,
+            title: 'average_speed'.tr,
+            valueWidget: AnimatedNumberText(
+              value: controller.totalSpeedMbps.value,
+              decimals: 2,
+              suffix: ' Mbps',
+              style: valueStyle,
+            ),
+          )),
       Obx(() {
         final elapsed = _fmtClock(controller.testDuration.value);
         final limit = controller.selectedDurationSec.value;
@@ -205,18 +255,15 @@ class ControlPanelWidget extends StatelessWidget {
         );
       }),
       Obx(() => MetricTileWidget(
-        icon: Icons.data_usage,
-        title: 'data_downloaded'.tr,
-        valueWidget: AnimatedNumberText(
-          value: controller.totalBytesIncludingProgress.value / (1024 * 1024),
-          decimals: 2,
-          suffix: ' MB',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      )),
+            icon: Icons.data_usage,
+            title: 'data_downloaded'.tr,
+            valueWidget: AnimatedNumberText(
+              value: controller.totalBytesIncludingProgress.value / (1024 * 1024),
+              decimals: 2,
+              suffix: ' MB',
+              style: valueStyle,
+            ),
+          )),
     ];
   }
 }

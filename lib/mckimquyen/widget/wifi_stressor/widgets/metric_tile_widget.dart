@@ -27,6 +27,7 @@ class MetricTileWidget extends StatelessWidget {
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
       ),
     );
@@ -36,12 +37,14 @@ class MetricTileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-      leading: Icon(icon, color: Colors.green),
+      visualDensity: VisualDensity.compact,
+      leading: Icon(icon, color: const Color(0xFF10B981)),
       title: Text(
         title,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.normal,
+          color: Colors.white70,
         ),
       ),
       trailing: valueWidget,

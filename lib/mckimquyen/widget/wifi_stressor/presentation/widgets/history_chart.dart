@@ -170,7 +170,10 @@ class HistoryChart extends StatelessWidget {
           ),
         ),
       ),
-      borderData: FlBorderData(show: true),
+      borderData: FlBorderData(
+        show: true,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
       minX: 0,
       maxX: (limitedResults.length - 1).toDouble(),
       minY: 0,

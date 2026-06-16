@@ -330,8 +330,11 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Status indicator với animation tối ưu
-          StatusIndicatorWidget(isRunning: isRunning),
+          // Hero: gauge tốc độ realtime khi đang chạy, status icon khi idle.
+          if (isRunning)
+            SpeedometerGaugeWidget(controller: controller, size: 260)
+          else
+            StatusIndicatorWidget(isRunning: isRunning),
           const SizedBox(height: 16),
           // Status text
           StatusTextWidget(isRunning: isRunning, controller: controller),
@@ -339,11 +342,9 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           // Control panel
           ControlPanelWidget(isRunning: isRunning, controller: controller),
           const SizedBox(height: 16),
-          // Speedometer gauge + chart hiển thị nếu đang chạy
-          if (isRunning) SpeedometerGaugeWidget(controller: controller),
-          if (isRunning) const SizedBox(height: 16),
+          // Chart hiển thị nếu đang chạy
           if (isRunning) _buildSpeedChart(),
-          const SizedBox(height: 16),
+          if (isRunning) const SizedBox(height: 16),
           // Control button
           ControlButtonWidget(
             isRunning: isRunning,
@@ -362,13 +363,14 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           padding: const EdgeInsets.symmetric(vertical: 16.0),
           child: Column(
             children: [
-              const CircularProgressIndicator(color: Colors.green),
+              const CircularProgressIndicator(color: Color(0xFF3B82F6)),
               const SizedBox(height: 16),
               Text(
                 'collecting_data'.tr,
                 style: const TextStyle(
                   fontWeight: FontWeight.normal,
                   fontSize: 16,
+                  color: Colors.white70,
                 ),
               ),
             ],

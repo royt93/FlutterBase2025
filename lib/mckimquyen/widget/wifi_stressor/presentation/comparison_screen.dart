@@ -60,7 +60,14 @@ class ComparisonScreen extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(width: 14, height: 14, color: _colorFor(i)),
+              Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: _colorFor(i),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
               const SizedBox(width: 6),
               Text(
                 _label(i),
@@ -134,7 +141,10 @@ class ComparisonScreen extends StatelessWidget {
           ),
         ),
       ),
-      borderData: FlBorderData(show: true),
+      borderData: FlBorderData(
+        show: true,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
       minX: 0,
       maxX: maxLen <= 1 ? 1 : (maxLen - 1).toDouble(),
       minY: 0,

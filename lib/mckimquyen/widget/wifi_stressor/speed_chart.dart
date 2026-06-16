@@ -16,11 +16,12 @@ class SpeedChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 6,
+    return Container(
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,14 +35,14 @@ class SpeedChart extends StatelessWidget {
                   'speed_chart'.tr,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                    color: Colors.white,
                     fontSize: 16,
                   ),
                 ),
                 Text(
                   'data_points'.trParams({'count': '${speeds.length}'}),
                   style: const TextStyle(
-                    color: Colors.grey,
+                    color: Colors.white54,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),

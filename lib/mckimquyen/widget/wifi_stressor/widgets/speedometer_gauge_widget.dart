@@ -7,10 +7,20 @@ import '../stressor_controller.dart';
 
 /// Đồng hồ tốc độ realtime — phản ứng theo `controller.speedMbps` qua `Obx`.
 /// Tự auto-scale max theo các mốc đẹp (50/100/200/500/1000/2000 Mbps).
+///
+/// Layout: cung bán nguyệt 180° ở trên, **giá trị số đặt ngay dưới cung**
+/// (Column, không Stack) → số đo không bao giờ đè lên kim/cung/nền.
 class SpeedometerGaugeWidget extends StatelessWidget {
   final StressorController controller;
 
-  const SpeedometerGaugeWidget({super.key, required this.controller});
+  /// Đường kính gauge. Mặc định 200; dùng lớn hơn (vd 260) khi làm hero.
+  final double size;
+
+  const SpeedometerGaugeWidget({
+    super.key,
+    required this.controller,
+    this.size = 200,
+  });
 
   static const _tiers = <double>[50, 100, 200, 500, 1000, 2000];
 
@@ -35,42 +45,41 @@ class SpeedometerGaugeWidget extends StatelessWidget {
       final speed = controller.speedMbps.value;
       final maxSpeed = niceMax(speed);
       final color = speedColor(speed);
-      return SizedBox(
-        width: 200,
-        height: 160,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            CustomPaint(
-              size: const Size(200, 160),
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: size,
+            height: size * 0.52,
+            child: CustomPaint(
+              size: Size(size, size * 0.52),
               painter: _GaugePainter(
                 speed: speed,
                 maxSpeed: maxSpeed,
                 color: color,
               ),
             ),
-            Positioned(
-              bottom: 10,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    speed.toStringAsFixed(1),
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                  const Text(
-                    'Mbps',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            speed.toStringAsFixed(1),
+            style: TextStyle(
+              fontSize: size * 0.2,
+              fontWeight: FontWeight.bold,
+              color: color,
+              height: 1.0,
             ),
-          ],
-        ),
+          ),
+          const Text(
+            'Mbps',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.white70,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ],
       );
     });
   }
@@ -87,23 +96,23 @@ class _GaugePainter extends CustomPainter {
     required this.color,
   });
 
-  static const _startAngle = math.pi * 0.75; // 135°
-  static const _sweep = math.pi * 1.5; // 270°
+  static const _start = math.pi; // 180° (mép trái)
+  static const _sweep = math.pi; // quét 180° qua đỉnh sang mép phải
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height * 0.62);
-    final radius = math.min(size.width, size.height) * 0.46;
+    final center = Offset(size.width / 2, size.height - 2);
+    final radius = size.width * 0.42;
     final stroke = radius * 0.16;
     final rect = Rect.fromCircle(center: center, radius: radius);
 
     // Background arc
     final bgPaint = Paint()
-      ..color = Colors.grey.withValues(alpha: 0.25)
+      ..color = Colors.white.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
       ..strokeCap = StrokeCap.round;
-    canvas.drawArc(rect, _startAngle, _sweep, false, bgPaint);
+    canvas.drawArc(rect, _start, _sweep, false, bgPaint);
 
     // Value arc
     final fraction = (speed / maxSpeed).clamp(0.0, 1.0);
@@ -112,15 +121,15 @@ class _GaugePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
       ..strokeCap = StrokeCap.round;
-    canvas.drawArc(rect, _startAngle, _sweep * fraction, false, valuePaint);
+    canvas.drawArc(rect, _start, _sweep * fraction, false, valuePaint);
 
     // Ticks
     final tickPaint = Paint()
-      ..color = Colors.grey.withValues(alpha: 0.5)
+      ..color = Colors.white.withValues(alpha: 0.35)
       ..strokeWidth = 2;
     const ticks = 5;
     for (int i = 0; i <= ticks; i++) {
-      final a = _startAngle + _sweep * (i / ticks);
+      final a = _start + _sweep * (i / ticks);
       final dir = Offset(math.cos(a), math.sin(a));
       final outer = center + dir * (radius - stroke / 2);
       final inner = center + dir * (radius - stroke * 1.3);
@@ -128,9 +137,9 @@ class _GaugePainter extends CustomPainter {
     }
 
     // Needle
-    final needleAngle = _startAngle + _sweep * fraction;
-    final needleEnd =
-        center + Offset(math.cos(needleAngle), math.sin(needleAngle)) * (radius - stroke);
+    final needleAngle = _start + _sweep * fraction;
+    final needleEnd = center +
+        Offset(math.cos(needleAngle), math.sin(needleAngle)) * (radius - stroke);
     final needlePaint = Paint()
       ..color = color
       ..strokeWidth = 3
@@ -138,7 +147,12 @@ class _GaugePainter extends CustomPainter {
     canvas.drawLine(center, needleEnd, needlePaint);
 
     // Hub
-    canvas.drawCircle(center, stroke * 0.5, Paint()..color = color);
+    canvas.drawCircle(center, stroke * 0.6, Paint()..color = color);
+    canvas.drawCircle(
+      center,
+      stroke * 0.28,
+      Paint()..color = const Color(0xFF0F172A),
+    );
   }
 
   @override
