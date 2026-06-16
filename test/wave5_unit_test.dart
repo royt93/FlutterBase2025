@@ -6,9 +6,25 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/models/network_dashboard.dart';
+import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/models/network_info.dart';
+import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/models/test_result.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/services/network_info_service.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/speed_chart.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/widgets/loss_pie_widget.dart';
+
+TestResult _resultWithSignal(int? dbm) => TestResult(
+      id: 't',
+      startTime: DateTime(2026, 1, 1),
+      avgSpeed: 10,
+      peakSpeed: 10,
+      minSpeed: 10,
+      medianSpeed: 10,
+      speedHistory: const [10],
+      status: 'completed',
+      totalDownloadedBytes: 0,
+      downloadCount: 0,
+      networkInfo: dbm == null ? null : NetworkInfo(signalStrength: dbm),
+    );
 
 void main() {
   group('NetworkInfoService.isLikelyIpv4', () {
@@ -75,6 +91,27 @@ void main() {
       expect(const NetworkDashboard(signalStrength: -65).signalQuality, 'fair');
       expect(const NetworkDashboard(signalStrength: -80).signalQuality, 'poor');
       expect(const NetworkDashboard(signalStrength: null).signalQuality, isNull);
+    });
+  });
+
+  group('TestResult.signalQuality (i18n tier keys, unified)', () {
+    test('returns lowercase tier keys matching NetworkDashboard', () {
+      expect(_resultWithSignal(-40).signalQuality, 'excellent');
+      expect(_resultWithSignal(-55).signalQuality, 'good');
+      expect(_resultWithSignal(-65).signalQuality, 'fair');
+      expect(_resultWithSignal(-80).signalQuality, 'poor');
+      expect(_resultWithSignal(null).signalQuality, isNull);
+    });
+  });
+
+  group('NetworkInfoService.publicIpProviders', () {
+    test('has multiple fallback providers incl. ipify', () {
+      expect(NetworkInfoService.publicIpProviders.length, greaterThanOrEqualTo(2));
+      expect(NetworkInfoService.publicIpProviders.first, contains('ipify'));
+      // All entries are https URLs.
+      for (final url in NetworkInfoService.publicIpProviders) {
+        expect(url, startsWith('https://'));
+      }
     });
   });
 }

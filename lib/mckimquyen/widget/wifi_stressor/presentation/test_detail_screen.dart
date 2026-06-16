@@ -304,7 +304,7 @@ class TestDetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
             _buildInfoRow(
               'signal'.tr,
-              '${networkInfo.signalStrength} dBm (${result.signalQuality ?? "N/A"})',
+              '${networkInfo.signalStrength} dBm (${result.signalQuality == null ? "N/A" : ('signal_${result.signalQuality}').tr})',
             ),
           ],
           if (networkInfo.frequency != null) ...[
@@ -486,7 +486,7 @@ class TestDetailScreen extends StatelessWidget {
         buffer.writeln('• SSID: ${networkInfo.ssid}');
       }
       if (networkInfo.signalStrength != null) {
-        buffer.writeln('• Signal Strength: ${networkInfo.signalStrength} dBm (${result.signalQuality ?? "N/A"})');
+        buffer.writeln('• Signal Strength: ${networkInfo.signalStrength} dBm (${result.signalQuality?.capitalizeFirst ?? "N/A"})');
       }
       if (networkInfo.frequency != null) {
         buffer.writeln('• Frequency: ${networkInfo.frequency}');

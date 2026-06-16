@@ -99,29 +99,48 @@ class NetworkInfoService {
     return true;
   }
 
-  /// Lấy public IP qua API ngoài (ipify). null nếu offline/timeout/parse fail.
+  /// Danh sách provider public-IP (plain-text body). Thử lần lượt, dừng ở
+  /// cái đầu trả IPv4 hợp lệ — fallback khi 1 provider bị chặn/timeout.
+  @visibleForTesting
+  static const publicIpProviders = <String>[
+    'https://api.ipify.org',
+    'https://ifconfig.me/ip',
+    'https://icanhazip.com',
+  ];
+
+  /// Lấy public IP qua API ngoài (có fallback). null nếu mọi provider fail.
   Future<String?> getPublicIp() async {
-    try {
-      final dio = Dio(BaseOptions(
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 5),
-      ));
-      final resp = await dio.get<String>('https://api.ipify.org');
-      final ip = resp.data?.trim();
-      return isLikelyIpv4(ip) ? ip : null;
-    } catch (e) {
-      SafeLogger.d('Log', 'getPublicIp failed: $e');
-      return null;
+    final dio = Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 5),
+      receiveTimeout: const Duration(seconds: 5),
+    ));
+    for (final url in publicIpProviders) {
+      try {
+        final resp = await dio.get<String>(url);
+        final ip = resp.data?.trim();
+        if (isLikelyIpv4(ip)) return ip;
+      } catch (e) {
+        SafeLogger.d('Log', 'getPublicIp provider $url failed: $e');
+      }
     }
+    return null;
   }
 
   /// Snapshot mạng đầy đủ cho Network Dashboard (live, không persist).
+  /// Các nhánh độc lập chạy song song (hot futures) → giảm trễ; public IP
+  /// (tới 5s) không còn chặn các phần native nhanh.
   Future<NetworkDashboard> getNetworkDashboard() async {
-    final connectionType = await getConnectionType();
-    final base = await getCurrentNetworkInfo();
-    final wifi = await getWifiInfoMap();
-    final details = await getNetworkDetailsMap();
-    final publicIp = await getPublicIp();
+    final connectionTypeF = getConnectionType();
+    final baseF = getCurrentNetworkInfo();
+    final wifiF = getWifiInfoMap();
+    final detailsF = getNetworkDetailsMap();
+    final publicIpF = getPublicIp();
+
+    final connectionType = await connectionTypeF;
+    final base = await baseF;
+    final wifi = await wifiF;
+    final details = await detailsF;
+    final publicIp = await publicIpF;
 
     return NetworkDashboard(
       ssid: base.ssid,

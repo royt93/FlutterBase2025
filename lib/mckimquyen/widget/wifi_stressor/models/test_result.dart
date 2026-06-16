@@ -86,16 +86,18 @@ class TestResult {
   /// Kiểm tra xem test có failed không
   bool get isFailed => status == 'failed';
 
-  /// Get signal quality từ network info
+  /// Get signal quality từ network info.
+  /// Trả tier KEY lowercase ('excellent'/'good'/'fair'/'poor') để dịch i18n
+  /// (`signal_<tier>`), thống nhất với NetworkDashboard.signalQuality.
   String? get signalQuality {
     final signal = networkInfo?.signalStrength;
     if (signal == null) return null;
 
     // dBm scale: higher is better (less negative)
-    if (signal >= -50) return 'Excellent';
-    if (signal >= -60) return 'Good';
-    if (signal >= -70) return 'Fair';
-    return 'Poor';
+    if (signal >= -50) return 'excellent';
+    if (signal >= -60) return 'good';
+    if (signal >= -70) return 'fair';
+    return 'poor';
   }
 
   /// Get speed quality (Green/Yellow/Red)
