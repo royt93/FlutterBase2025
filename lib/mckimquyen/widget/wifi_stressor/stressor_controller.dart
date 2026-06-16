@@ -9,6 +9,7 @@ import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'models/test_result.dart';
 import 'services/test_history_storage.dart';
 import 'services/network_info_service.dart';
+import 'services/latency_service.dart';
 
 
 class StressorController extends GetxController {
@@ -20,6 +21,10 @@ class StressorController extends GetxController {
   // Giới hạn thời lượng test (giây). `null` = không giới hạn (dừng thủ công).
   // Khi đặt preset, test tự dừng + lưu khi đạt mốc thời gian.
   final selectedDurationSec = Rx<int?>(null);
+  // Ping/Latency + Jitter realtime (đo trong lúc test → latency dưới tải).
+  final latencyMs = Rx<double?>(null);
+  final jitterMs = Rx<double?>(null);
+  final latencyHistory = <double>[].obs;
   // Tách speedHistory riêng để tối ưu chart updates
   final speedHistory = <double>[].obs;
   final totalDownloadedBytes = 0.obs;
@@ -91,12 +96,16 @@ class StressorController extends GetxController {
   final Dio dio;
   Timer? _updateTimer;
   Timer? _retryTimer;
+  Timer? _latencyTimer;
 
   // Storage để lưu test history - SINGLETON
   final TestHistoryStorage _storage = TestHistoryStorage.instance;
 
   // Network info service để lấy thông tin mạng
   final NetworkInfoService _networkInfoService = NetworkInfoService();
+
+  // Service đo độ trễ + jitter
+  final LatencyService _latencyService = LatencyService();
 
   // Track failed URLs để tránh retry liên tục
   final Set<String> _failedUrls = {};
@@ -184,6 +193,8 @@ class StressorController extends GetxController {
     _cancelAllTasks();
     _updateTimer?.cancel();
     _retryTimer?.cancel();
+    _latencyTimer?.cancel();
+    _latencyService.close();
     // KHÔNG close shared singleton storage
     // _storage.close();
     dio.close(); // Close Dio to prevent memory leak
@@ -277,10 +288,29 @@ class StressorController extends GetxController {
       _retryFailedUrls();
     });
 
+    // Reset + start latency probe (đo độ trễ dưới tải mỗi 2s)
+    latencyMs.value = null;
+    jitterMs.value = null;
+    latencyHistory.clear();
+    _probeLatency();
+    _latencyTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      _probeLatency();
+    });
+
     for (int i = 0; i < parallelDownloads.value; i++) {
       SafeLogger.d('Log', 'Starting download loop #$i');
       _runDownloadLoop(i);
     }
+  }
+
+  /// Đo 1 mẫu latency, cập nhật trung bình + jitter. Bỏ qua nếu đã dừng/lỗi.
+  Future<void> _probeLatency() async {
+    if (!isRunning.value) return;
+    final ms = await _latencyService.probe();
+    if (ms == null || !isRunning.value) return;
+    latencyHistory.add(ms);
+    latencyMs.value = LatencyService.average(latencyHistory);
+    jitterMs.value = LatencyService.jitter(latencyHistory);
   }
 
   /// Thử lại các URL đã failed sau một khoảng thời gian
@@ -326,6 +356,7 @@ class StressorController extends GetxController {
     _updateTotalSpeed();
     _updateTimer?.cancel();
     _retryTimer?.cancel();
+    _latencyTimer?.cancel();
 
     // CRITICAL FIX: AWAIT để đảm bảo save xong trước khi return
     await _saveTestResult('stopped');
@@ -372,6 +403,8 @@ class StressorController extends GetxController {
         downloadCount: downloadCount.value,
         status: status,
         networkInfo: networkInfo,
+        avgLatencyMs: latencyMs.value,
+        jitterMs: jitterMs.value,
       );
 
       await _storage.saveTestResult(result);

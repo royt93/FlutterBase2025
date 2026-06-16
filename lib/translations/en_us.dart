@@ -41,6 +41,9 @@ const Map<String, String> enUS = {
   'average_speed': 'Average Speed',
   'running_time': 'Running Time',
   'data_downloaded': 'Data Downloaded',
+  'latency': 'Latency',
+  'jitter': 'Jitter',
+  'quality_score': 'Quality',
 
   // Duration presets
   'duration_label': 'Duration:',
@@ -74,6 +77,7 @@ const Map<String, String> enUS = {
   'warning_title': '⚠️ Warning',
   'warning_message': 'This app will use a large amount of network data. Are you sure you want to continue?',
   'cancel': 'Cancel',
+  'ok': 'OK',
   'continue': 'Continue',
   'no_internet': 'It looks like your device is not connected to the internet',
 
@@ -151,6 +155,7 @@ const Map<String, String> enUS = {
 
   // Export
   'export_no_data': 'No data to export',
+  'export_choose_format': 'Choose export format',
   'export_success': 'Exported @count tests to @file',
   'export_failed': 'Export failed: @error',
 

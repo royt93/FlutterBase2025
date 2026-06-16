@@ -15,6 +15,12 @@ class TestResult {
   final int totalDownloadedBytes;
   final int downloadCount;
 
+  /// Độ trễ trung bình (ms) đo trong lúc test. `null` nếu không đo được / record cũ.
+  final double? avgLatencyMs;
+
+  /// Jitter (ms) — dao động độ trễ. `null` nếu không đo được / record cũ.
+  final double? jitterMs;
+
   TestResult({
     required this.id,
     required this.startTime,
@@ -28,6 +34,8 @@ class TestResult {
     this.networkInfo,
     required this.totalDownloadedBytes,
     required this.downloadCount,
+    this.avgLatencyMs,
+    this.jitterMs,
   });
 
   /// Tính duration từ start và end time
@@ -99,6 +107,8 @@ class TestResult {
     NetworkInfo? networkInfo,
     int? totalDownloadedBytes,
     int? downloadCount,
+    double? avgLatencyMs,
+    double? jitterMs,
   }) {
     return TestResult(
       id: id ?? this.id,
@@ -113,6 +123,8 @@ class TestResult {
       networkInfo: networkInfo ?? this.networkInfo,
       totalDownloadedBytes: totalDownloadedBytes ?? this.totalDownloadedBytes,
       downloadCount: downloadCount ?? this.downloadCount,
+      avgLatencyMs: avgLatencyMs ?? this.avgLatencyMs,
+      jitterMs: jitterMs ?? this.jitterMs,
     );
   }
 
@@ -125,6 +137,8 @@ class TestResult {
     required int downloadCount,
     required String status,
     NetworkInfo? networkInfo,
+    double? avgLatencyMs,
+    double? jitterMs,
   }) {
     // Calculate statistics từ speedHistory
     // VALIDATION: Clamp all negative speeds to 0
@@ -152,6 +166,8 @@ class TestResult {
       networkInfo: networkInfo,
       totalDownloadedBytes: totalDownloadedBytes,
       downloadCount: downloadCount,
+      avgLatencyMs: avgLatencyMs,
+      jitterMs: jitterMs,
     );
   }
 
@@ -170,6 +186,8 @@ class TestResult {
       'networkInfo': networkInfo?.toJson(),
       'totalDownloadedBytes': totalDownloadedBytes,
       'downloadCount': downloadCount,
+      'avgLatencyMs': avgLatencyMs,
+      'jitterMs': jitterMs,
     };
   }
 
@@ -190,7 +208,21 @@ class TestResult {
           : null,
       totalDownloadedBytes: json['totalDownloadedBytes'] as int,
       downloadCount: json['downloadCount'] as int,
+      avgLatencyMs: (json['avgLatencyMs'] as num?)?.toDouble(),
+      jitterMs: (json['jitterMs'] as num?)?.toDouble(),
     );
+  }
+
+  /// Hiển thị latency: "23 ms" hoặc "N/A".
+  String get latencyFormatted {
+    final l = avgLatencyMs;
+    return l == null ? 'N/A' : '${l.round()} ms';
+  }
+
+  /// Hiển thị jitter: "5 ms" hoặc "N/A".
+  String get jitterFormatted {
+    final j = jitterMs;
+    return j == null ? 'N/A' : '${j.round()} ms';
   }
 
   @override

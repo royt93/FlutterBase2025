@@ -41,6 +41,9 @@ const Map<String, String> viVN = {
   'average_speed': 'Tốc độ trung bình',
   'running_time': 'Thời gian chạy',
   'data_downloaded': 'Dữ liệu đã tải',
+  'latency': 'Độ trễ',
+  'jitter': 'Jitter',
+  'quality_score': 'Chất lượng',
 
   // Duration presets
   'duration_label': 'Thời lượng:',
@@ -74,6 +77,7 @@ const Map<String, String> viVN = {
   'warning_title': '⚠️ Cảnh báo',
   'warning_message': 'Ứng dụng sẽ sử dụng lượng lớn dữ liệu mạng. Bạn có chắc muốn tiếp tục?',
   'cancel': 'Hủy bỏ',
+  'ok': 'OK',
   'continue': 'Tiếp tục',
   'no_internet': 'Thiết bị của bạn không kết nối internet',
 
@@ -151,6 +155,7 @@ const Map<String, String> viVN = {
 
   // Export
   'export_no_data': 'Không có dữ liệu để xuất',
+  'export_choose_format': 'Chọn định dạng xuất',
   'export_success': 'Đã xuất @count tests vào @file',
   'export_failed': 'Xuất thất bại: @error',
 

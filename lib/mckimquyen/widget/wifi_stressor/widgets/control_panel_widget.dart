@@ -178,37 +178,17 @@ class ControlPanelWidget extends StatelessWidget {
     );
   }
 
-  /// Dialog nhập thời lượng custom (giây). Quản lý controller cục bộ + dispose.
+  /// Dialog nhập thời lượng custom (giây). Dùng StatefulWidget để
+  /// `TextEditingController` được dispose ĐÚNG vòng đời (trong State.dispose,
+  /// sau khi widget unmount) — tránh assert `_dependents.isEmpty` do dispose
+  /// controller khi TextField còn mounted.
   void _showCustomDurationDialog(BuildContext context) {
-    final current = controller.selectedDurationSec.value;
-    final textCtrl = TextEditingController(
-      text: current == null ? '' : '$current',
-    );
-    Get.defaultDialog(
-      titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      contentPadding: const EdgeInsets.all(16),
-      title: 'duration_custom_title'.tr,
-      content: TextField(
-        controller: textCtrl,
-        autofocus: true,
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(
-          labelText: 'duration_custom_hint'.tr,
-          suffixText: 's',
-          border: const OutlineInputBorder(),
-        ),
+    Get.dialog(
+      _CustomDurationDialog(
+        initialSec: controller.selectedDurationSec.value,
+        onSubmit: (v) => controller.selectedDurationSec.value = v,
       ),
-      textCancel: 'cancel'.tr,
-      textConfirm: 'ok'.tr,
-      onConfirm: () {
-        final v = int.tryParse(textCtrl.text.trim());
-        if (v != null && v > 0) {
-          controller.selectedDurationSec.value = v;
-        }
-        Get.back();
-      },
-    ).then((_) => textCtrl.dispose());
+    );
   }
 
   /// Định dạng preset: 15s / 1m / 1m30s.
@@ -242,6 +222,22 @@ class ControlPanelWidget extends StatelessWidget {
             ),
           )),
       Obx(() {
+        final l = controller.latencyMs.value;
+        return MetricTileWidget.text(
+          icon: Icons.network_ping,
+          title: 'latency'.tr,
+          value: l == null ? '—' : '${l.round()} ms',
+        );
+      }),
+      Obx(() {
+        final j = controller.jitterMs.value;
+        return MetricTileWidget.text(
+          icon: Icons.multiline_chart,
+          title: 'jitter'.tr,
+          value: j == null ? '—' : '${j.round()} ms',
+        );
+      }),
+      Obx(() {
         final elapsed = _fmtClock(controller.testDuration.value);
         final limit = controller.selectedDurationSec.value;
         // Có preset → hiển thị "đã chạy / tổng" để user thấy còn bao lâu.
@@ -265,5 +261,79 @@ class ControlPanelWidget extends StatelessWidget {
             ),
           )),
     ];
+  }
+}
+
+/// Dialog nhập thời lượng custom (giây) — StatefulWidget tự quản controller.
+class _CustomDurationDialog extends StatefulWidget {
+  final int? initialSec;
+  final ValueChanged<int> onSubmit;
+
+  const _CustomDurationDialog({required this.initialSec, required this.onSubmit});
+
+  @override
+  State<_CustomDurationDialog> createState() => _CustomDurationDialogState();
+}
+
+class _CustomDurationDialogState extends State<_CustomDurationDialog> {
+  TextEditingController? _textCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    final init = widget.initialSec;
+    _textCtrl = TextEditingController(text: init == null ? '' : '$init');
+  }
+
+  @override
+  void dispose() {
+    _textCtrl?.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final c = _textCtrl;
+    if (c != null) {
+      final v = int.tryParse(c.text.trim());
+      if (v != null && v > 0) widget.onSubmit(v);
+    }
+    Get.back();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = _textCtrl;
+    return AlertDialog(
+      backgroundColor: const Color(0xFF1E293B),
+      title: Text(
+        'duration_custom_title'.tr,
+        style: const TextStyle(color: Colors.white),
+      ),
+      content: TextField(
+        controller: c,
+        autofocus: true,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        style: const TextStyle(color: Colors.white),
+        onSubmitted: (_) => _submit(),
+        decoration: InputDecoration(
+          labelText: 'duration_custom_hint'.tr,
+          labelStyle: const TextStyle(color: Colors.white70),
+          suffixText: 's',
+          suffixStyle: const TextStyle(color: Colors.white70),
+          border: const OutlineInputBorder(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Get.back(),
+          child: Text('cancel'.tr),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: Text('ok'.tr),
+        ),
+      ],
+    );
   }
 }

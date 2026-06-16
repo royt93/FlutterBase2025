@@ -70,6 +70,29 @@ void main() {
     expect(c.selectedDurationSec.value, 30);
   });
 
+  testWidgets('custom duration dialog sets value + closes without crashing',
+      (tester) async {
+    // Regression: disposing the dialog's TextEditingController while still
+    // mounted threw `_dependents.isEmpty`. The dialog now owns it in a
+    // StatefulWidget; this full open→fill→OK→dispose path must stay clean.
+    final c = Get.put(StressorController());
+    await tester.pumpWidget(
+      _app(Scaffold(body: ControlPanelWidget(isRunning: false, controller: c))),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Custom'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '45');
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle(); // would surface the dispose assertion if any
+
+    expect(c.selectedDurationSec.value, 45);
+    expect(find.byType(TextField), findsNothing); // dialog closed
+  });
+
   testWidgets('control panel hides duration presets while running', (tester) async {
     final c = Get.put(StressorController());
     await tester.pumpWidget(

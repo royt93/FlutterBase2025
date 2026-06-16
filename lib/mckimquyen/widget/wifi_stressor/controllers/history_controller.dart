@@ -1,14 +1,30 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:toastification/toastification.dart';
+import '../models/network_quality.dart';
 import '../models/test_result.dart';
 import '../models/test_statistics.dart';
 import '../services/test_history_storage.dart';
 import '../../../util/ui_utils.dart';
 import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
+
+/// Định dạng export lịch sử test.
+enum ExportFormat {
+  csv('csv', 'text/csv'),
+  json('json', 'application/json'),
+  pdf('pdf', 'application/pdf');
+
+  final String ext;
+  final String mime;
+  const ExportFormat(this.ext, this.mime);
+}
 
 
 /// Controller để quản lý History screen với GetX
@@ -287,46 +303,86 @@ class HistoryController extends GetxController {
         .toList();
   }
 
-  /// Export history data to CSV and share
+  /// Mở picker chọn định dạng (CSV / JSON / PDF) rồi export.
   Future<void> exportData() async {
+    if (allResults.isEmpty) {
+      UIUtils.showToast(
+        'info'.tr,
+        'export_no_data'.tr,
+        type: ToastificationType.info,
+      );
+      return;
+    }
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1E293B),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                'export_choose_format'.tr,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            _exportTile(Icons.table_chart, 'CSV', ExportFormat.csv),
+            _exportTile(Icons.data_object, 'JSON', ExportFormat.json),
+            _exportTile(Icons.picture_as_pdf, 'PDF', ExportFormat.pdf),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _exportTile(IconData icon, String label, ExportFormat fmt) {
+    return ListTile(
+      leading: Icon(icon, color: const Color(0xFF3B82F6)),
+      title: Text(label, style: const TextStyle(color: Colors.white)),
+      onTap: () {
+        Get.back();
+        _exportAs(fmt);
+      },
+    );
+  }
+
+  /// Sinh file theo định dạng + share.
+  Future<void> _exportAs(ExportFormat fmt) async {
     try {
-      if (allResults.isEmpty) {
-        UIUtils.showToast(
-          'info'.tr,
-          'export_no_data'.tr,
-          type: ToastificationType.info,
-        );
-        return;
-      }
-
-      SafeLogger.d('Log', '📤 Starting export of ${allResults.length} tests...');
-
-      // Generate CSV content
-      final csvContent = _generateCSV();
-      SafeLogger.d('Log', 'CSV Preview:\n${csvContent.substring(0, csvContent.length > 500 ? 500 : csvContent.length)}...');
-
-      // Create filename with timestamp
+      SafeLogger.d('Log', '📤 Export ${allResults.length} tests as ${fmt.ext}...');
       final now = DateTime.now();
-      final timestamp = '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}';
-      final filename = 'wifi_test_history_$timestamp.csv';
+      final timestamp =
+          '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}';
+      final filename = 'wifi_test_history_$timestamp.${fmt.ext}';
 
-      // Get temporary directory (no permission needed)
       final directory = await getTemporaryDirectory();
       final filePath = '${directory.path}/$filename';
-
-      // Write CSV to file
       final file = File(filePath);
-      await file.writeAsString(csvContent);
+
+      if (fmt == ExportFormat.csv) {
+        await file.writeAsString(generateCsv());
+      } else if (fmt == ExportFormat.json) {
+        await file.writeAsString(generateJson());
+      } else {
+        await file.writeAsBytes(await generatePdf());
+      }
       SafeLogger.d('Log', '✅ File created: $filePath');
 
-      // Share file using share_plus (user can choose where to save)
       await Share.shareXFiles(
-        [XFile(filePath, mimeType: 'text/csv')],
+        [XFile(filePath, mimeType: fmt.mime)],
         subject: 'WiFi Test History Export',
         text: 'Exported ${allResults.length} WiFi stress test results',
       );
 
-      SafeLogger.d('Log', '✅ Export completed successfully');
       UIUtils.showToast(
         'success'.tr,
         'export_success'.trParams({'count': '${allResults.length}', 'file': filename}),
@@ -342,18 +398,87 @@ class HistoryController extends GetxController {
     }
   }
 
+  /// JSON: mảng các test (kèm latency/jitter qua toJson).
+  String generateJson() {
+    const encoder = JsonEncoder.withIndent('  ');
+    return encoder.convert(allResults.map((r) => r.toJson()).toList());
+  }
+
+  /// PDF: bảng tóm tắt các lần test.
+  Future<Uint8List> generatePdf() async {
+    final doc = pw.Document();
+    final headers = [
+      '#',
+      'Time',
+      'Avg',
+      'Peak',
+      'Latency',
+      'Jitter',
+      'Grade',
+      'Status',
+    ];
+    final rows = <List<String>>[];
+    for (int i = 0; i < allResults.length; i++) {
+      final r = allResults[i];
+      final q = NetworkQuality.compute(
+        avgSpeed: r.avgSpeed,
+        latencyMs: r.avgLatencyMs,
+        jitterMs: r.jitterMs,
+      );
+      rows.add([
+        '${i + 1}',
+        _formatDateTimeForCSV(r.startTime),
+        r.avgSpeed.toStringAsFixed(1),
+        r.peakSpeed.toStringAsFixed(1),
+        r.latencyFormatted,
+        r.jitterFormatted,
+        '${q.grade} (${q.score})',
+        r.status,
+      ]);
+    }
+    doc.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => [
+          pw.Header(
+            level: 0,
+            child: pw.Text(
+              'WiFi Test History (${allResults.length})',
+              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+          pw.SizedBox(height: 8),
+          pw.TableHelper.fromTextArray(
+            headers: headers,
+            data: rows,
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+            cellStyle: const pw.TextStyle(fontSize: 8),
+            headerDecoration: const pw.BoxDecoration(color: PdfColors.blue100),
+            cellAlignment: pw.Alignment.centerLeft,
+          ),
+        ],
+      ),
+    );
+    return doc.save();
+  }
+
   /// Generate CSV content from test results
-  String _generateCSV() {
+  String generateCsv() {
     final buffer = StringBuffer();
 
     // CSV Header
-    buffer.writeln('ID,Start Time,End Time,Duration (s),Status,Avg Speed (Mbps),Peak Speed (Mbps),Min Speed (Mbps),Median Speed (Mbps),Downloaded (MB),Download Count,SSID,Signal (dBm),Frequency,IP Address');
+    buffer.writeln('ID,Start Time,End Time,Duration (s),Status,Avg Speed (Mbps),Peak Speed (Mbps),Min Speed (Mbps),Median Speed (Mbps),Latency (ms),Jitter (ms),Quality,Downloaded (MB),Download Count,SSID,Signal (dBm),Frequency,IP Address');
 
     // CSV Rows
     for (final result in allResults) {
       final downloadedMB = (result.totalDownloadedBytes / (1024 * 1024)).toStringAsFixed(2);
       final end = result.endTime;
       final durationSeconds = end != null ? end.difference(result.startTime).inSeconds : 0;
+      final q = NetworkQuality.compute(
+        avgSpeed: result.avgSpeed,
+        latencyMs: result.avgLatencyMs,
+        jitterMs: result.jitterMs,
+      );
 
       buffer.write('${result.id},');
       buffer.write('${_formatDateTimeForCSV(result.startTime)},');
@@ -364,6 +489,9 @@ class HistoryController extends GetxController {
       buffer.write('${result.peakSpeed.toStringAsFixed(2)},');
       buffer.write('${result.minSpeed.toStringAsFixed(2)},');
       buffer.write('${result.medianSpeed.toStringAsFixed(2)},');
+      buffer.write('${result.avgLatencyMs?.toStringAsFixed(1) ?? ""},');
+      buffer.write('${result.jitterMs?.toStringAsFixed(1) ?? ""},');
+      buffer.write('${q.grade} (${q.score}),');
       buffer.write('$downloadedMB,');
       buffer.write('${result.downloadCount},');
       buffer.write('${result.networkInfo?.ssid ?? ""},');

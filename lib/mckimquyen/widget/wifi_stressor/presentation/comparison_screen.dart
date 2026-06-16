@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../models/test_result.dart';
+import '../models/network_quality.dart';
 
 /// Màn so sánh nhiều lần test: chart overlay speed-over-time + bảng metrics.
 /// Stateless, reactive theo data truyền vào — không setState/late/force-null.
@@ -217,7 +218,10 @@ class ComparisonScreen extends StatelessWidget {
           ),
           const Divider(color: Colors.white24),
           for (final row in rows) _buildMetricRow(row),
-          // Duration + downloaded (neutral, no best highlight)
+          // Latency + jitter + quality grade + duration + downloaded (neutral)
+          _buildTextRow('latency', (r) => r.latencyFormatted),
+          _buildTextRow('jitter', (r) => r.jitterFormatted),
+          _buildGradeRow(),
           _buildTextRow('cmp_duration', (r) => r.durationFormatted),
           _buildTextRow('cmp_downloaded', (r) => r.downloadedFormatted),
         ],
@@ -260,6 +264,44 @@ class ComparisonScreen extends StatelessWidget {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  /// Hàng điểm chất lượng A–F (chữ màu theo grade).
+  Widget _buildGradeRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              'quality_score'.tr,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+          ),
+          for (final r in results)
+            Builder(builder: (_) {
+              final q = NetworkQuality.compute(
+                avgSpeed: r.avgSpeed,
+                latencyMs: r.avgLatencyMs,
+                jitterMs: r.jitterMs,
+              );
+              return Expanded(
+                flex: 2,
+                child: Text(
+                  '${q.grade} · ${q.score}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: q.color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
+            }),
         ],
       ),
     );

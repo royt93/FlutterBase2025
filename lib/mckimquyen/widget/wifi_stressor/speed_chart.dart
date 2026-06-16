@@ -6,7 +6,10 @@ import 'package:get/get.dart';
 class SpeedChart extends StatelessWidget {
   final List<double> speeds;
 
-  const SpeedChart({super.key, required this.speeds});
+  /// Chiều cao vùng vẽ chart. Mặc định 360 (màn chạy); detail dùng nhỏ hơn.
+  final double chartHeight;
+
+  const SpeedChart({super.key, required this.speeds, this.chartHeight = 360});
 
   double get maxSpeed {
     if (speeds.isEmpty) return 100;
@@ -51,7 +54,7 @@ class SpeedChart extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 360,
+            height: chartHeight,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 0),
               child: AnimatedSwitcher(

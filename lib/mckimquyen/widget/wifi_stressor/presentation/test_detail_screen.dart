@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/test_result.dart';
+import '../models/network_quality.dart';
 import '../speed_chart.dart';
 import '../controllers/history_controller.dart';
 
@@ -95,14 +96,17 @@ class TestDetailScreen extends StatelessWidget {
             children: [
               Icon(_getStatusIcon(), color: Colors.white),
               const SizedBox(width: 8),
-              Text(
-                'performance_stats'.tr,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  'performance_stats'.tr,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
+              _buildQualityBadge(),
             ],
           ),
           const SizedBox(height: 16),
@@ -144,6 +148,55 @@ class TestDetailScreen extends StatelessWidget {
                 child: _buildMetricColumn(
                   'median_speed'.tr,
                   '${result.medianSpeed.toStringAsFixed(1)} Mbps',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Badge điểm chất lượng mạng A–F (gộp speed + latency + jitter).
+  Widget _buildQualityBadge() {
+    final q = NetworkQuality.compute(
+      avgSpeed: result.avgSpeed,
+      latencyMs: result.avgLatencyMs,
+      jitterMs: result.jitterMs,
+    );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            q.grade,
+            style: TextStyle(
+              color: q.color,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'quality_score'.tr,
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 9),
+              ),
+              Text(
+                '${q.score}/100',
+                style: TextStyle(
+                  color: Colors.grey.shade900,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -196,6 +249,10 @@ class TestDetailScreen extends StatelessWidget {
           _buildInfoRow('data_downloaded'.tr, result.downloadedFormatted),
           const SizedBox(height: 8),
           _buildInfoRow('download_count'.tr, '${result.downloadCount}'),
+          const SizedBox(height: 8),
+          _buildInfoRow('latency'.tr, result.latencyFormatted),
+          const SizedBox(height: 8),
+          _buildInfoRow('jitter'.tr, result.jitterFormatted),
         ],
       ),
     );
@@ -284,10 +341,7 @@ class TestDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           if (result.speedHistory.isNotEmpty)
-            SizedBox(
-              height: 200,
-              child: SpeedChart(speeds: result.speedHistory),
-            )
+            SpeedChart(speeds: result.speedHistory, chartHeight: 180)
           else
             Center(
               child: Padding(

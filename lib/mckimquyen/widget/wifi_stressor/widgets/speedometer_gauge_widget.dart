@@ -42,44 +42,53 @@ class SpeedometerGaugeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final speed = controller.speedMbps.value;
-      final maxSpeed = niceMax(speed);
-      final color = speedColor(speed);
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: size,
-            height: size * 0.52,
-            child: CustomPaint(
-              size: Size(size, size * 0.52),
-              painter: _GaugePainter(
-                speed: speed,
-                maxSpeed: maxSpeed,
-                color: color,
+      // Target từ controller; scale max khoá theo target để không nhảy thang khi
+      // animate. Kim/cung/số/màu nội suy mượt qua TweenAnimationBuilder.
+      final target = controller.speedMbps.value;
+      final maxSpeed = niceMax(target);
+      return TweenAnimationBuilder<double>(
+        tween: Tween<double>(end: target),
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeOutCubic,
+        builder: (context, speed, _) {
+          final color = speedColor(speed);
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: size,
+                height: size * 0.52,
+                child: CustomPaint(
+                  size: Size(size, size * 0.52),
+                  painter: _GaugePainter(
+                    speed: speed,
+                    maxSpeed: maxSpeed,
+                    color: color,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            speed.toStringAsFixed(1),
-            style: TextStyle(
-              fontSize: size * 0.2,
-              fontWeight: FontWeight.bold,
-              color: color,
-              height: 1.0,
-            ),
-          ),
-          const Text(
-            'Mbps',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.white70,
-              letterSpacing: 1.5,
-            ),
-          ),
-        ],
+              const SizedBox(height: 4),
+              Text(
+                speed.toStringAsFixed(1),
+                style: TextStyle(
+                  fontSize: size * 0.2,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                  height: 1.0,
+                ),
+              ),
+              const Text(
+                'Mbps',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white70,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          );
+        },
       );
     });
   }

@@ -42,6 +42,8 @@ dependencies:
   path:
   path_provider: ^2.1.4
   share_plus: ^10.1.2
+  # PDF export (history reports)
+  pdf: ^3.11.1
 
 # Hosted — ACTIVE: 1.0.23 published to pub.dev (VIP stacking + bypassVipGuard + App-Open-over-modal guard):
   applovin_admob_sdk: ^1.0.23
