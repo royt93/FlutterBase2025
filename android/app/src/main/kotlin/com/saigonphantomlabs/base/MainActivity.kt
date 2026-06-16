@@ -16,6 +16,7 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "getRssi" -> result.success(currentRssi())
                     "getWifiInfo" -> result.success(currentWifiInfo())
+                    "getNetworkDetails" -> result.success(currentNetworkDetails())
                     else -> result.notImplemented()
                 }
             }
@@ -56,5 +57,36 @@ class MainActivity : FlutterActivity() {
         } catch (e: Exception) {
             emptyMap()
         }
+    }
+
+    /**
+     * Gateway IP + DNS servers + BSSID (router MAC). Lấy từ DhcpInfo (deprecated
+     * nhưng ổn định) + WifiInfo.bssid. Field nào không lấy được → null.
+     * BSSID placeholder "02:00:00:00:00:00" (thiếu location permission) → null.
+     */
+    private fun currentNetworkDetails(): Map<String, Any?> {
+        return try {
+            val wifi = applicationContext
+                .getSystemService(Context.WIFI_SERVICE) as WifiManager
+            @Suppress("DEPRECATION")
+            val dhcp = wifi.dhcpInfo
+            @Suppress("DEPRECATION")
+            val bssidRaw = wifi.connectionInfo?.bssid
+            val bssid = if (bssidRaw == null || bssidRaw == "02:00:00:00:00:00") null else bssidRaw
+            mapOf(
+                "gatewayIp" to formatIp(dhcp?.gateway),
+                "dns1" to formatIp(dhcp?.dns1),
+                "dns2" to formatIp(dhcp?.dns2),
+                "bssid" to bssid,
+            )
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
+
+    /** Int IP (little-endian như DhcpInfo) → "a.b.c.d". 0/null → null. */
+    private fun formatIp(ip: Int?): String? {
+        if (ip == null || ip == 0) return null
+        return "${ip and 0xff}.${(ip shr 8) and 0xff}.${(ip shr 16) and 0xff}.${(ip shr 24) and 0xff}"
     }
 }

@@ -219,4 +219,20 @@ const Map<String, String> enUS = {
   'vip_failed_message': 'The VIP key you entered is invalid or expired.',
   'vip_network_error': 'Network error — please try again.',
   'vip_confirm': 'OK',
+  // Network dashboard (Wave 5)
+  'net_dashboard_title': 'Network Info',
+  'net_refresh': 'Refresh',
+  'net_connection': 'Connection',
+  'net_connection_type': 'Type',
+  'net_link_speed': 'Link speed',
+  'net_addresses': 'Addresses',
+  'net_local_ip': 'Local IP',
+  'net_public_ip': 'Public IP',
+  'net_gateway': 'Gateway',
+  'net_bssid': 'Router MAC (BSSID)',
+  'net_dns': 'DNS',
+  'net_copied': 'Copied to clipboard',
+  // Packet pie (Wave 5)
+  'packet_pie_title': 'Packet success / loss',
+  'packet_success': 'Successful',
 };

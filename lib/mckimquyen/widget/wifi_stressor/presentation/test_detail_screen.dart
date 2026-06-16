@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/test_result.dart';
 import '../models/network_quality.dart';
 import '../speed_chart.dart';
+import '../widgets/loss_pie_widget.dart';
 import '../controllers/history_controller.dart';
 
 /// Màn hình chi tiết một test result
@@ -57,6 +58,10 @@ class TestDetailScreen extends StatelessWidget {
 
             // Network Info Card (if available)
             if (result.networkInfo != null) _buildNetworkInfoCard(),
+
+            // Packet success-vs-loss pie (chỉ khi có dữ liệu packet loss)
+            if (result.packetLossPct != null)
+              LossPieWidget(packetLossPct: result.packetLossPct as double),
 
             // Speed Over Time Chart
             _buildSpeedChartCard(),

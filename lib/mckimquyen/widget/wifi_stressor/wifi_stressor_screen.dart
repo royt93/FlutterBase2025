@@ -12,6 +12,7 @@ import 'widgets/control_panel_widget.dart';
 import 'widgets/control_button_widget.dart';
 import 'widgets/speedometer_gauge_widget.dart';
 import 'presentation/history_screen.dart';
+import 'presentation/network_dashboard_screen.dart';
 import '../vip/vip_screen.dart';
 
 /// Widget chính cho ứng dụng kiểm tra sức chịu tải WiFi
@@ -160,6 +161,11 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.router, color: Colors.white),
+          onPressed: _navigateToNetworkDashboard,
+          tooltip: 'net_dashboard_title'.tr,
+        ),
+        IconButton(
           icon: const Icon(Icons.history, color: Colors.white),
           onPressed: _navigateToHistory,
           tooltip: 'History & Statistics',
@@ -207,6 +213,12 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   void _navigateToVip() {
     SafeLogger.d(_tag, '▶️ ACTION navigateToVip');
     Get.to(() => const VipScreen());
+  }
+
+  /// Network Dashboard — không show interstitial (chỉ là màn thông tin).
+  void _navigateToNetworkDashboard() {
+    SafeLogger.d(_tag, '▶️ ACTION navigateToNetworkDashboard');
+    Get.to(() => const NetworkDashboardScreen());
   }
 
   static const String _tag = 'StressorHome';
@@ -379,7 +391,8 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       }
       // RepaintBoundary để tránh repaint toàn bộ widget tree
       return RepaintBoundary(
-        child: SpeedChart(speeds: controller.speedHistory),
+        // Chart live khi đang chạy: ẩn toggle, giữ bộ đếm data_points.
+        child: SpeedChart(speeds: controller.speedHistory, showTypeToggle: false),
       );
     });
   }

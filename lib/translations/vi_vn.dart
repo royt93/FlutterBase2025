@@ -221,4 +221,20 @@ const Map<String, String> viVN = {
   'vip_failed_message': 'Mã VIP bạn nhập không đúng hoặc đã hết hạn.',
   'vip_network_error': 'Lỗi mạng — vui lòng thử lại.',
   'vip_confirm': 'OK',
+  // Network dashboard (Wave 5)
+  'net_dashboard_title': 'Thông tin mạng',
+  'net_refresh': 'Làm mới',
+  'net_connection': 'Kết nối',
+  'net_connection_type': 'Loại',
+  'net_link_speed': 'Tốc độ liên kết',
+  'net_addresses': 'Địa chỉ',
+  'net_local_ip': 'IP nội bộ',
+  'net_public_ip': 'IP công khai',
+  'net_gateway': 'Gateway',
+  'net_bssid': 'MAC router (BSSID)',
+  'net_dns': 'DNS',
+  'net_copied': 'Đã sao chép',
+  // Packet pie (Wave 5)
+  'packet_pie_title': 'Gói thành công / mất',
+  'packet_success': 'Thành công',
 };

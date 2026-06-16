@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:network_info_plus/network_info_plus.dart' as network_info_plugin;
@@ -6,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 
 import '../models/network_info.dart';
+import '../models/network_dashboard.dart';
 
 /// Service để lấy thông tin mạng thực tế
 class NetworkInfoService {
@@ -59,6 +61,81 @@ class NetworkInfoService {
     if (mhz >= 5160 && mhz <= 5885) return (mhz - 5000) ~/ 5; // 5GHz
     if (mhz >= 5955 && mhz <= 7115) return (mhz - 5950) ~/ 5; // 6GHz
     return null;
+  }
+
+  /// Map chi tiết native {gatewayIp, dns1, dns2, bssid}. null nếu lỗi/iOS.
+  @visibleForTesting
+  Future<Map<String, dynamic>?> getNetworkDetailsMap() async {
+    try {
+      return await _wifiChannel.invokeMapMethod<String, dynamic>('getNetworkDetails');
+    } catch (e) {
+      SafeLogger.d('Log', 'getNetworkDetails failed (likely non-Android): $e');
+      return null;
+    }
+  }
+
+  /// Gom dns1/dns2 từ native map thành list, loại null/rỗng/trùng.
+  @visibleForTesting
+  static List<String> dnsListOf(Map<String, dynamic>? map) {
+    if (map == null) return const [];
+    final out = <String>[];
+    for (final key in ['dns1', 'dns2']) {
+      final v = (map[key] as String?)?.trim();
+      if (v != null && v.isNotEmpty && !out.contains(v)) out.add(v);
+    }
+    return out;
+  }
+
+  /// IPv4 hợp lệ thô (4 octet 0-255). Dùng để lọc body public-IP API.
+  @visibleForTesting
+  static bool isLikelyIpv4(String? s) {
+    if (s == null) return false;
+    final parts = s.trim().split('.');
+    if (parts.length != 4) return false;
+    for (final p in parts) {
+      final n = int.tryParse(p);
+      if (n == null || n < 0 || n > 255) return false;
+    }
+    return true;
+  }
+
+  /// Lấy public IP qua API ngoài (ipify). null nếu offline/timeout/parse fail.
+  Future<String?> getPublicIp() async {
+    try {
+      final dio = Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 5),
+      ));
+      final resp = await dio.get<String>('https://api.ipify.org');
+      final ip = resp.data?.trim();
+      return isLikelyIpv4(ip) ? ip : null;
+    } catch (e) {
+      SafeLogger.d('Log', 'getPublicIp failed: $e');
+      return null;
+    }
+  }
+
+  /// Snapshot mạng đầy đủ cho Network Dashboard (live, không persist).
+  Future<NetworkDashboard> getNetworkDashboard() async {
+    final connectionType = await getConnectionType();
+    final base = await getCurrentNetworkInfo();
+    final wifi = await getWifiInfoMap();
+    final details = await getNetworkDetailsMap();
+    final publicIp = await getPublicIp();
+
+    return NetworkDashboard(
+      ssid: base.ssid,
+      signalStrength: base.signalStrength,
+      frequency: base.frequency,
+      channel: base.channel,
+      linkSpeedMbps: (wifi?['linkSpeedMbps'] as num?)?.toInt(),
+      localIp: base.ipAddress,
+      publicIp: publicIp,
+      gatewayIp: details?['gatewayIp'] as String?,
+      dnsServers: dnsListOf(details),
+      bssid: details?['bssid'] as String?,
+      connectionType: connectionType,
+    );
   }
 
   /// Request location permission để lấy WiFi SSID

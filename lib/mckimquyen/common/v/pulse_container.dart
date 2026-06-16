@@ -19,33 +19,38 @@ class PulseContainer extends StatefulWidget {
 }
 
 class _PulseContainerState extends State<PulseContainer> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  // Nullable thay cho `late` theo quy ước doc/init.md — gán trong initState,
+  // dispose null-safe, build guard để không force-null.
+  AnimationController? _controller;
+  Animation<double>? _animation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    final controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
     )..repeat(reverse: true);
-    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(_controller);
+    _controller = controller;
+    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(controller);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final animation = _animation;
+    if (animation == null) return const SizedBox.shrink();
     return AnimatedBuilder(
-      animation: _animation,
+      animation: animation,
       builder: (context, child) {
         return InkWell(
           child: Transform.scale(
-            scale: _animation.value,
+            scale: animation.value,
             child: Stack(
               alignment: widget.alignment,
               children: [
