@@ -232,9 +232,18 @@ const Map<String, String> viVN = {
   'net_public_ip': 'IP công khai',
   'net_gateway': 'Gateway',
   'net_bssid': 'MAC router (BSSID)',
+  'net_vendor': 'Hãng',
   'net_dns': 'DNS',
   'net_copied': 'Đã sao chép',
+  'net_type_wifi': 'WiFi',
+  'net_type_mobile': 'Di động',
+  'net_type_ethernet': 'Ethernet',
+  'net_type_unknown': 'Không rõ',
   // Packet pie (Wave 5)
   'packet_pie_title': 'Gói thành công / mất',
   'packet_success': 'Thành công',
+  // Heatmap (Wave 5)
+  'heatmap_title': 'Bản đồ nhiệt hiệu suất',
+  'heatmap_empty': 'Chưa có dữ liệu test',
+  'heatmap_legend': 'Tốc độ theo thời gian mỗi lần test (thấp → cao)',
 };

@@ -29,8 +29,7 @@ class SpeedChart extends StatefulWidget {
   static const int maxBars = 48;
 
   /// Gộp `speeds` về tối đa `maxBars` cột bằng trung bình từng bucket.
-  /// Dùng cho bar chart để không quá dày khi có hàng trăm mẫu.
-  @visibleForTesting
+  /// Dùng cho bar chart + heatmap để không quá dày khi có hàng trăm mẫu.
   static List<double> downsample(List<double> speeds, int maxBars) {
     if (maxBars <= 0) return const [];
     if (speeds.length <= maxBars) return List<double>.from(speeds);

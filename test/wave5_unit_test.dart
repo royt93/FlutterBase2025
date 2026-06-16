@@ -4,10 +4,12 @@
 //   - LossPieWidget.successOf
 //   - NetworkDashboard.signalQuality tiers
 
+import 'package:flutter/material.dart' show Color;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/models/network_dashboard.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/models/network_info.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/models/test_result.dart';
+import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/presentation/heatmap_screen.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/services/network_info_service.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/speed_chart.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/wifi_stressor/widgets/loss_pie_widget.dart';
@@ -112,6 +114,40 @@ void main() {
       for (final url in NetworkInfoService.publicIpProviders) {
         expect(url, startsWith('https://'));
       }
+    });
+  });
+
+  group('NetworkInfoService.vendorOf', () {
+    test('known universal OUI → vendor (format-agnostic)', () {
+      expect(NetworkInfoService.vendorOf('B0:48:7A:11:22:33'), 'TP-Link');
+      expect(NetworkInfoService.vendorOf('b0-48-7a-11-22-33'), 'TP-Link');
+      expect(NetworkInfoService.vendorOf('08606E001122'), 'Asus');
+    });
+    test('locally-administered / randomized MAC → null', () {
+      // a2 has the 0x02 bit set → randomized → not a real vendor.
+      expect(NetworkInfoService.vendorOf('a2:05:d6:fe:7f:0f'), isNull);
+    });
+    test('universal-but-unknown OUI → null', () {
+      expect(NetworkInfoService.vendorOf('00:11:22:33:44:55'), isNull);
+    });
+    test('null / malformed → null', () {
+      expect(NetworkInfoService.vendorOf(null), isNull);
+      expect(NetworkInfoService.vendorOf('xy'), isNull);
+      expect(NetworkInfoService.vendorOf('ZZ:ZZ:ZZ'), isNull);
+    });
+  });
+
+  group('HeatmapScreen.heatmapColor', () {
+    test('boundaries: low→red, mid→amber, high→green', () {
+      expect(HeatmapScreen.heatmapColor(0, 100), const Color(0xFFEF4444));
+      expect(HeatmapScreen.heatmapColor(50, 100), const Color(0xFFF59E0B));
+      expect(HeatmapScreen.heatmapColor(100, 100), const Color(0xFF22C55E));
+    });
+    test('max<=0 → neutral slate, no crash', () {
+      expect(HeatmapScreen.heatmapColor(10, 0), const Color(0xFF334155));
+    });
+    test('over-max clamps to green', () {
+      expect(HeatmapScreen.heatmapColor(200, 100), const Color(0xFF22C55E));
     });
   });
 }

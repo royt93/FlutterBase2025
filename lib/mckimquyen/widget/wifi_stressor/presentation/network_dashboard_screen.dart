@@ -75,7 +75,7 @@ class NetworkDashboardScreen extends StatelessWidget {
       title: 'net_connection'.tr,
       rows: [
         _RowData('ssid'.tr, d.ssid ?? 'N/A'),
-        _RowData('net_connection_type'.tr, d.connectionType),
+        _RowData('net_connection_type'.tr, _connTypeLabel(d.connectionType)),
         if (d.signalStrength != null)
           _RowData('signal'.tr,
               '${d.signalStrength} dBm${d.signalQuality != null ? ' (${('signal_${d.signalQuality}').tr})' : ''}'),
@@ -96,8 +96,23 @@ class NetworkDashboardScreen extends StatelessWidget {
         _RowData('net_public_ip'.tr, d.publicIp ?? 'N/A', copyable: d.publicIp != null),
         _RowData('net_gateway'.tr, d.gatewayIp ?? 'N/A', copyable: d.gatewayIp != null),
         _RowData('net_bssid'.tr, d.bssid ?? 'N/A', copyable: d.bssid != null),
+        if (d.vendor != null) _RowData('net_vendor'.tr, d.vendor ?? 'N/A'),
       ],
     );
+  }
+
+  /// Localize giá trị loại kết nối ('WiFi'/'Mobile'/'Ethernet'/'Unknown').
+  String _connTypeLabel(String raw) {
+    switch (raw) {
+      case 'WiFi':
+        return 'net_type_wifi'.tr;
+      case 'Mobile':
+        return 'net_type_mobile'.tr;
+      case 'Ethernet':
+        return 'net_type_ethernet'.tr;
+      default:
+        return 'net_type_unknown'.tr;
+    }
   }
 
   Widget _dnsCard(NetworkDashboard d) {

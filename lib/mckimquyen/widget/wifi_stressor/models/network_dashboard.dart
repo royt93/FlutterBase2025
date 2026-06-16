@@ -14,6 +14,7 @@ class NetworkDashboard {
   final String? gatewayIp;
   final List<String> dnsServers;
   final String? bssid; // router MAC
+  final String? vendor; // hãng router suy từ OUI (null nếu randomized/unknown)
   final String connectionType; // 'WiFi' / 'Mobile' / ...
 
   const NetworkDashboard({
@@ -27,6 +28,7 @@ class NetworkDashboard {
     this.gatewayIp,
     this.dnsServers = const [],
     this.bssid,
+    this.vendor,
     this.connectionType = 'Unknown',
   });
 

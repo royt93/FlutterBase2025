@@ -99,6 +99,43 @@ class NetworkInfoService {
     return true;
   }
 
+  /// Bảng OUI → hãng (3 octet đầu MAC, 6 hex HOA, không dấu phân cách).
+  /// Danh sách rút gọn các hãng router/AP phổ biến — mở rộng khi cần.
+  @visibleForTesting
+  static const ouiVendors = <String, String>{
+    '000C43': 'Ralink', '00146C': 'Netgear', '20E52A': 'Netgear',
+    'A040A0': 'Netgear', '3894ED': 'Netgear', '9C3DCF': 'Netgear',
+    '50C7BF': 'TP-Link', 'B0487A': 'TP-Link', 'EC086B': 'TP-Link',
+    '1C61B4': 'TP-Link', 'AC84C6': 'TP-Link', '5C628B': 'TP-Link',
+    '08606E': 'Asus', '2C56DC': 'Asus', '1C872C': 'Asus',
+    '04D9F5': 'Asus', '50465D': 'Asus', 'AC9E17': 'Asus',
+    '00179A': 'D-Link', '1CBDB9': 'D-Link', '340804': 'D-Link',
+    '00E0FC': 'Huawei', '48FD8E': 'Huawei', 'E468A3': 'Huawei',
+    '286C07': 'Xiaomi', '64CC2E': 'Xiaomi', '8CBEBE': 'Xiaomi',
+    '0418D6': 'Ubiquiti', '24A43C': 'Ubiquiti', 'FCECDA': 'Ubiquiti',
+    '00000C': 'Cisco', '001A2F': 'Cisco', 'A4934C': 'Cisco',
+    '6466B3': 'Google', '54600B': 'Google',
+    '001451': 'Apple', 'AC87A3': 'Apple', '3C0754': 'Apple',
+    'C8D719': 'Cisco-Linksys', '48F8B3': 'Cisco-Linksys',
+    'F81A67': 'TP-Link', '843497': 'AzureWave',
+  };
+
+  /// Tra hãng router từ BSSID. null nếu:
+  /// - bssid null/sai định dạng;
+  /// - **MAC locally-administered/randomized** (bit 0x02 của octet đầu) → tra vô nghĩa;
+  /// - OUI không có trong bảng.
+  @visibleForTesting
+  static String? vendorOf(String? bssid) {
+    if (bssid == null) return null;
+    final hex = bssid.replaceAll(RegExp('[:-]'), '').toUpperCase();
+    if (hex.length < 6) return null;
+    final firstOctet = int.tryParse(hex.substring(0, 2), radix: 16);
+    if (firstOctet == null) return null;
+    // Bit 0x02 = locally administered (randomized) → không tra được hãng thật.
+    if (firstOctet & 0x02 != 0) return null;
+    return ouiVendors[hex.substring(0, 6)];
+  }
+
   /// Danh sách provider public-IP (plain-text body). Thử lần lượt, dừng ở
   /// cái đầu trả IPv4 hợp lệ — fallback khi 1 provider bị chặn/timeout.
   @visibleForTesting
@@ -114,34 +151,43 @@ class NetworkInfoService {
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 5),
     ));
-    for (final url in publicIpProviders) {
-      try {
-        final resp = await dio.get<String>(url);
-        final ip = resp.data?.trim();
-        if (isLikelyIpv4(ip)) return ip;
-      } catch (e) {
-        SafeLogger.d('Log', 'getPublicIp provider $url failed: $e');
+    try {
+      for (final url in publicIpProviders) {
+        try {
+          final resp = await dio.get<String>(url);
+          final ip = resp.data?.trim();
+          if (isLikelyIpv4(ip)) return ip;
+        } catch (e) {
+          SafeLogger.d('Log', 'getPublicIp provider $url failed: $e');
+        }
       }
+      return null;
+    } finally {
+      dio.close();
     }
-    return null;
   }
 
   /// Snapshot mạng đầy đủ cho Network Dashboard (live, không persist).
-  /// Các nhánh độc lập chạy song song (hot futures) → giảm trễ; public IP
-  /// (tới 5s) không còn chặn các phần native nhanh.
+  ///
+  /// publicIp (≤5s) chạy nền ngay từ đầu (không cần permission). base được
+  /// await TRƯỚC khi lấy details/wifi vì BSSID (WifiInfo.bssid) cần location
+  /// permission mà `getCurrentNetworkInfo` xin — tránh race null-BSSID lần
+  /// mở đầu trên máy mới. Phần còn lại vẫn overlap với publicIp.
   Future<NetworkDashboard> getNetworkDashboard() async {
+    final publicIpF = getPublicIp(); // không cần permission → chạy nền sớm
     final connectionTypeF = getConnectionType();
-    final baseF = getCurrentNetworkInfo();
+
+    final base = await getCurrentNetworkInfo(); // xử lý location permission
+    // Giờ permission đã xong → BSSID hợp lệ. Hai native call này nhanh.
     final wifiF = getWifiInfoMap();
     final detailsF = getNetworkDetailsMap();
-    final publicIpF = getPublicIp();
 
-    final connectionType = await connectionTypeF;
-    final base = await baseF;
     final wifi = await wifiF;
     final details = await detailsF;
-    final publicIp = await publicIpF;
+    final connectionType = await connectionTypeF;
+    final publicIp = await publicIpF; // đã overlap với mọi thứ trên
 
+    final bssid = details?['bssid'] as String?;
     return NetworkDashboard(
       ssid: base.ssid,
       signalStrength: base.signalStrength,
@@ -152,7 +198,8 @@ class NetworkInfoService {
       publicIp: publicIp,
       gatewayIp: details?['gatewayIp'] as String?,
       dnsServers: dnsListOf(details),
-      bssid: details?['bssid'] as String?,
+      bssid: bssid,
+      vendor: vendorOf(bssid),
       connectionType: connectionType,
     );
   }

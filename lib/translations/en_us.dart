@@ -230,9 +230,18 @@ const Map<String, String> enUS = {
   'net_public_ip': 'Public IP',
   'net_gateway': 'Gateway',
   'net_bssid': 'Router MAC (BSSID)',
+  'net_vendor': 'Vendor',
   'net_dns': 'DNS',
   'net_copied': 'Copied to clipboard',
+  'net_type_wifi': 'WiFi',
+  'net_type_mobile': 'Mobile',
+  'net_type_ethernet': 'Ethernet',
+  'net_type_unknown': 'Unknown',
   // Packet pie (Wave 5)
   'packet_pie_title': 'Packet success / loss',
   'packet_success': 'Successful',
+  // Heatmap (Wave 5)
+  'heatmap_title': 'Performance heatmap',
+  'heatmap_empty': 'No test data yet',
+  'heatmap_legend': 'Speed over time per test (low → high)',
 };

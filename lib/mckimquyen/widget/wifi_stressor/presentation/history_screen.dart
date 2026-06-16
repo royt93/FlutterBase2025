@@ -8,6 +8,7 @@ import 'widgets/timeline_item.dart';
 import 'widgets/history_chart.dart';
 import 'test_detail_screen.dart';
 import 'comparison_screen.dart';
+import 'heatmap_screen.dart';
 
 /// Màn hình History & Statistics
 class HistoryScreen extends AdScreen {
@@ -39,6 +40,14 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.grid_on),
+            tooltip: 'heatmap_title'.tr,
+            onPressed: () {
+              SafeLogger.d(_tag, '▶️ ACTION openHeatmap');
+              Get.to(() => const HeatmapScreen());
+            },
+          ),
           // Toggle chế độ chọn nhiều để so sánh
           Obx(() => IconButton(
                 icon: Icon(controller.selectionMode.value
