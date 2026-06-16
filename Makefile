@@ -16,7 +16,9 @@ help:
 	@echo "  coverage        - Generate test coverage report"
 	@echo "  analyze         - Run static analysis"
 	@echo "  format          - Format code"
-	@echo "  build           - Build APK"
+	@echo "  build           - Build debug APK"
+	@echo "  release-aab     - Build optimized release AAB for Play Store (obfuscated, symbols split out)"
+	@echo "  release-size    - Build arm64 AAB + print code-size breakdown"
 	@echo "  clean           - Clean build files"
 	@echo "  quality-check   - Run all quality checks"
 
@@ -70,6 +72,23 @@ build:
 	@echo "Building APK..."
 	flutter build apk --debug
 	@echo "APK built successfully!"
+
+# Build optimized release AAB for Play Store.
+# --obfuscate + --split-debug-info đẩy ~11MB debug symbols / obfuscation map ra
+# khỏi bundle (Play không giao cho user) và lưu riêng để giải mã crash sau này.
+# GIỮ build/symbols/ theo từng version để decode được crash của bản đã phát hành.
+release-aab:
+	@echo "Building optimized release AAB..."
+	flutter build appbundle --release \
+		--obfuscate --split-debug-info=build/symbols
+	@echo "AAB at build/app/outputs/bundle/release/app-release.aab"
+	@echo "Debug symbols saved to build/symbols/ (keep these per release!)"
+
+# Build single-ABI AAB and print the code-size breakdown.
+release-size:
+	@echo "Analyzing release size (arm64)..."
+	flutter build appbundle --release \
+		--target-platform android-arm64 --analyze-size
 
 # Clean build files
 clean:

@@ -2,7 +2,7 @@
 <!--
   Animated splash icon for Android 12+ (windowSplashScreenAnimatedIcon).
   Frame animation (AnimationDrawable) dựng từ chính logo ic_launcher_960.png:
-  zoom-in + fade với overshoot. Frames: res/drawable-nodpi/splash_logo_*.png
+  zoom-in + fade với overshoot. Frames: res/drawable-nodpi/splash_logo_*.webp
   (sinh bằng PIL — xem doc/SPLASH_SETUP.md). 16 frame x 45ms ~= 720ms.
   oneshot=true -> dừng ở frame cuối (logo đầy đủ).
 -->
