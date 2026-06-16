@@ -1,26 +1,29 @@
-# Please note that the splash screen will be clipped to a circle on the center of the screen.
-# App icon with an icon background: This should be 960×960 pixels, and fit within a circle
-# 640 pixels in diameter.
-# App icon without an icon background: This should be 1152×1152 pixels, and fit within a circle
-# 768 pixels in diameter.
-
-#ic_launcher_960 => size 960x960 nhung nen de background trong suot nhieu vao
-
-#dart run flutter_native_splash:create
+# Cấu hình splash screen theo từng nền tảng.
+# Màu nền chủ đạo #faf9f5 suy ra từ ColorConstants.appColor (0xfffaf9f5).
+#
+# Lệnh gen:  dart run flutter_native_splash:create
+#
+# Lưu ý Android 12+: flutter_native_splash KHÔNG có key `icon_animation`.
+# Icon động (AnimatedVectorDrawable) được wiring native qua
+# res/values-v31/styles.xml -> windowSplashScreenAnimatedIcon
+# (file drawable: res/drawable/splash_icon_anim.xml).
 flutter_native_splash:
   color: "#faf9f5"
-  image: assets/images/ic_launcher_960.png
-#  branding: assets/images/ic_launcher_960.png
-  color_dark: "#faf9f5"
-  image_dark: assets/images/ic_launcher_960.png
-#  branding_dark: assets/images/ic_launcher_960.png
+
+  # iOS: ảnh background full màn hình (đã convert webp -> png cho LaunchScreen).
+  background_image_ios: assets/images/bkg_2.png
+  ios_content_mode: scaleAspectFill
+
+  # Android < 12: launcher icon tĩnh, căn giữa.
+  image_android: assets/images/ic_launcher.png
+
+  # UX
   fullscreen: true
-#  android_gravity: fill
-  ios_content_mode: center
+  android_gravity: center
+
+  # Android 12+ : nền + icon tĩnh (fallback). Icon động xử lý native sau gen.
   android_12:
+    color: "#faf9f5"
     image: assets/images/ic_launcher_960.png
-    icon_background_color: "#faf9f5"
-    image_dark: assets/images/ic_launcher_960.png
-    icon_background_color_dark: "#faf9f5"
 
   web: false

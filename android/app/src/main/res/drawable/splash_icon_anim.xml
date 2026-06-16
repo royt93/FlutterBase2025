@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Animated splash icon for Android 12+ (windowSplashScreenAnimatedIcon).
+  Frame animation (AnimationDrawable) dựng từ chính logo ic_launcher_960.png:
+  zoom-in + fade với overshoot. Frames: res/drawable-nodpi/splash_logo_*.png
+  (sinh bằng PIL — xem doc/SPLASH_SETUP.md). 16 frame x 45ms ~= 720ms.
+  oneshot=true -> dừng ở frame cuối (logo đầy đủ).
+-->
+<animation-list
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="true">
+    <item android:drawable="@drawable/splash_logo_00" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_01" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_02" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_03" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_04" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_05" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_06" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_07" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_08" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_09" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_10" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_11" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_12" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_13" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_14" android:duration="45" />
+    <item android:drawable="@drawable/splash_logo_15" android:duration="200" />
+</animation-list>

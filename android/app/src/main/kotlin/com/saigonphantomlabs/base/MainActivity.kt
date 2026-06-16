@@ -2,12 +2,28 @@ package com.saigonphantomlabs.base
 
 import android.content.Context
 import android.net.wifi.WifiManager
+import android.os.Bundle
+import android.os.SystemClock
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val wifiChannel = "com.saigonphantomlabs.base/wifi"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // Cài splash API trước super.onCreate. Trên Android 12+ hệ thống chỉ hiện
+        // splash trong cold-start (rất ngắn trên S24 Ultra) rồi gỡ ngay khi Flutter
+        // vẽ frame đầu -> AnimatedVectorDrawable chưa kịp chạy. Giữ splash lại đúng
+        // thời lượng animation (~900ms) để icon động hiển thị trọn vẹn.
+        val splashScreen = installSplashScreen()
+        val start = SystemClock.uptimeMillis()
+        splashScreen.setKeepOnScreenCondition {
+            SystemClock.uptimeMillis() - start < SPLASH_ANIM_DURATION_MS
+        }
+        super.onCreate(savedInstanceState)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -88,5 +104,10 @@ class MainActivity : FlutterActivity() {
     private fun formatIp(ip: Int?): String? {
         if (ip == null || ip == 0) return null
         return "${ip and 0xff}.${(ip shr 8) and 0xff}.${(ip shr 16) and 0xff}.${(ip shr 24) and 0xff}"
+    }
+
+    companion object {
+        /** Khớp windowSplashScreenAnimationDuration trong values-v31/styles.xml. */
+        private const val SPLASH_ANIM_DURATION_MS = 1000L
     }
 }

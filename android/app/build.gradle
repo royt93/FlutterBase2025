@@ -151,4 +151,7 @@ dependencies {
 //    implementation("com.google.firebase:firebase-appcheck-playintegrity")
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
     implementation("com.google.ads.mediation:applovin:13.2.0.1")
+    // Giữ splash Android 12+ lại đủ lâu để AnimatedVectorDrawable kịp chạy
+    // (xem MainActivity.onCreate + doc/SPLASH_SETUP.md).
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
