@@ -18,7 +18,11 @@ flutter_native_splash:
   image_android: assets/images/ic_launcher.png
 
   # UX
-  fullscreen: true
+  # fullscreen:false -> KHÔNG ẩn status bar. Trước đây fullscreen:true sinh
+  # android:windowFullscreen vào LaunchTheme; FLAG_FULLSCREEN này dính lại window
+  # cả sau khi Flutter load (NormalTheme không clear được) khiến status bar biến
+  # mất toàn app. Edge-to-edge (UIUtils.initEdgeToEdge) vẫn vẽ content sau bar.
+  fullscreen: false
   android_gravity: center
 
   # Android 12+ : nền + icon tĩnh (fallback). Icon động xử lý native sau gen.

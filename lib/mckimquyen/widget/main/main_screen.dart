@@ -54,8 +54,9 @@ class _MainScreenState extends BaseStatefulState<MainScreen> with SingleTickerPr
         systemOverlayStyle: const SystemUiOverlayStyle(
           systemNavigationBarColor: Colors.transparent,
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
-          statusBarBrightness: Brightness.light,
+          // Nền app tối -> icon status bar luôn sáng (trắng).
+          statusBarIconBrightness: Brightness.light, // Android
+          statusBarBrightness: Brightness.dark, // iOS
         ),
       ),
       backgroundColor: ColorConstants.appColor,
