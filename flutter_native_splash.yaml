@@ -1,5 +1,7 @@
 # Cấu hình splash screen theo từng nền tảng.
-# Màu nền chủ đạo #faf9f5 suy ra từ ColorConstants.appColor (0xfffaf9f5).
+# Màu nền chủ đạo #012f46 (xanh navy đậm) lấy từ nền ảnh assets/images/bkg_2.png
+# để splash khớp màu với background (trước đây dùng #faf9f5 trắng kem nên viền
+# ngoài ảnh iOS scaleAspectFill và nền Android bị lệch tông).
 #
 # Lệnh gen:  dart run flutter_native_splash:create
 #
@@ -8,7 +10,7 @@
 # res/values-v31/styles.xml -> windowSplashScreenAnimatedIcon
 # (file drawable: res/drawable/splash_icon_anim.xml).
 flutter_native_splash:
-  color: "#faf9f5"
+  color: "#012f46"
 
   # iOS: ảnh background full màn hình (đã convert webp -> png cho LaunchScreen).
   background_image_ios: assets/images/bkg_2.png
@@ -27,7 +29,7 @@ flutter_native_splash:
 
   # Android 12+ : nền + icon tĩnh (fallback). Icon động xử lý native sau gen.
   android_12:
-    color: "#faf9f5"
+    color: "#012f46"
     image: assets/images/ic_launcher_960.png
 
   web: false
