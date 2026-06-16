@@ -39,6 +39,8 @@ class ControlPanelWidget extends StatelessWidget {
           const SizedBox(height: 16),
           // Duration preset selector (ẩn khi đang chạy)
           if (!isRunning) _buildDurationSelector(context),
+          if (!isRunning) const SizedBox(height: 16),
+          if (!isRunning) _buildAlertSelector(),
           // Metrics display khi đang chạy
           if (isRunning) ..._buildMetrics(),
         ],
@@ -143,6 +145,42 @@ class ControlPanelWidget extends StatelessWidget {
     });
   }
 
+  /// Ngưỡng cảnh báo tốc độ thấp (Mbps). 0 = tắt.
+  static const _alertPresets = <int>[0, 5, 10, 20, 50];
+
+  /// Selector ngưỡng cảnh báo realtime khi tốc độ tụt dưới mốc.
+  Widget _buildAlertSelector() {
+    return Obx(() {
+      final sel = controller.alertThresholdMbps.value;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'alert_label'.tr,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final p in _alertPresets)
+                _durationChip(
+                  label: p == 0 ? 'alert_off'.tr : '$p Mbps',
+                  selected: sel == p,
+                  onTap: () => controller.alertThresholdMbps.value = p,
+                ),
+            ],
+          ),
+        ],
+      );
+    });
+  }
+
   /// Chip preset dark: selected = accent xanh đặc + trắng; còn lại = nền tối,
   /// viền mờ, text trắng70.
   Widget _durationChip({
@@ -212,7 +250,7 @@ class ControlPanelWidget extends StatelessWidget {
     );
     return [
       Obx(() => MetricTileWidget(
-            icon: Icons.speed,
+            icon: Icons.download,
             title: 'average_speed'.tr,
             valueWidget: AnimatedNumberText(
               value: controller.totalSpeedMbps.value,
@@ -221,6 +259,14 @@ class ControlPanelWidget extends StatelessWidget {
               style: valueStyle,
             ),
           )),
+      Obx(() {
+        final u = controller.uploadMbps.value;
+        return MetricTileWidget.text(
+          icon: Icons.upload,
+          title: 'upload_speed'.tr,
+          value: u == null ? '—' : '${u.toStringAsFixed(1)} Mbps',
+        );
+      }),
       Obx(() {
         final l = controller.latencyMs.value;
         return MetricTileWidget.text(

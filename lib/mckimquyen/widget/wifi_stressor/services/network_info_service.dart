@@ -1,4 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:network_info_plus/network_info_plus.dart' as network_info_plugin;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
@@ -9,6 +11,55 @@ import '../models/network_info.dart';
 class NetworkInfoService {
   final _connectivity = Connectivity();
   final _networkInfo = network_info_plugin.NetworkInfo();
+
+  /// Native channel lấy RSSI (chỉ Android; iOS không có handler → null).
+  static const _wifiChannel = MethodChannel('com.saigonphantomlabs.base/wifi');
+
+  /// Lấy cường độ tín hiệu WiFi (dBm) qua platform channel.
+  /// Android: WifiManager.rssi. iOS / lỗi / không WiFi → null.
+  @visibleForTesting
+  Future<int?> getSignalStrength() async {
+    try {
+      final rssi = await _wifiChannel.invokeMethod<int>('getRssi');
+      if (rssi == null || rssi >= 0) return null;
+      return rssi;
+    } catch (e) {
+      SafeLogger.d('Log', 'getRssi failed (likely non-Android): $e');
+      return null;
+    }
+  }
+
+  /// Lấy map WiFi info native {rssi, frequencyMhz, linkSpeedMbps}. null nếu lỗi/iOS.
+  @visibleForTesting
+  Future<Map<String, dynamic>?> getWifiInfoMap() async {
+    try {
+      return await _wifiChannel.invokeMapMethod<String, dynamic>('getWifiInfo');
+    } catch (e) {
+      SafeLogger.d('Log', 'getWifiInfo failed (likely non-Android): $e');
+      return null;
+    }
+  }
+
+  /// Band từ tần số MHz: 2.4 / 5 / 6 GHz.
+  @visibleForTesting
+  static String? bandOf(int? mhz) {
+    if (mhz == null || mhz <= 0) return null;
+    if (mhz >= 2400 && mhz < 2500) return '2.4 GHz';
+    if (mhz >= 4900 && mhz < 5900) return '5 GHz';
+    if (mhz >= 5925 && mhz <= 7125) return '6 GHz';
+    return '$mhz MHz';
+  }
+
+  /// Số kênh (channel) từ tần số MHz.
+  @visibleForTesting
+  static int? channelOf(int? mhz) {
+    if (mhz == null || mhz <= 0) return null;
+    if (mhz == 2484) return 14; // 2.4GHz channel 14
+    if (mhz >= 2412 && mhz <= 2472) return ((mhz - 2412) ~/ 5) + 1;
+    if (mhz >= 5160 && mhz <= 5885) return (mhz - 5000) ~/ 5; // 5GHz
+    if (mhz >= 5955 && mhz <= 7115) return (mhz - 5950) ~/ 5; // 6GHz
+    return null;
+  }
 
   /// Request location permission để lấy WiFi SSID
   Future<bool> _requestLocationPermission() async {
@@ -77,16 +128,24 @@ class NetworkInfoService {
       // Lấy các thông tin WiFi
       String? ssid = await _getWifiSSID();
       String? ipAddress = await _getIpAddress();
-      String? frequency = await _estimateFrequency();
 
-      SafeLogger.d('Log', '📡 Network Info - SSID: $ssid, IP: $ipAddress, Freq: $frequency');
+      // Native WiFi info (rssi + frequency MHz) → signal + band + channel thật.
+      final wifi = await getWifiInfoMap();
+      final rssi = (wifi?['rssi'] as num?)?.toInt();
+      final freqMhz = (wifi?['frequencyMhz'] as num?)?.toInt();
+      final int? signalStrength = (rssi != null && rssi < 0) ? rssi : null;
+      final int? channel = channelOf(freqMhz);
+      // Band thật từ native; fallback ước lượng nếu native không có.
+      final String? frequency = bandOf(freqMhz) ?? await _estimateFrequency();
+
+      SafeLogger.d('Log', '📡 Network Info - SSID: $ssid, IP: $ipAddress, Freq: $frequency, Ch: $channel, RSSI: $signalStrength dBm');
 
       return NetworkInfo(
         ssid: ssid ?? 'Unknown',
-        signalStrength: null, // Không thể lấy từ Flutter, cần platform channel
+        signalStrength: signalStrength, // RSSI thật qua platform channel (Android)
         frequency: frequency,
         ipAddress: ipAddress,
-        channel: null, // Không thể lấy từ Flutter, cần platform channel
+        channel: channel, // Channel thật từ tần số (Android)
       );
     } catch (e) {
       SafeLogger.d('Log', '❌ Error getting network info: $e');

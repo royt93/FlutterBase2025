@@ -467,7 +467,7 @@ class HistoryController extends GetxController {
     final buffer = StringBuffer();
 
     // CSV Header
-    buffer.writeln('ID,Start Time,End Time,Duration (s),Status,Avg Speed (Mbps),Peak Speed (Mbps),Min Speed (Mbps),Median Speed (Mbps),Latency (ms),Jitter (ms),Quality,Downloaded (MB),Download Count,SSID,Signal (dBm),Frequency,IP Address');
+    buffer.writeln('ID,Start Time,End Time,Duration (s),Status,Avg Speed (Mbps),Peak Speed (Mbps),Min Speed (Mbps),Median Speed (Mbps),Upload (Mbps),Latency (ms),Jitter (ms),DNS (ms),Packet Loss (%),Quality,Downloaded (MB),Download Count,SSID,Signal (dBm),Frequency,IP Address');
 
     // CSV Rows
     for (final result in allResults) {
@@ -489,8 +489,11 @@ class HistoryController extends GetxController {
       buffer.write('${result.peakSpeed.toStringAsFixed(2)},');
       buffer.write('${result.minSpeed.toStringAsFixed(2)},');
       buffer.write('${result.medianSpeed.toStringAsFixed(2)},');
+      buffer.write('${result.uploadMbps?.toStringAsFixed(2) ?? ""},');
       buffer.write('${result.avgLatencyMs?.toStringAsFixed(1) ?? ""},');
       buffer.write('${result.jitterMs?.toStringAsFixed(1) ?? ""},');
+      buffer.write('${result.dnsMs?.toStringAsFixed(1) ?? ""},');
+      buffer.write('${result.packetLossPct?.toStringAsFixed(1) ?? ""},');
       buffer.write('${q.grade} (${q.score}),');
       buffer.write('$downloadedMB,');
       buffer.write('${result.downloadCount},');

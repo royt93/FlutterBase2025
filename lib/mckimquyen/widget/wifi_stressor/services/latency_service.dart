@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:applovin_admob_sdk/applovin_admob_sdk.dart'; // SafeLogger
 import 'package:dio/dio.dart';
 
@@ -31,6 +33,25 @@ class LatencyService {
     } catch (e) {
       sw.stop();
       SafeLogger.d('Latency', 'probe failed: $e');
+      return null;
+    }
+  }
+
+  static const _dnsHost = 'www.cloudflare.com';
+
+  /// Đo thời gian phân giải DNS (ms). Trả `null` nếu lỗi.
+  /// Lưu ý: OS cache DNS → lần sau nhanh, phản ánh DNS thực tế người dùng gặp.
+  Future<double?> dnsLookup() async {
+    final sw = Stopwatch()..start();
+    try {
+      final res = await InternetAddress.lookup(_dnsHost)
+          .timeout(const Duration(seconds: 3));
+      sw.stop();
+      if (res.isEmpty) return null;
+      return sw.elapsedMicroseconds / 1000.0;
+    } catch (e) {
+      sw.stop();
+      SafeLogger.d('Latency', 'dns lookup failed: $e');
       return null;
     }
   }

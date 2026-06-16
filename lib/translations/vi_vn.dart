@@ -41,8 +41,11 @@ const Map<String, String> viVN = {
   'average_speed': 'Tốc độ trung bình',
   'running_time': 'Thời gian chạy',
   'data_downloaded': 'Dữ liệu đã tải',
+  'upload_speed': 'Tốc độ tải lên',
   'latency': 'Độ trễ',
   'jitter': 'Jitter',
+  'dns_time': 'DNS',
+  'packet_loss': 'Mất gói',
   'quality_score': 'Chất lượng',
 
   // Duration presets
@@ -51,6 +54,13 @@ const Map<String, String> viVN = {
   'duration_custom': 'Tùy chỉnh',
   'duration_custom_title': 'Thời lượng tùy chỉnh',
   'duration_custom_hint': 'Nhập số giây',
+
+  // Alerts
+  'alert_label': 'Cảnh báo khi tốc độ dưới:',
+  'alert_off': 'Tắt',
+  'alert_low_speed': '⚠️ Tốc độ thấp: @speed Mbps (dưới @threshold Mbps)',
+  'test_complete': '✅ Hoàn thành',
+  'test_complete_msg': 'Kết thúc test — TB @speed Mbps',
 
   // Comparison
   'comparison_title': 'So sánh',

@@ -26,16 +26,19 @@ class TestResultAdapter extends TypeAdapter<TestResult> {
       networkInfo: fields[9] as NetworkInfo?,
       totalDownloadedBytes: fields[10] as int,
       downloadCount: fields[11] as int,
-      // Fields 12/13 mới — record cũ không có → null (backward compatible).
+      // Fields 12+ mới — record cũ không có → null (backward compatible).
       avgLatencyMs: (fields[12] as num?)?.toDouble(),
       jitterMs: (fields[13] as num?)?.toDouble(),
+      dnsMs: (fields[14] as num?)?.toDouble(),
+      packetLossPct: (fields[15] as num?)?.toDouble(),
+      uploadMbps: (fields[16] as num?)?.toDouble(),
     );
   }
 
   @override
   void write(BinaryWriter writer, TestResult obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(17)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -63,7 +66,13 @@ class TestResultAdapter extends TypeAdapter<TestResult> {
       ..writeByte(12)
       ..write(obj.avgLatencyMs)
       ..writeByte(13)
-      ..write(obj.jitterMs);
+      ..write(obj.jitterMs)
+      ..writeByte(14)
+      ..write(obj.dnsMs)
+      ..writeByte(15)
+      ..write(obj.packetLossPct)
+      ..writeByte(16)
+      ..write(obj.uploadMbps);
   }
 
   @override

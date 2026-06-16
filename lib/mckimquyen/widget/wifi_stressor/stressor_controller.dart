@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/common/const/string_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
+import 'package:toastification/toastification.dart';
 import 'models/test_result.dart';
 import 'services/test_history_storage.dart';
 import 'services/network_info_service.dart';
 import 'services/latency_service.dart';
+import 'services/upload_speed_service.dart';
 
 
 class StressorController extends GetxController {
@@ -25,6 +27,25 @@ class StressorController extends GetxController {
   final latencyMs = Rx<double?>(null);
   final jitterMs = Rx<double?>(null);
   final latencyHistory = <double>[].obs;
+  // DNS resolution time + packet loss (ước lượng từ tỉ lệ probe thất bại).
+  final dnsMs = Rx<double?>(null);
+  final packetLossPct = Rx<double?>(null);
+  final dnsHistory = <double>[].obs;
+  int _probeAttempts = 0;
+  int _probeFailures = 0;
+  // Upload speed (đo định kỳ dưới tải).
+  final uploadMbps = Rx<double?>(null);
+  final uploadHistory = <double>[].obs;
+  // Real-time alert: ngưỡng cảnh báo tốc độ thấp (Mbps). 0 = tắt.
+  final alertThresholdMbps = 0.obs;
+  bool _lowSpeedAlerted = false;
+
+  /// True khi đã bật ngưỡng và tốc độ TB dưới ngưỡng. Pure → unit-test.
+  @visibleForTesting
+  bool shouldAlertLowSpeed(double avgSpeed) {
+    final t = alertThresholdMbps.value;
+    return t > 0 && avgSpeed < t;
+  }
   // Tách speedHistory riêng để tối ưu chart updates
   final speedHistory = <double>[].obs;
   final totalDownloadedBytes = 0.obs;
@@ -97,6 +118,7 @@ class StressorController extends GetxController {
   Timer? _updateTimer;
   Timer? _retryTimer;
   Timer? _latencyTimer;
+  Timer? _uploadTimer;
 
   // Storage để lưu test history - SINGLETON
   final TestHistoryStorage _storage = TestHistoryStorage.instance;
@@ -106,6 +128,9 @@ class StressorController extends GetxController {
 
   // Service đo độ trễ + jitter
   final LatencyService _latencyService = LatencyService();
+
+  // Service đo tốc độ upload
+  final UploadSpeedService _uploadService = UploadSpeedService();
 
   // Track failed URLs để tránh retry liên tục
   final Set<String> _failedUrls = {};
@@ -194,7 +219,9 @@ class StressorController extends GetxController {
     _updateTimer?.cancel();
     _retryTimer?.cancel();
     _latencyTimer?.cancel();
+    _uploadTimer?.cancel();
     _latencyService.close();
+    _uploadService.close();
     // KHÔNG close shared singleton storage
     // _storage.close();
     dio.close(); // Close Dio to prevent memory leak
@@ -288,13 +315,27 @@ class StressorController extends GetxController {
       _retryFailedUrls();
     });
 
-    // Reset + start latency probe (đo độ trễ dưới tải mỗi 2s)
+    // Reset + start network probe (latency/jitter/DNS/packet-loss mỗi 2s)
     latencyMs.value = null;
     jitterMs.value = null;
     latencyHistory.clear();
+    dnsMs.value = null;
+    packetLossPct.value = null;
+    dnsHistory.clear();
+    _probeAttempts = 0;
+    _probeFailures = 0;
     _probeLatency();
     _latencyTimer = Timer.periodic(const Duration(seconds: 2), (_) {
       _probeLatency();
+    });
+
+    _lowSpeedAlerted = false;
+
+    // Upload probe (nặng hơn → 5s/lần)
+    uploadMbps.value = null;
+    uploadHistory.clear();
+    _uploadTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _probeUpload();
     });
 
     for (int i = 0; i < parallelDownloads.value; i++) {
@@ -303,14 +344,39 @@ class StressorController extends GetxController {
     }
   }
 
-  /// Đo 1 mẫu latency, cập nhật trung bình + jitter. Bỏ qua nếu đã dừng/lỗi.
+  /// Đo 1 vòng: latency/jitter + DNS + packet-loss. Bỏ qua nếu đã dừng.
   Future<void> _probeLatency() async {
     if (!isRunning.value) return;
+    _probeAttempts++;
     final ms = await _latencyService.probe();
-    if (ms == null || !isRunning.value) return;
-    latencyHistory.add(ms);
-    latencyMs.value = LatencyService.average(latencyHistory);
-    jitterMs.value = LatencyService.jitter(latencyHistory);
+    if (!isRunning.value) return;
+    if (ms == null) {
+      _probeFailures++;
+    } else {
+      latencyHistory.add(ms);
+      latencyMs.value = LatencyService.average(latencyHistory);
+      jitterMs.value = LatencyService.jitter(latencyHistory);
+    }
+    // Packet loss ước lượng = tỉ lệ probe thất bại.
+    packetLossPct.value =
+        _probeAttempts == 0 ? null : (_probeFailures / _probeAttempts) * 100.0;
+
+    // DNS lookup (riêng, không tính vào packet loss).
+    final dns = await _latencyService.dnsLookup();
+    if (!isRunning.value) return;
+    if (dns != null) {
+      dnsHistory.add(dns);
+      dnsMs.value = LatencyService.average(dnsHistory);
+    }
+  }
+
+  /// Đo 1 mẫu upload, cập nhật trung bình. Bỏ qua nếu đã dừng/lỗi.
+  Future<void> _probeUpload() async {
+    if (!isRunning.value) return;
+    final mbps = await _uploadService.measure();
+    if (mbps == null || !isRunning.value) return;
+    uploadHistory.add(mbps);
+    uploadMbps.value = LatencyService.average(uploadHistory);
   }
 
   /// Thử lại các URL đã failed sau một khoảng thời gian
@@ -357,9 +423,19 @@ class StressorController extends GetxController {
     _updateTimer?.cancel();
     _retryTimer?.cancel();
     _latencyTimer?.cancel();
+    _uploadTimer?.cancel();
 
     // CRITICAL FIX: AWAIT để đảm bảo save xong trước khi return
     await _saveTestResult('stopped');
+
+    // Alert hoàn thành test (chỉ khi stop chủ động/auto-stop, không phải dispose).
+    UIUtils.showToast(
+      'test_complete'.tr,
+      'test_complete_msg'.trParams({
+        'speed': totalSpeedMbps.value.toStringAsFixed(1),
+      }),
+      type: ToastificationType.success,
+    );
   }
 
   /// Save test result to storage
@@ -405,6 +481,9 @@ class StressorController extends GetxController {
         networkInfo: networkInfo,
         avgLatencyMs: latencyMs.value,
         jitterMs: jitterMs.value,
+        dnsMs: dnsMs.value,
+        packetLossPct: packetLossPct.value,
+        uploadMbps: uploadMbps.value,
       );
 
       await _storage.saveTestResult(result);
@@ -461,6 +540,26 @@ class StressorController extends GetxController {
       totalBytesIncludingProgress.value = totalBytes;
 
       totalSpeedMbps.value = (totalBytes * 8) / (duration.inSeconds * 1000000);
+
+      // Real-time alert tốc độ thấp — fire 1 lần khi tụt dưới ngưỡng (sau 5s để
+      // tốc độ ổn định), reset khi vượt lại ngưỡng.
+      if (duration.inSeconds >= 5 && isRunning.value) {
+        if (shouldAlertLowSpeed(totalSpeedMbps.value)) {
+          if (!_lowSpeedAlerted) {
+            _lowSpeedAlerted = true;
+            UIUtils.showToast(
+              StringConstants.warning,
+              'alert_low_speed'.trParams({
+                'speed': totalSpeedMbps.value.toStringAsFixed(1),
+                'threshold': '${alertThresholdMbps.value}',
+              }),
+              type: ToastificationType.warning,
+            );
+          }
+        } else {
+          _lowSpeedAlerted = false;
+        }
+      }
 
       // Tính instant speed dựa trên delta bytes (tránh race condition)
       final timeSinceLastUpdate = now.difference(_lastSpeedUpdate).inMilliseconds;

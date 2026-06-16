@@ -21,6 +21,15 @@ class TestResult {
   /// Jitter (ms) — dao động độ trễ. `null` nếu không đo được / record cũ.
   final double? jitterMs;
 
+  /// Thời gian phân giải DNS trung bình (ms). `null` nếu không đo / record cũ.
+  final double? dnsMs;
+
+  /// Tỉ lệ mất gói ước lượng (%) từ tỉ lệ probe thất bại. `null` nếu không đo.
+  final double? packetLossPct;
+
+  /// Tốc độ upload trung bình (Mbps) đo trong test. `null` nếu không đo / record cũ.
+  final double? uploadMbps;
+
   TestResult({
     required this.id,
     required this.startTime,
@@ -36,6 +45,9 @@ class TestResult {
     required this.downloadCount,
     this.avgLatencyMs,
     this.jitterMs,
+    this.dnsMs,
+    this.packetLossPct,
+    this.uploadMbps,
   });
 
   /// Tính duration từ start và end time
@@ -109,6 +121,9 @@ class TestResult {
     int? downloadCount,
     double? avgLatencyMs,
     double? jitterMs,
+    double? dnsMs,
+    double? packetLossPct,
+    double? uploadMbps,
   }) {
     return TestResult(
       id: id ?? this.id,
@@ -125,6 +140,9 @@ class TestResult {
       downloadCount: downloadCount ?? this.downloadCount,
       avgLatencyMs: avgLatencyMs ?? this.avgLatencyMs,
       jitterMs: jitterMs ?? this.jitterMs,
+      dnsMs: dnsMs ?? this.dnsMs,
+      packetLossPct: packetLossPct ?? this.packetLossPct,
+      uploadMbps: uploadMbps ?? this.uploadMbps,
     );
   }
 
@@ -139,6 +157,9 @@ class TestResult {
     NetworkInfo? networkInfo,
     double? avgLatencyMs,
     double? jitterMs,
+    double? dnsMs,
+    double? packetLossPct,
+    double? uploadMbps,
   }) {
     // Calculate statistics từ speedHistory
     // VALIDATION: Clamp all negative speeds to 0
@@ -168,6 +189,9 @@ class TestResult {
       downloadCount: downloadCount,
       avgLatencyMs: avgLatencyMs,
       jitterMs: jitterMs,
+      dnsMs: dnsMs,
+      packetLossPct: packetLossPct,
+      uploadMbps: uploadMbps,
     );
   }
 
@@ -188,6 +212,9 @@ class TestResult {
       'downloadCount': downloadCount,
       'avgLatencyMs': avgLatencyMs,
       'jitterMs': jitterMs,
+      'dnsMs': dnsMs,
+      'packetLossPct': packetLossPct,
+      'uploadMbps': uploadMbps,
     };
   }
 
@@ -210,6 +237,9 @@ class TestResult {
       downloadCount: json['downloadCount'] as int,
       avgLatencyMs: (json['avgLatencyMs'] as num?)?.toDouble(),
       jitterMs: (json['jitterMs'] as num?)?.toDouble(),
+      dnsMs: (json['dnsMs'] as num?)?.toDouble(),
+      packetLossPct: (json['packetLossPct'] as num?)?.toDouble(),
+      uploadMbps: (json['uploadMbps'] as num?)?.toDouble(),
     );
   }
 
@@ -223,6 +253,24 @@ class TestResult {
   String get jitterFormatted {
     final j = jitterMs;
     return j == null ? 'N/A' : '${j.round()} ms';
+  }
+
+  /// Hiển thị DNS: "12 ms" hoặc "N/A".
+  String get dnsFormatted {
+    final d = dnsMs;
+    return d == null ? 'N/A' : '${d.round()} ms';
+  }
+
+  /// Hiển thị packet loss: "2.5%" hoặc "N/A".
+  String get packetLossFormatted {
+    final p = packetLossPct;
+    return p == null ? 'N/A' : '${p.toStringAsFixed(1)}%';
+  }
+
+  /// Hiển thị upload: "12.3 Mbps" hoặc "N/A".
+  String get uploadFormatted {
+    final u = uploadMbps;
+    return u == null ? 'N/A' : '${u.toStringAsFixed(1)} Mbps';
   }
 
   @override

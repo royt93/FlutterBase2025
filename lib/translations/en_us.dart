@@ -41,8 +41,11 @@ const Map<String, String> enUS = {
   'average_speed': 'Average Speed',
   'running_time': 'Running Time',
   'data_downloaded': 'Data Downloaded',
+  'upload_speed': 'Upload',
   'latency': 'Latency',
   'jitter': 'Jitter',
+  'dns_time': 'DNS',
+  'packet_loss': 'Packet Loss',
   'quality_score': 'Quality',
 
   // Duration presets
@@ -51,6 +54,13 @@ const Map<String, String> enUS = {
   'duration_custom': 'Custom',
   'duration_custom_title': 'Custom Duration',
   'duration_custom_hint': 'Enter seconds',
+
+  // Alerts
+  'alert_label': 'Alert when speed below:',
+  'alert_off': 'Off',
+  'alert_low_speed': '⚠️ Low speed: @speed Mbps (below @threshold Mbps)',
+  'test_complete': '✅ Complete',
+  'test_complete_msg': 'Test finished — avg @speed Mbps',
 
   // Comparison
   'comparison_title': 'Comparison',

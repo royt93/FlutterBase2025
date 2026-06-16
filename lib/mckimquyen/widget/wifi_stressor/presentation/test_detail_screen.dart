@@ -250,9 +250,15 @@ class TestDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _buildInfoRow('download_count'.tr, '${result.downloadCount}'),
           const SizedBox(height: 8),
+          _buildInfoRow('upload_speed'.tr, result.uploadFormatted),
+          const SizedBox(height: 8),
           _buildInfoRow('latency'.tr, result.latencyFormatted),
           const SizedBox(height: 8),
           _buildInfoRow('jitter'.tr, result.jitterFormatted),
+          const SizedBox(height: 8),
+          _buildInfoRow('dns_time'.tr, result.dnsFormatted),
+          const SizedBox(height: 8),
+          _buildInfoRow('packet_loss'.tr, result.packetLossFormatted),
         ],
       ),
     );
@@ -315,45 +321,24 @@ class TestDetailScreen extends StatelessWidget {
 
   /// Build speed chart card
   Widget _buildSpeedChartCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.show_chart, color: Colors.purple),
-              const SizedBox(width: 8),
-              Text(
-                'speed_over_time'.tr,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (result.speedHistory.isNotEmpty)
-            SpeedChart(speeds: result.speedHistory, chartHeight: 180)
-          else
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Text(
-                  'no_data'.tr,
-                  style: const TextStyle(color: Colors.white54),
-                ),
-              ),
-            ),
-        ],
-      ),
+    // SpeedChart đã là 1 card có header riêng — không bọc thêm card (tránh
+    // card-lồng-card + 2 header). Chỉ thêm margin cho khớp các card khác.
+    if (result.speedHistory.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Center(
+          child: Text('no_data'.tr, style: const TextStyle(color: Colors.white54)),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: SpeedChart(speeds: result.speedHistory, chartHeight: 200),
     );
   }
 

@@ -188,6 +188,7 @@ class ComparisonScreen extends StatelessWidget {
       _MetricRow('cmp_peak_speed', (r) => r.peakSpeed, higherBetter: true),
       _MetricRow('cmp_min_speed', (r) => r.minSpeed, higherBetter: true),
       _MetricRow('cmp_median_speed', (r) => r.medianSpeed, higherBetter: true),
+      _MetricRow('upload_speed', (r) => r.uploadMbps ?? 0, higherBetter: true),
     ];
     return Container(
       padding: const EdgeInsets.all(12),
@@ -221,6 +222,8 @@ class ComparisonScreen extends StatelessWidget {
           // Latency + jitter + quality grade + duration + downloaded (neutral)
           _buildTextRow('latency', (r) => r.latencyFormatted),
           _buildTextRow('jitter', (r) => r.jitterFormatted),
+          _buildTextRow('dns_time', (r) => r.dnsFormatted),
+          _buildTextRow('packet_loss', (r) => r.packetLossFormatted),
           _buildGradeRow(),
           _buildTextRow('cmp_duration', (r) => r.durationFormatted),
           _buildTextRow('cmp_downloaded', (r) => r.downloadedFormatted),
