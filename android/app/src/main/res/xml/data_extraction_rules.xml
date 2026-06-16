@@ -7,17 +7,19 @@
   must be cloud-backed up so a reinstall on the same Google account restores
   the flag and short-circuits a fresh first-install grace grant.
 
-  Excludes `FlutterSecureStorage.xml` because its EncryptedSharedPreferences
-  ciphertext is unrecoverable without the device-bound Keystore key (which is
-  not part of any backup), so restoring that file produces garbage.
+  `FlutterSecureStorage.xml` is NOT backed up: because we declare an explicit
+  <include> for this domain, every other file in `sharedpref` (including the
+  EncryptedSharedPreferences ciphertext) is excluded by default. Its ciphertext
+  is unrecoverable without the device-bound Keystore key (not part of any
+  backup), so restoring it would produce garbage. We must NOT add an explicit
+  <exclude> for it — Android lint (FullBackupContent) rejects an exclude whose
+  path is not nested under an included path, which fails the release build.
 -->
 <data-extraction-rules>
     <cloud-backup>
         <include domain="sharedpref" path="FlutterSharedPreferences.xml" />
-        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
     </cloud-backup>
     <device-transfer>
         <include domain="sharedpref" path="FlutterSharedPreferences.xml" />
-        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
     </device-transfer>
 </data-extraction-rules>

@@ -1,14 +1,14 @@
+import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 
 import '../controllers/history_controller.dart';
-import 'widgets/summary_stats_card.dart';
-import 'widgets/timeline_item.dart';
-import 'widgets/history_chart.dart';
-import 'test_detail_screen.dart';
 import 'comparison_screen.dart';
 import 'heatmap_screen.dart';
+import 'test_detail_screen.dart';
+import 'widgets/history_chart.dart';
+import 'widgets/summary_stats_card.dart';
+import 'widgets/timeline_item.dart';
 
 /// Màn hình History & Statistics
 class HistoryScreen extends AdScreen {
@@ -20,6 +20,7 @@ class HistoryScreen extends AdScreen {
 
 class _HistoryScreenState extends AdScreenState<HistoryScreen> {
   static const String _tag = 'HistoryScreen';
+
   // Field initializer (chạy trước initState) thay cho `late` — Get.put trả
   // instance đồng bộ, giống pattern ở StressorHomePage.
   final HistoryController controller = Get.put(HistoryController());
@@ -50,9 +51,7 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
           ),
           // Toggle chế độ chọn nhiều để so sánh
           Obx(() => IconButton(
-                icon: Icon(controller.selectionMode.value
-                    ? Icons.close
-                    : Icons.compare_arrows),
+                icon: Icon(controller.selectionMode.value ? Icons.close : Icons.compare_arrows),
                 tooltip: 'compare_tooltip'.tr,
                 onPressed: () {
                   SafeLogger.d(_tag, '▶️ ACTION toggleSelectionMode');
@@ -204,8 +203,7 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                               ...results.map((result) {
                                 return Obx(() {
                                   final selecting = controller.selectionMode.value;
-                                  final selected =
-                                      controller.selectedIds.contains(result.id);
+                                  final selected = controller.selectedIds.contains(result.id);
                                   return TimelineItem(
                                     result: result,
                                     selectionMode: selecting,
@@ -261,10 +259,8 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                 FilledButton.icon(
                   onPressed: canCompare
                       ? () {
-                          SafeLogger.d(_tag,
-                              '▶️ ACTION compare → ${controller.selectedIds.length} tests');
-                          Get.to(() =>
-                              ComparisonScreen(results: controller.selectedResults));
+                          SafeLogger.d(_tag, '▶️ ACTION compare → ${controller.selectedIds.length} tests');
+                          Get.to(() => ComparisonScreen(results: controller.selectedResults));
                         }
                       : null,
                   icon: const Icon(Icons.compare_arrows),
@@ -307,7 +303,8 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
           ],
           selected: {selected},
           onSelectionChanged: (Set<String> newSelection) {
-            SafeLogger.d(_tag, '▶️ ACTION changeTimeRange → ${newSelection.first} (was ${controller.selectedTimeRange.value})');
+            SafeLogger.d(
+                _tag, '▶️ ACTION changeTimeRange → ${newSelection.first} (was ${controller.selectedTimeRange.value})');
             controller.changeTimeRange(newSelection.first);
           },
           style: ButtonStyle(
