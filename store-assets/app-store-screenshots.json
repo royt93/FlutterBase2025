@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "appName": "FastNet Speed Test",
+  "themeId": "fastnet-dark",
+  "connectedCanvas": true,
+  "locales": [
+    "en"
+  ],
+  "locale": "en",
+  "device": "android",
+  "orientation": "portrait",
+  "appIcon": "/app-icon.png",
+  "slidesByDevice": {
+    "iphone": [],
+    "android": [
+      {
+        "id": "fn_01_hero",
+        "layout": "hero",
+        "label": {
+          "en": "REAL-TIME SPEED TEST"
+        },
+        "headline": {
+          "en": "See your WiFi's\ntrue speed."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/02-testing.png"
+      },
+      {
+        "id": "fn_02_stress",
+        "layout": "device-bottom",
+        "label": {
+          "en": "PUSH IT TO THE LIMIT"
+        },
+        "headline": {
+          "en": "Stress-test your\nwhole network."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/01-home.png"
+      },
+      {
+        "id": "fn_03_graph",
+        "layout": "device-top",
+        "label": {
+          "en": "LIVE GRAPH"
+        },
+        "headline": {
+          "en": "Watch every\nspike and drop."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/03-livechart.png",
+        "inverted": true
+      },
+      {
+        "id": "fn_04_history",
+        "layout": "device-bottom",
+        "label": {
+          "en": "HISTORY & STATS"
+        },
+        "headline": {
+          "en": "Every test,\nremembered."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/04-stats.png"
+      },
+      {
+        "id": "fn_05_diagnostics",
+        "layout": "device-top",
+        "label": {
+          "en": "DEEP DIAGNOSTICS"
+        },
+        "headline": {
+          "en": "Find what's\nslowing you down."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/05-detail.png"
+      },
+      {
+        "id": "fn_06_insight",
+        "layout": "device-bottom",
+        "label": {
+          "en": "FULL NETWORK INSIGHT"
+        },
+        "headline": {
+          "en": "Catch lag before\nit catches you."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/06-network.png"
+      }
+    ],
+    "ipad": [],
+    "android-7": [
+      {
+        "id": "s_mqi6t8tn_d",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Pocket-sized\npower."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mqi6t8tn_e",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Wide canvas,\nbigger ideas."
+        },
+        "screenshot": ""
+      }
+    ],
+    "android-10": [
+      {
+        "id": "s_mqi6t8tn_f",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Made for\nthe big screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mqi6t8tn_g",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Wide canvas,\nbigger ideas."
+        },
+        "screenshot": ""
+      }
+    ],
+    "feature-graphic": []
+  },
+  "tagline": "Stress-test your WiFi. See the truth."
+}
