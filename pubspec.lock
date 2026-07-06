@@ -44,10 +44,9 @@ packages:
   applovin_admob_sdk:
     dependency: "direct main"
     description:
-      name: applovin_admob_sdk
-      sha256: b6e8b27de87cce32b473ed39c64087f7328cf186c3bc44ed6f278048cf940a06
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/ad_sdk"
+      relative: true
+    source: path
     version: "1.0.23"
   applovin_max:
     dependency: "direct overridden"
@@ -265,6 +264,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  cryptography:
+    dependency: transitive
+    description:
+      name: cryptography
+      sha256: "3eda3029d34ec9095a27a198ac9785630fe525c0eb6a49f3d575272f8e792ef0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.9.0"
   csslib:
     dependency: transitive
     description:

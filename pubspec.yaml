@@ -45,11 +45,13 @@ dependencies:
   # PDF export (history reports)
   pdf: ^3.11.1
 
-# Hosted — ACTIVE: 1.0.23 published to pub.dev (VIP stacking + bypassVipGuard + App-Open-over-modal guard):
-  applovin_admob_sdk: ^1.0.23
-  # Local path override (re-enable + comment the hosted line above to ship in-repo SDK changes):
-  #  applovin_admob_sdk:
-  #    path: packages/ad_sdk
+# Hosted — 1.0.23 on pub.dev. TEMPORARILY overridden by the local path below to
+# dev/test in-repo SDK changes (T01–T20 audit fixes). Flip back before release
+# (re-publish the bumped SDK, then re-enable the hosted line + comment the path).
+#  applovin_admob_sdk: ^1.0.23
+  # Local path override — ACTIVE (in-repo SDK under test):
+  applovin_admob_sdk:
+    path: packages/ad_sdk
 
   # Bắt buộc ở app-level: native mediation plugin, không khai báo được trong sub-package
   gma_mediation_applovin:
