@@ -9,7 +9,6 @@ import 'package:saigonphantomlabs/mckimquyen/common/const/color_constants.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/duration_util.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
 import 'package:saigonphantomlabs/mckimquyen/widget/main/main_screen.dart';
-import 'package:saigonphantomlabs/mckimquyen/widget/vip/vip_keys.dart';
 
 import '../../core/base_stateful_state.dart';
 
@@ -172,7 +171,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
         try {
           SafeLogger.d('SplashTrace', 'ATT request start');
           final attResult = await AdManager().requestAtt();
-          SafeLogger.d('SplashTrace', 'ATT done status=${attResult.status.name}');
+          SafeLogger.d(
+              'SplashTrace', 'ATT done status=${attResult.status.name}');
         } catch (e) {
           SafeLogger.w('SplashTrace', 'ATT threw -> continue error=$e');
         }
@@ -255,8 +255,8 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
               privacyPolicyUrl: AdKey.privacyPolicyUrl,
             ),
 
-            // Q14: validator chỉ accept key trong kVipKeyMap (30d).
-            vipKeyValidator: vipKeyValidator,
+            // VIP redeem dùng signed key offline (T18) qua
+            // VipManager.redeemSignedKey — không cần AdConfig.vipKeyValidator.
 
             // Cap tổng thời gian VIP cộng dồn (stack) ở 90 ngày — chặn lạm dụng
             // (vd bấm key nhiều lần / xem ad liên tục). null = không cap.

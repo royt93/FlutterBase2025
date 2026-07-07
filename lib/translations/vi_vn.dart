@@ -8,7 +8,8 @@ const Map<String, String> viVN = {
 
   // VIP — watch ad → 3 days (rewarded + interstitial fallback)
   'vip_watch_ad_title': 'Xem quảng cáo → VIP miễn phí',
-  'vip_watch_ad_subtitle': 'Xem 1 quảng cáo ngắn để nhận ngay 3 ngày VIP miễn phí.',
+  'vip_watch_ad_subtitle':
+      'Xem 1 quảng cáo ngắn để nhận ngay 3 ngày VIP miễn phí.',
   'vip_watch_ad_badge_free': 'MIỄN PHÍ',
   'vip_watch_ad_button': 'Xem quảng cáo',
   'vip_watch_ad_success': '🎉 Đã nhận 3 ngày VIP!',
@@ -27,7 +28,7 @@ const Map<String, String> viVN = {
   'info_dialog_title': 'Thông tin ứng dụng',
   'info_dialog_content':
       'Ứng dụng kiểm tra sức chịu tải Wi-Fi bằng cách tải file song song liên tục.\n'
-      '⚠️ Lưu ý: Sử dụng lượng lớn dữ liệu mạng!',
+          '⚠️ Lưu ý: Sử dụng lượng lớn dữ liệu mạng!',
   'close_button': 'Đóng',
 
   // Status
@@ -85,7 +86,8 @@ const Map<String, String> viVN = {
 
   // Warning Dialog
   'warning_title': '⚠️ Cảnh báo',
-  'warning_message': 'Ứng dụng sẽ sử dụng lượng lớn dữ liệu mạng. Bạn có chắc muốn tiếp tục?',
+  'warning_message':
+      'Ứng dụng sẽ sử dụng lượng lớn dữ liệu mạng. Bạn có chắc muốn tiếp tục?',
   'cancel': 'Hủy bỏ',
   'ok': 'OK',
   'continue': 'Tiếp tục',
@@ -110,7 +112,8 @@ const Map<String, String> viVN = {
   'export_data': 'Xuất dữ liệu',
   'clear_history': 'Xóa lịch sử',
   'confirm_clear_title': 'Xóa toàn bộ lịch sử?',
-  'confirm_clear_message': 'Hành động này sẽ xóa vĩnh viễn tất cả lịch sử test. Không thể hoàn tác.',
+  'confirm_clear_message':
+      'Hành động này sẽ xóa vĩnh viễn tất cả lịch sử test. Không thể hoàn tác.',
   'delete': 'Xóa',
 
   // Test Detail
@@ -219,6 +222,7 @@ const Map<String, String> viVN = {
   'vip_success_message': 'VIP của bạn có hiệu lực đến @until.',
   'vip_failed_title': 'Mã không hợp lệ',
   'vip_failed_message': 'Mã VIP bạn nhập không đúng hoặc đã hết hạn.',
+  'vip_key_already_used': 'Mã này đã được sử dụng trên thiết bị này.',
   'vip_network_error': 'Lỗi mạng — vui lòng thử lại.',
   'vip_confirm': 'OK',
   // Network dashboard (Wave 5)

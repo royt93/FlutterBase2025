@@ -8,7 +8,8 @@ const Map<String, String> enUS = {
 
   // VIP — watch ad → 3 days (rewarded + interstitial fallback)
   'vip_watch_ad_title': 'Watch ad → free VIP',
-  'vip_watch_ad_subtitle': 'Watch a short ad and unlock 3 days of VIP for free.',
+  'vip_watch_ad_subtitle':
+      'Watch a short ad and unlock 3 days of VIP for free.',
   'vip_watch_ad_badge_free': 'FREE',
   'vip_watch_ad_button': 'Watch ad',
   'vip_watch_ad_success': '🎉 Earned 3 days of VIP!',
@@ -27,7 +28,7 @@ const Map<String, String> enUS = {
   'info_dialog_title': 'App Information',
   'info_dialog_content':
       'This app tests Wi-Fi load capacity by continuously downloading files in parallel.\n'
-      '⚠️ Warning: Uses large amounts of network data!',
+          '⚠️ Warning: Uses large amounts of network data!',
   'close_button': 'Close',
 
   // Status
@@ -85,7 +86,8 @@ const Map<String, String> enUS = {
 
   // Warning Dialog
   'warning_title': '⚠️ Warning',
-  'warning_message': 'This app will use a large amount of network data. Are you sure you want to continue?',
+  'warning_message':
+      'This app will use a large amount of network data. Are you sure you want to continue?',
   'cancel': 'Cancel',
   'ok': 'OK',
   'continue': 'Continue',
@@ -110,7 +112,8 @@ const Map<String, String> enUS = {
   'export_data': 'Export Data',
   'clear_history': 'Clear History',
   'confirm_clear_title': 'Clear All History?',
-  'confirm_clear_message': 'This will permanently delete all test history. This action cannot be undone.',
+  'confirm_clear_message':
+      'This will permanently delete all test history. This action cannot be undone.',
   'delete': 'Delete',
 
   // Test Detail
@@ -193,7 +196,8 @@ const Map<String, String> enUS = {
   'vip_remaining_hours': '@hours hours left',
   'vip_remaining_extra_hours': '+@hours h',
   'vip_redeem_title': 'Redeem VIP key',
-  'vip_redeem_subtitle': 'Enter your activation key to unlock an ad-free session.',
+  'vip_redeem_subtitle':
+      'Enter your activation key to unlock an ad-free session.',
   'vip_key_hint': 'Enter your activation key',
   'vip_activate_button': 'Activate',
   'vip_active_entries': 'Active keys (@count)',
@@ -217,6 +221,7 @@ const Map<String, String> enUS = {
   'vip_success_message': 'VIP active until @until.',
   'vip_failed_title': 'Invalid Key',
   'vip_failed_message': 'The VIP key you entered is invalid or expired.',
+  'vip_key_already_used': 'This key has already been used on this device.',
   'vip_network_error': 'Network error — please try again.',
   'vip_confirm': 'OK',
   // Network dashboard (Wave 5)
