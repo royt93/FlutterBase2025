@@ -20,6 +20,7 @@ class VipScreen extends StatelessWidget {
     return VipRedeemScreen(
       publicKeyBase64: kVipPublicKeyBase64,
       onPrivacyPolicyTap: _openPrivacyPolicy,
+      onPrivacyOptionsTap: () => AdManager().showPrivacyOptions(),
       strings: VipRedeemStrings(
         sdkNotReady: 'vip_sdk_not_ready'.tr,
         enterKeyFirst: 'vip_enter_key_first'.tr,
@@ -58,6 +59,7 @@ class VipScreen extends StatelessWidget {
         buyLocked: 'vip_buy_locked'.tr,
         restoreLocked: 'vip_restore_locked'.tr,
         privacyPolicy: 'vip_privacy_policy'.tr,
+        privacyOptions: 'vip_privacy_options'.tr,
         expiresAt: (date) => 'vip_expires_at'.trParams({'date': date}),
         remainingDays: (days) =>
             'vip_remaining_days'.trParams({'days': '$days'}),

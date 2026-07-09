@@ -217,6 +217,7 @@ const Map<String, String> viVN = {
   'vip_enter_key_first': 'Vui lòng nhập mã trước khi kích hoạt.',
   'vip_sdk_not_ready': 'SDK quảng cáo chưa sẵn sàng. Vui lòng thử lại sau.',
   'vip_privacy_policy': 'Chính sách bảo mật & điều khoản',
+  'vip_privacy_options': 'Tùy chọn quyền riêng tư',
 
   // VIP dialog (Cupertino — SDK redeem flow)
   'vip_verifying_title': 'Đang xác thực',

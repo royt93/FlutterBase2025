@@ -216,6 +216,7 @@ const Map<String, String> enUS = {
   'vip_enter_key_first': 'Please enter a key first.',
   'vip_sdk_not_ready': 'Ad SDK is not ready. Please try again later.',
   'vip_privacy_policy': 'Privacy Policy & Terms',
+  'vip_privacy_options': 'Privacy Options',
 
   // VIP dialog (Cupertino — SDK redeem flow)
   'vip_verifying_title': 'Verifying',
