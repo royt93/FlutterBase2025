@@ -64,6 +64,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeAdsAsync();
     });
+    AdManager().vip?.graceNudgeDueListenable.addListener(_onGraceNudgeChanged);
   }
 
   /// Khởi tạo quảng cáo bất đồng bộ để không block UI
@@ -75,9 +76,31 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
 
   @override
   void dispose() {
+    AdManager()
+        .vip
+        ?.graceNudgeDueListenable
+        .removeListener(_onGraceNudgeChanged);
     // Cleanup controller để tránh memory leak
     Get.delete<StressorController>();
     super.dispose();
+  }
+
+  /// VIP sắp hết hạn (còn dưới threshold) → nhắc 1 lần qua SnackBar, trỏ
+  /// tới VipScreen để gia hạn. `acknowledgeGraceNudge()` đánh dấu đã nhắc
+  /// cho đúng `expiresAt` hiện tại — stack/redeem mới sẽ tự nhắc lại.
+  void _onGraceNudgeChanged() {
+    final vip = AdManager().vip;
+    if (vip == null || !vip.graceNudgeDueListenable.value || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('vip_grace_nudge_message'.tr),
+        action: SnackBarAction(
+          label: 'vip_grace_nudge_action'.tr,
+          onPressed: _navigateToVip,
+        ),
+      ),
+    );
+    vip.acknowledgeGraceNudge();
   }
 
   @override
@@ -227,14 +250,16 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   void _navigateToHistory() {
     SafeLogger.d(_tag, '▶️ ACTION navigateToHistory — requesting interstitial');
     showInterstitialAd(onDone: (shown) {
-      SafeLogger.d(_tag, '▶️ ACTION navigateToHistory — interstitialShown=$shown → navigating');
+      SafeLogger.d(_tag,
+          '▶️ ACTION navigateToHistory — interstitialShown=$shown → navigating');
       Get.to(() => const HistoryScreen());
     });
   }
 
   /// Hiển thị dialog chọn ngôn ngữ
   void _showLanguageDialog() {
-    SafeLogger.d(_tag, '▶️ ACTION showLanguageDialog — current locale=${Get.locale}');
+    SafeLogger.d(
+        _tag, '▶️ ACTION showLanguageDialog — current locale=${Get.locale}');
     Get.dialog(
       AlertDialog(
         title: Text(
@@ -284,9 +309,11 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
           ? const Icon(Icons.check_circle, color: Colors.green)
           : null,
       onTap: () async {
-        SafeLogger.d(_tag, '▶️ ACTION changeLanguage → locale=$locale (was ${Get.locale})');
+        SafeLogger.d(_tag,
+            '▶️ ACTION changeLanguage → locale=$locale (was ${Get.locale})');
         await LanguageService.changeLanguage(locale);
-        SafeLogger.d(_tag, '▶️ ACTION changeLanguage DONE → new locale=${Get.locale}');
+        SafeLogger.d(
+            _tag, '▶️ ACTION changeLanguage DONE → new locale=${Get.locale}');
         Get.back();
       },
     );
@@ -392,7 +419,8 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       // RepaintBoundary để tránh repaint toàn bộ widget tree
       return RepaintBoundary(
         // Chart live khi đang chạy: ẩn toggle, giữ bộ đếm data_points.
-        child: SpeedChart(speeds: controller.speedHistory, showTypeToggle: false),
+        child:
+            SpeedChart(speeds: controller.speedHistory, showTypeToggle: false),
       );
     });
   }

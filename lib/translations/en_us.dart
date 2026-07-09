@@ -195,6 +195,9 @@ const Map<String, String> enUS = {
   'vip_remaining_days': '@days days left',
   'vip_remaining_hours': '@hours hours left',
   'vip_remaining_extra_hours': '+@hours h',
+  'vip_grace_nudge_message':
+      'Your VIP is expiring soon — extend it before ads come back.',
+  'vip_grace_nudge_action': 'View',
   'vip_redeem_title': 'Redeem VIP key',
   'vip_redeem_subtitle':
       'Enter your activation key to unlock an ad-free session.',
