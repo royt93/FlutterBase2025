@@ -47,7 +47,7 @@ packages:
       path: "packages/ad_sdk"
       relative: true
     source: path
-    version: "1.0.23"
+    version: "1.0.24"
   applovin_max:
     dependency: "direct overridden"
     description:

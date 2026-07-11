@@ -197,11 +197,12 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
           SafeLogger.w('SplashTrace', 'UMP threw -> continue init error=$e');
           SafeLogger.w('Splash', 'UMP threw, continuing init anyway: $e');
         }
-        if (!mounted || _hasNavigated) {
-          SafeLogger.w('SplashTrace',
-              'skip AdManager.initialize mounted=$mounted hasNavigated=$_hasNavigated');
-          return;
-        }
+        // Phải gọi dù mounted==false hoặc _hasNavigated==true — nếu hard-cap
+        // timer đã điều hướng đi trước khi ATT/UMP await xong (form GDPR
+        // chậm), SDK sẽ không bao giờ init cho cả phiên app nếu return sớm ở
+        // đây (không dùng context nên không cần mounted check).
+        SafeLogger.d('SplashTrace',
+            'AdManager.initialize proceeding mounted=$mounted hasNavigated=$_hasNavigated');
 
         // Khởi tạo AdManager (gọi EventBus.sendEvent khi xong)
         SafeLogger.d(

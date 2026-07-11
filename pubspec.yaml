@@ -91,15 +91,14 @@ flutter_icons:
 
 dependency_overrides:
   vector_math: ^2.2.0
-  # Ghim applovin_max về 4.6.0 (AppLovinSDK iOS 13.5.0) cho khớp với
-  # gma_mediation_applovin 2.5.1 (adapter 13.5.0.0 -> AppLovinSDK 13.5.0).
-  # Bản applovin_admob_sdk 1.0.18 kéo applovin_max 4.6.3 (AppLovinSDK 13.6.1)
-  # gây xung đột pod vì chưa có gma tương thích trên google_mobile_ads ^6 / Flutter 3.35.1.
+  # Retest 2026-07-10 (audit finding #2): thử nâng gma_mediation_applovin lên
+  # 2.6.1 (khớp applovin_max ^4.6.4/google_mobile_ads ^7.0.0 SDK tự khai) —
+  # THẤT BẠI ngay ở `flutter pub get`: gma_mediation_applovin >=2.6.0 đòi
+  # meta ^1.17.0, nhưng flutter_test từ Flutter SDK 3.35.1 (pin CI) ép
+  # meta 1.16.0 — xung đột Dart-level, chưa tới lượt CocoaPods. Vẫn ghim bản cũ
+  # cho tới khi Flutter SDK nâng lên bản có meta ^1.17.0, hoặc gma hạ constraint
+  # meta. Xem doc/audit/audit_partner_lead_20260710.md finding #2/#3.
   applovin_max: 4.6.0
-  # Local ad_sdk (path) khai báo google_mobile_ads ^7 / applovin_max ^4.6.4,
-  # nhưng app này build ổn định trên cụm đã ghim (gma 2.5.1 + GMA 6 + applovin_max
-  # 4.6.0). Ghim lại để path override không kéo GMA 7 (làm vỡ native registrant
-  # của gma_mediation_applovin). VIP stacking độc lập với GMA version.
   google_mobile_ads: 6.0.0
   gma_mediation_applovin: 2.5.1
 
