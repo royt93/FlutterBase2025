@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:saigonphantomlabs/mckimquyen/util/ui_utils.dart';
@@ -52,6 +53,13 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   // lần / frame). Nullable thay cho `late` theo quy ước doc/init.md.
   Widget? _bannerSlot;
 
+  // `AdManager().vip` là null cho tới khi SDK init xong; SplashScreen có thể
+  // navigate sang màn hình này trước khi init hoàn tất (init chạy fire-and-
+  // forget, không chờ). Track listenable đang attach để (a) không attach 2
+  // lần vào cùng 1 instance và (b) detach đúng listenable khi dispose (không
+  // phải instance vip hiện tại, có thể đã đổi qua initRevision).
+  ValueListenable<bool>? _attachedGraceNudgeListenable;
+
   @override
   void initState() {
     super.initState();
@@ -64,7 +72,10 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeAdsAsync();
     });
-    AdManager().vip?.graceNudgeDueListenable.addListener(_onGraceNudgeChanged);
+    _attachGraceNudgeListener();
+    // initRevision bump = SDK (re)init xong → vip có thể vừa mới sẵn sàng
+    // (hoặc đã đổi instance) → thử attach lại.
+    AdManager().initRevision.addListener(_attachGraceNudgeListener);
   }
 
   /// Khởi tạo quảng cáo bất đồng bộ để không block UI
@@ -74,12 +85,18 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
     // Ads được tự động load bởi AdScreenState
   }
 
+  void _attachGraceNudgeListener() {
+    final current = AdManager().vip?.graceNudgeDueListenable;
+    if (identical(current, _attachedGraceNudgeListenable)) return;
+    _attachedGraceNudgeListenable?.removeListener(_onGraceNudgeChanged);
+    current?.addListener(_onGraceNudgeChanged);
+    _attachedGraceNudgeListenable = current;
+  }
+
   @override
   void dispose() {
-    AdManager()
-        .vip
-        ?.graceNudgeDueListenable
-        .removeListener(_onGraceNudgeChanged);
+    AdManager().initRevision.removeListener(_attachGraceNudgeListener);
+    _attachedGraceNudgeListenable?.removeListener(_onGraceNudgeChanged);
     // Cleanup controller để tránh memory leak
     Get.delete<StressorController>();
     super.dispose();
