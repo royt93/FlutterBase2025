@@ -176,7 +176,9 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
         } catch (e) {
           SafeLogger.w('SplashTrace', 'ATT threw -> continue error=$e');
         }
-        if (!mounted || _hasNavigated) return;
+        // Không return sớm ở đây — cùng lý do với guard trước initialize() bên
+        // dưới: nếu ATT chậm (user chưa tap dialog) và hard-cap đã bắn, return
+        // sớm sẽ skip luôn UMP + initialize() cho cả phiên app.
 
         // ─── UMP consent (Q3C: Global) ────────────────────────────────────
         // Phải gọi TRƯỚC initialize() — Google policy yêu cầu form consent
