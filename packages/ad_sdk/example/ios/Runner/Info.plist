@@ -51,6 +51,13 @@
 	<string>e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>This identifier is used to deliver personalised ads.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartobservatory._tcp</string>
+		<string>_dartVmService._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Required for Flutter debugging/Dart VM Service discovery.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
