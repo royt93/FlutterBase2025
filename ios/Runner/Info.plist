@@ -49,6 +49,9 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<true/>
+		<!-- TODO roy93~ update iOS AdMob Application ID — currently duplicated from
+		     Android value below, must be replaced with the real iOS App ID from
+		     AdMob console (see doc/feature.md pending items) -->
 		<key>GADApplicationIdentifier</key>
 		<string>ca-app-pub-3612191981543807~9731053733</string>
 		<key>AppLovinSdkKey</key>

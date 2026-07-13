@@ -157,12 +157,16 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
       DurationUtils.delay(300, () async {
         SafeLogger.d('SplashTrace',
             'delayed init block start mounted=$mounted hasNavigated=$_hasNavigated');
-        if (!mounted) return;
-        // ValueNotifier thay cho setState — chỉ rebuild đúng widget con cần thiết
-        _containerColorNotifier.value = Colors.transparent;
-        SafeLogger.d('SplashTrace', 'splash animation color transparent');
-        SafeLogger.d(
-            'Splash', 'containerColor → transparent (animation started)');
+        // Guard mounted chỉ bọc phần UI-only (ValueNotifier bị dispose() cùng
+        // State) — không return sớm ở đây nữa, vì ATT→UMP→initialize() bên
+        // dưới PHẢI chạy dù widget đã unmount (xem comment dòng ~202).
+        if (mounted) {
+          // ValueNotifier thay cho setState — chỉ rebuild đúng widget con cần thiết
+          _containerColorNotifier.value = Colors.transparent;
+          SafeLogger.d('SplashTrace', 'splash animation color transparent');
+          SafeLogger.d(
+              'Splash', 'containerColor → transparent (animation started)');
+        }
 
         // ─── ATT (iOS App Tracking Transparency) ──────────────────────────
         // Phải hiện TRƯỚC UMP để IDFA được quyết định trước first ad request.
