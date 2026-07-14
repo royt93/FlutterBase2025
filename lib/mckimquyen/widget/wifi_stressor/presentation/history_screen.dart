@@ -2,6 +2,7 @@ import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../util/shared_preferences_util.dart';
 import '../controllers/history_controller.dart';
 import 'comparison_screen.dart';
 import 'heatmap_screen.dart';
@@ -51,7 +52,9 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
           ),
           // Toggle chế độ chọn nhiều để so sánh
           Obx(() => IconButton(
-                icon: Icon(controller.selectionMode.value ? Icons.close : Icons.compare_arrows),
+                icon: Icon(controller.selectionMode.value
+                    ? Icons.close
+                    : Icons.compare_arrows),
                 tooltip: 'compare_tooltip'.tr,
                 onPressed: () {
                   SafeLogger.d(_tag, '▶️ ACTION toggleSelectionMode');
@@ -61,15 +64,21 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
           IconButton(
             icon: const Icon(Icons.download),
             tooltip: 'export_data'.tr,
-            onPressed: () {
-              SafeLogger.d(_tag, '▶️ ACTION exportData — requesting rewarded ad');
-              showRewardedAd(onEarnedReward: (earned) {
-                SafeLogger.d(_tag, '▶️ ACTION exportData — earned=$earned');
-                if (earned) {
-                  controller.exportData();
-                }
-                // else: SDK already showed TopToast automatically
-              });
+            onPressed: () async {
+              SafeLogger.d(
+                  _tag, '▶️ ACTION exportData — requesting rewarded ad');
+              final ssvUserId =
+                  await SharedPreferencesUtil.getOrCreateSsvUserId();
+              showRewardedAd(
+                ssvUserId: ssvUserId,
+                onEarnedReward: (earned) {
+                  SafeLogger.d(_tag, '▶️ ACTION exportData — earned=$earned');
+                  if (earned) {
+                    controller.exportData();
+                  }
+                  // else: SDK already showed TopToast automatically
+                },
+              );
             },
           ),
           PopupMenuButton<String>(
@@ -123,7 +132,8 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
 
               // Main content - scrollable
               return SingleChildScrollView(
-                physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                physics: BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics()),
                 padding: EdgeInsets.only(bottom: 128),
                 child: Column(
                   children: [
@@ -139,7 +149,8 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
 
                     // Chart
                     Obx(() {
-                      return HistoryChart(results: controller.filteredResults.toList());
+                      return HistoryChart(
+                          results: controller.filteredResults.toList());
                     }),
 
                     // Timeline Header
@@ -147,7 +158,8 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                       child: Row(
                         children: [
-                          const Icon(Icons.history, color: Colors.white70, size: 20),
+                          const Icon(Icons.history,
+                              color: Colors.white70, size: 20),
                           const SizedBox(width: 8),
                           Text(
                             'recent_tests'.tr,
@@ -189,7 +201,8 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                             children: [
                               // Date Header
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 16, 16, 8),
                                 child: Text(
                                   dateKey,
                                   style: const TextStyle(
@@ -202,8 +215,10 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                               // Items for this date
                               ...results.map((result) {
                                 return Obx(() {
-                                  final selecting = controller.selectionMode.value;
-                                  final selected = controller.selectedIds.contains(result.id);
+                                  final selecting =
+                                      controller.selectionMode.value;
+                                  final selected = controller.selectedIds
+                                      .contains(result.id);
                                   return TimelineItem(
                                     result: result,
                                     selectionMode: selecting,
@@ -212,8 +227,10 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                                       if (selecting) {
                                         controller.toggleSelect(result.id);
                                       } else {
-                                        SafeLogger.d(_tag, '▶️ ACTION timelineItem tap → id=${result.id}');
-                                        Get.to(() => TestDetailScreen(result: result));
+                                        SafeLogger.d(_tag,
+                                            '▶️ ACTION timelineItem tap → id=${result.id}');
+                                        Get.to(() =>
+                                            TestDetailScreen(result: result));
                                       }
                                     },
                                   );
@@ -259,8 +276,10 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
                 FilledButton.icon(
                   onPressed: canCompare
                       ? () {
-                          SafeLogger.d(_tag, '▶️ ACTION compare → ${controller.selectedIds.length} tests');
-                          Get.to(() => ComparisonScreen(results: controller.selectedResults));
+                          SafeLogger.d(_tag,
+                              '▶️ ACTION compare → ${controller.selectedIds.length} tests');
+                          Get.to(() => ComparisonScreen(
+                              results: controller.selectedResults));
                         }
                       : null,
                   icon: const Icon(Icons.compare_arrows),
@@ -303,8 +322,8 @@ class _HistoryScreenState extends AdScreenState<HistoryScreen> {
           ],
           selected: {selected},
           onSelectionChanged: (Set<String> newSelection) {
-            SafeLogger.d(
-                _tag, '▶️ ACTION changeTimeRange → ${newSelection.first} (was ${controller.selectedTimeRange.value})');
+            SafeLogger.d(_tag,
+                '▶️ ACTION changeTimeRange → ${newSelection.first} (was ${controller.selectedTimeRange.value})');
             controller.changeTimeRange(newSelection.first);
           },
           style: ButtonStyle(

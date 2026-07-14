@@ -98,6 +98,10 @@ dependency_overrides:
   # meta 1.16.0 — xung đột Dart-level, chưa tới lượt CocoaPods. Vẫn ghim bản cũ
   # cho tới khi Flutter SDK nâng lên bản có meta ^1.17.0, hoặc gma hạ constraint
   # meta. Xem doc/audit/audit_partner_lead_20260710.md finding #2/#3.
+  # Lần kiểm tra kế tiếp: ~2026-10-13 (3 tháng sau lần audit 2026-07-13) — thử
+  # lại `flutter pub get` sau khi bump gma_mediation_applovin/google_mobile_ads/
+  # applovin_max theo version SDK tự khai báo, xem xung đột meta đã được
+  # Flutter SDK giải quyết chưa.
   applovin_max: 4.6.0
   google_mobile_ads: 6.0.0
   gma_mediation_applovin: 2.5.1

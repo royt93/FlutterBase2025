@@ -49,11 +49,14 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<true/>
-		<!-- TODO roy93~ update iOS AdMob Application ID — currently duplicated from
-		     Android value below, must be replaced with the real iOS App ID from
-		     AdMob console (see doc/feature.md pending items) -->
+		<!-- T32 (2026-07-14): tạm dùng test App ID chính thức của Google cho
+		     iOS — App ID production cũ bị trùng với App ID Android (chỉ là 1
+		     giá trị dùng chung cho cả 2 platform, sai vì AdMob console cấp
+		     App ID riêng biệt theo từng platform app entry). PHẢI thay bằng
+		     App ID production thật của app entry iOS trên AdMob console
+		     trước khi bật AdMob làm provider chính. -->
 		<key>GADApplicationIdentifier</key>
-		<string>ca-app-pub-3612191981543807~9731053733</string>
+		<string>ca-app-pub-3940256099942544~1458002511</string>
 		<key>AppLovinSdkKey</key>
 		<string>e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt</string>
 		<key>NSUserTrackingUsageDescription</key>

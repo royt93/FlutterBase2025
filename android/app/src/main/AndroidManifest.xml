@@ -49,10 +49,15 @@
         android:label="FastNet Speed Test"
         tools:ignore="DiscouragedApi,LockedOrientationActivity,UnusedAttribute">
 
-        <!--        TODO roy93~ update admob app id-->
+        <!-- T32 (2026-07-14): tạm dùng test App ID chính thức của Google cho
+             Android — App ID production cũ bị trùng với App ID iOS (chỉ là
+             1 giá trị dùng chung cho cả 2 platform, sai vì AdMob console cấp
+             App ID riêng biệt theo từng platform app entry). PHẢI thay bằng
+             App ID production thật của app entry Android trên AdMob console
+             trước khi bật AdMob làm provider chính. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3612191981543807~9731053733" />
+            android:value="ca-app-pub-3940256099942544~3347511713" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_bell" />
