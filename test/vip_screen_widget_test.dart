@@ -56,7 +56,7 @@ void main() {
         translations: AppTranslations(),
         locale: const Locale('vi', 'VN'),
         fallbackLocale: const Locale('en', 'US'),
-        home: const VipScreen(),
+        home: VipScreen(),
       ),
     );
     // Let the staggered entrance animation play (no pumpAndSettle — shimmer /

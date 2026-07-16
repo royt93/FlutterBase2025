@@ -58,6 +58,12 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713" />
+        <!-- AppLovin MAX SDK key (active runtime provider). Value from
+             AdKey.appLovinAndroid.sdkKey in
+             lib/mckimquyen/common/const/ad_keys.dart — keep the two in sync. -->
+        <meta-data
+            android:name="applovin.sdk.key"
+            android:value="e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_bell" />

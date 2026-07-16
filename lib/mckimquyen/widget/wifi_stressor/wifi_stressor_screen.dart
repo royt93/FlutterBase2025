@@ -252,7 +252,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
 
   void _navigateToVip() {
     SafeLogger.d(_tag, '▶️ ACTION navigateToVip');
-    Get.to(() => const VipScreen());
+    Get.to(() => VipScreen());
   }
 
   /// Network Dashboard — không show interstitial (chỉ là màn thông tin).

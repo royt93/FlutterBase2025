@@ -13,64 +13,77 @@ import 'vip_keys.dart';
 class VipScreen extends StatelessWidget {
   static const String screenName = '/VipScreen';
 
-  const VipScreen({super.key});
+  VipScreen({super.key});
+
+  final RxBool _doNotSell = AdManager().consent.doNotSell.obs;
 
   @override
   Widget build(BuildContext context) {
-    return VipRedeemScreen(
-      publicKeyBase64: kVipPublicKeyBase64,
-      onPrivacyPolicyTap: _openPrivacyPolicy,
-      onPrivacyOptionsTap: () => AdManager().showPrivacyOptions(),
-      strings: VipRedeemStrings(
-        sdkNotReady: 'vip_sdk_not_ready'.tr,
-        enterKeyFirst: 'vip_enter_key_first'.tr,
-        successTitle: 'vip_success_title'.tr,
-        keyAlreadyUsed: 'vip_key_already_used'.tr,
-        failedMessage: 'vip_failed_message'.tr,
-        watchAdSuccess: 'vip_watch_ad_success'.tr,
-        watchAdFailed: 'vip_watch_ad_failed'.tr,
-        revoke: 'vip_revoke'.tr,
-        revokeConfirm: 'vip_revoke_confirm'.tr,
-        revokeAll: 'vip_revoke_all'.tr,
-        revokeAllConfirm: 'vip_revoke_all_confirm'.tr,
-        cancel: 'cancel'.tr,
-        delete: 'delete'.tr,
-        error: 'error'.tr,
-        statusActive: 'vip_status_active'.tr,
-        statusInactive: 'vip_status_inactive'.tr,
-        statusInactiveTagline: 'vip_status_inactive_tagline'.tr,
-        redeemTitle: 'vip_redeem_title'.tr,
-        redeemSubtitle: 'vip_redeem_subtitle'.tr,
-        keyHint: 'vip_key_hint'.tr,
-        activateButton: 'vip_activate_button'.tr,
-        noEntries: 'vip_no_entries'.tr,
-        firstInstall: 'vip_first_install'.tr,
-        legacyDevice: 'vip_legacy_device'.tr,
-        rewardEntry: 'vip_reward_entry'.tr,
-        watchAdTitle: 'vip_watch_ad_title'.tr,
-        watchAdBadgeFree: 'vip_watch_ad_badge_free'.tr,
-        watchAdSubtitle: 'vip_watch_ad_subtitle'.tr,
-        watchAdButton: 'vip_watch_ad_button'.tr,
-        buyTitle: 'vip_buy_title'.tr,
-        buy30d: 'vip_buy_30d'.tr,
-        buy90d: 'vip_buy_90d'.tr,
-        buy1y: 'vip_buy_1y'.tr,
-        buyLifetime: 'vip_buy_lifetime'.tr,
-        buyLocked: 'vip_buy_locked'.tr,
-        restoreLocked: 'vip_restore_locked'.tr,
-        privacyPolicy: 'vip_privacy_policy'.tr,
-        privacyOptions: 'vip_privacy_options'.tr,
-        expiresAt: (date) => 'vip_expires_at'.trParams({'date': date}),
-        remainingDays: (days) =>
-            'vip_remaining_days'.trParams({'days': '$days'}),
-        remainingHours: (hours) =>
-            'vip_remaining_hours'.trParams({'hours': '$hours'}),
-        remainingExtraHours: (hours) =>
-            'vip_remaining_extra_hours'.trParams({'hours': '$hours'}),
-        activeEntries: (count) =>
-            'vip_active_entries'.trParams({'count': '$count'}),
-      ),
-    );
+    return Obx(() => VipRedeemScreen(
+          publicKeyBase64: kVipPublicKeyBase64,
+          onPrivacyPolicyTap: _openPrivacyPolicy,
+          onPrivacyOptionsTap: () => AdManager().showPrivacyOptions(),
+          doNotSellValue: _doNotSell.value,
+          onDoNotSellChanged: (value) {
+            _doNotSell.value = value;
+            final consent = AdManager().consent;
+            AdManager().setConsent(AdConsent(
+              hasUserConsent: consent.hasUserConsent,
+              isAgeRestrictedUser: consent.isAgeRestrictedUser,
+              doNotSell: value,
+            ));
+          },
+          strings: VipRedeemStrings(
+            sdkNotReady: 'vip_sdk_not_ready'.tr,
+            enterKeyFirst: 'vip_enter_key_first'.tr,
+            successTitle: 'vip_success_title'.tr,
+            keyAlreadyUsed: 'vip_key_already_used'.tr,
+            failedMessage: 'vip_failed_message'.tr,
+            watchAdSuccess: 'vip_watch_ad_success'.tr,
+            watchAdFailed: 'vip_watch_ad_failed'.tr,
+            revoke: 'vip_revoke'.tr,
+            revokeConfirm: 'vip_revoke_confirm'.tr,
+            revokeAll: 'vip_revoke_all'.tr,
+            revokeAllConfirm: 'vip_revoke_all_confirm'.tr,
+            cancel: 'cancel'.tr,
+            delete: 'delete'.tr,
+            error: 'error'.tr,
+            statusActive: 'vip_status_active'.tr,
+            statusInactive: 'vip_status_inactive'.tr,
+            statusInactiveTagline: 'vip_status_inactive_tagline'.tr,
+            redeemTitle: 'vip_redeem_title'.tr,
+            redeemSubtitle: 'vip_redeem_subtitle'.tr,
+            keyHint: 'vip_key_hint'.tr,
+            activateButton: 'vip_activate_button'.tr,
+            noEntries: 'vip_no_entries'.tr,
+            firstInstall: 'vip_first_install'.tr,
+            legacyDevice: 'vip_legacy_device'.tr,
+            rewardEntry: 'vip_reward_entry'.tr,
+            watchAdTitle: 'vip_watch_ad_title'.tr,
+            watchAdBadgeFree: 'vip_watch_ad_badge_free'.tr,
+            watchAdSubtitle: 'vip_watch_ad_subtitle'.tr,
+            watchAdButton: 'vip_watch_ad_button'.tr,
+            buyTitle: 'vip_buy_title'.tr,
+            buy30d: 'vip_buy_30d'.tr,
+            buy90d: 'vip_buy_90d'.tr,
+            buy1y: 'vip_buy_1y'.tr,
+            buyLifetime: 'vip_buy_lifetime'.tr,
+            buyLocked: 'vip_buy_locked'.tr,
+            restoreLocked: 'vip_restore_locked'.tr,
+            privacyPolicy: 'vip_privacy_policy'.tr,
+            privacyOptions: 'vip_privacy_options'.tr,
+            doNotSell: 'vip_do_not_sell'.tr,
+            expiresAt: (date) => 'vip_expires_at'.trParams({'date': date}),
+            remainingDays: (days) =>
+                'vip_remaining_days'.trParams({'days': '$days'}),
+            remainingHours: (hours) =>
+                'vip_remaining_hours'.trParams({'hours': '$hours'}),
+            remainingExtraHours: (hours) =>
+                'vip_remaining_extra_hours'.trParams({'hours': '$hours'}),
+            activeEntries: (count) =>
+                'vip_active_entries'.trParams({'count': '$count'}),
+          ),
+        ));
   }
 
   Future<void> _openPrivacyPolicy() async {

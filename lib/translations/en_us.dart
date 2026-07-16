@@ -217,6 +217,7 @@ const Map<String, String> enUS = {
   'vip_sdk_not_ready': 'Ad SDK is not ready. Please try again later.',
   'vip_privacy_policy': 'Privacy Policy & Terms',
   'vip_privacy_options': 'Privacy Options',
+  'vip_do_not_sell': 'Do Not Sell or Share My Info',
 
   // VIP dialog (Cupertino — SDK redeem flow)
   'vip_verifying_title': 'Verifying',
