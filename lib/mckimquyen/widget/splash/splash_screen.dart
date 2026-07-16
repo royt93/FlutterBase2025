@@ -118,6 +118,18 @@ class _SplashScreenState extends BaseStatefulState<SplashScreen> {
               _hardCapTimer = null;
               SafeLogger.d(
                   'SplashTrace', 'hard cap cancelled -> showAppOpenAd');
+              // bypassSafety: true — App Open runs before any frequency cap
+              // is warm, since this is the very first ad slot of a cold
+              // start. AdMob policy treats App Open shown over first-launch
+              // content as a gray area (it should not "interrupt" the first
+              // load); accepted risk (audit doc/audit/audit_gemini.md F2),
+              // mitigated by the 24h first-install VIP grace period below
+              // (new installs never see App Open on day 1). Decision
+              // 2026-07-16: keep as-is, monitor AdMob Policy Center after
+              // ship rather than dropping cold-start App Open (it's the
+              // highest-eCPM placement) or gating it behind the daily cap
+              // (which defeats the point — the cap is rarely warm this
+              // early, so gating it here would amount to disabling it).
               AdManager().showAppOpenAd(
                 onAdDismiss: (dismissed) {
                   SafeLogger.d('SplashTrace',
