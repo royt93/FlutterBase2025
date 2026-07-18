@@ -9,6 +9,17 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  # packages/ad_sdk is its own Flutter package with its own pubspec/deps
+  # (mocktail, etc.) — it's analyzed separately by the `sdk` CI job, which
+  # runs `flutter pub get` inside packages/ad_sdk first. The root `host` CI
+  # job only runs `pub get` at repo root, so without this exclude, analyzing
+  # root recurses into packages/ad_sdk/test and fails to resolve its
+  # dev_dependencies whenever packages/ad_sdk has no local .dart_tool cache
+  # (always true on a fresh CI checkout).
+  exclude:
+    - packages/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
