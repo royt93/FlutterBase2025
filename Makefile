@@ -77,12 +77,22 @@ build:
 # --obfuscate + --split-debug-info đẩy ~11MB debug symbols / obfuscation map ra
 # khỏi bundle (Play không giao cho user) và lưu riêng để giải mã crash sau này.
 # GIỮ build/symbols/ theo từng version để decode được crash của bản đã phát hành.
-release-aab:
+release-aab: check-admob-test-id
 	@echo "Building optimized release AAB..."
 	flutter build appbundle --release \
 		--obfuscate --split-debug-info=build/symbols
 	@echo "AAB at build/app/outputs/bundle/release/app-release.aab"
 	@echo "Debug symbols saved to build/symbols/ (keep these per release!)"
+
+# Warn (don't block) if the active provider is AdMob but native config still
+# ships Google's public test Application ID — harmless while AppLovin is
+# active, but would silently no-fill in production if AdMob is live.
+check-admob-test-id:
+	@if grep -q "AdProvider.admob" lib/mckimquyen/widget/splash/splash_screen.dart 2>/dev/null && \
+		(grep -q "3940256099942544~3347511713" android/app/src/main/AndroidManifest.xml 2>/dev/null || \
+		 grep -q "3940256099942544~1458002511" ios/Runner/Info.plist 2>/dev/null); then \
+		echo "WARNING: AdProvider.admob is active but AndroidManifest.xml/Info.plist still use Google's test Application ID — replace with your real AdMob App ID before shipping."; \
+	fi
 
 # Build single-ABI AAB and print the code-size breakdown.
 release-size:
