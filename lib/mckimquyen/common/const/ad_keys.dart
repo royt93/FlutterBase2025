@@ -44,14 +44,10 @@ class AdKey {
   // ─── AdMob (fallback / swap-ready) ────────────────────────────────────
   // The App ID is wired in `android/app/src/main/AndroidManifest.xml`
   // (`com.google.android.gms.ads.APPLICATION_ID`) and `ios/Runner/Info.plist`
-  // (`GADApplicationIdentifier`). Both currently hold Google's official TEST
-  // App IDs (T32, 2026-07-14) — the old production value was duplicated
-  // across both platforms, which is invalid (AdMob console issues a
-  // distinct App ID per platform app entry). Replace with the real,
-  // per-platform production App IDs from https://admob.google.com before
-  // flipping `AdConfig.provider` to `AdProvider.adMob`.
+  // (`GADApplicationIdentifier`). As of 2026-07-19 both hold the real
+  // production App ID (`ca-app-pub-3004713799155145~9488250427`).
   //
-  // The ad unit IDs below are Google's public test IDs — safe to ship
+  // The ad unit IDs below are still Google's public test IDs — safe to ship
   // because the runtime provider is `AdProvider.appLovin`, so AdMob is
   // never actually called. Replace with production unit IDs from
   // https://admob.google.com when you decide to swap providers.
