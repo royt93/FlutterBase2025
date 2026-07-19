@@ -59,6 +59,7 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
   // lần vào cùng 1 instance và (b) detach đúng listenable khi dispose (không
   // phải instance vip hiện tại, có thể đã đổi qua initRevision).
   ValueListenable<bool>? _attachedGraceNudgeListenable;
+  ValueListenable<bool>? _attachedFirstInstallGrantListenable;
 
   @override
   void initState() {
@@ -73,9 +74,11 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       _initializeAdsAsync();
     });
     _attachGraceNudgeListener();
+    _attachFirstInstallGrantListener();
     // initRevision bump = SDK (re)init xong → vip có thể vừa mới sẵn sàng
     // (hoặc đã đổi instance) → thử attach lại.
     AdManager().initRevision.addListener(_attachGraceNudgeListener);
+    AdManager().initRevision.addListener(_attachFirstInstallGrantListener);
   }
 
   /// Khởi tạo quảng cáo bất đồng bộ để không block UI
@@ -93,10 +96,22 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
     _attachedGraceNudgeListenable = current;
   }
 
+  void _attachFirstInstallGrantListener() {
+    final current = AdManager().vip?.firstInstallGrantDueListenable;
+    if (identical(current, _attachedFirstInstallGrantListenable)) return;
+    _attachedFirstInstallGrantListenable
+        ?.removeListener(_onFirstInstallGrantChanged);
+    current?.addListener(_onFirstInstallGrantChanged);
+    _attachedFirstInstallGrantListenable = current;
+  }
+
   @override
   void dispose() {
     AdManager().initRevision.removeListener(_attachGraceNudgeListener);
+    AdManager().initRevision.removeListener(_attachFirstInstallGrantListener);
     _attachedGraceNudgeListenable?.removeListener(_onGraceNudgeChanged);
+    _attachedFirstInstallGrantListenable
+        ?.removeListener(_onFirstInstallGrantChanged);
     // Cleanup controller để tránh memory leak
     Get.delete<StressorController>();
     super.dispose();
@@ -118,6 +133,23 @@ class _StressorHomePageState extends AdScreenState<StressorHomePage> {
       ),
     );
     vip.acknowledgeGraceNudge();
+  }
+
+  /// Vừa được tặng VIP miễn phí cho lần cài đặt đầu tiên → báo 1 lần qua
+  /// SnackBar (trước đây chỉ log, hoàn toàn im lặng với người dùng).
+  void _onFirstInstallGrantChanged() {
+    final vip = AdManager().vip;
+    if (vip == null || !vip.firstInstallGrantDueListenable.value || !mounted) {
+      return;
+    }
+    final hours = vip.lastFirstInstallGrantDuration?.inHours ?? 0;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('vip_first_install_grant_message'
+            .trParams({'hours': hours.toString()})),
+      ),
+    );
+    vip.acknowledgeFirstInstallGrant();
   }
 
   @override

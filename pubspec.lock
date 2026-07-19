@@ -45,10 +45,10 @@ packages:
     dependency: "direct main"
     description:
       name: applovin_admob_sdk
-      sha256: "8f7434cc22a7afd521b41d31e60df84fff8bcae1ad10498ad34a1c2a9837ea28"
+      sha256: "66b6b24d24748265f937f9921e9c3e8b3ef31613f4e996dbe3199aad4d576f51"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.0"
+    version: "1.2.1"
   applovin_max:
     dependency: "direct overridden"
     description:

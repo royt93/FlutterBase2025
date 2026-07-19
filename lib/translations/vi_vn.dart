@@ -199,6 +199,8 @@ const Map<String, String> viVN = {
   'vip_grace_nudge_message':
       'VIP của bạn sắp hết hạn — gia hạn ngay trước khi quảng cáo quay lại.',
   'vip_grace_nudge_action': 'Xem',
+  'vip_first_install_grant_message':
+      'Bạn được tặng @hours giờ miễn quảng cáo cho lần cài đặt đầu tiên!',
   'vip_redeem_title': 'Nhập mã VIP',
   'vip_redeem_subtitle':
       'Nhập mã kích hoạt để mở khoá trải nghiệm không quảng cáo.',

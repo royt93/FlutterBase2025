@@ -198,6 +198,8 @@ const Map<String, String> enUS = {
   'vip_grace_nudge_message':
       'Your VIP is expiring soon — extend it before ads come back.',
   'vip_grace_nudge_action': 'View',
+  'vip_first_install_grant_message':
+      'You got @hours hours ad-free for your first install!',
   'vip_redeem_title': 'Redeem VIP key',
   'vip_redeem_subtitle':
       'Enter your activation key to unlock an ad-free session.',
