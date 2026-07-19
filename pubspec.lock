@@ -45,10 +45,10 @@ packages:
     dependency: "direct main"
     description:
       name: applovin_admob_sdk
-      sha256: "8b3a384893315700f8cd161da3fad7756afb30759ca8808c92e6d8288d8ae08e"
+      sha256: "8f7434cc22a7afd521b41d31e60df84fff8bcae1ad10498ad34a1c2a9837ea28"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
   applovin_max:
     dependency: "direct overridden"
     description:
@@ -213,26 +213,26 @@ packages:
     dependency: "direct main"
     description:
       name: confetti
-      sha256: "979aafde2428c53947892c95eb244466c109c129b7eee9011f0a66caaca52267"
+      sha256: "79376a99648efbc3f23582f5784ced0fe239922bd1a0fb41f582051eba750751"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.0"
+    version: "0.8.0"
   connection_notifier:
     dependency: transitive
     description:
       name: connection_notifier
-      sha256: fa8b1a3c19929890361a7c338e99c168514ab764d5db4033e4c3098930f23643
+      sha256: c1c7cfb4f13ef2298cf9d4c7f9ffac6e52e1bfb7ad0f58b38af095b0bfb20027
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.1"
+    version: "4.1.0"
   connectivity_plus:
     dependency: "direct main"
     description:
       name: connectivity_plus
-      sha256: b5e72753cf63becce2c61fd04dfe0f1c430cc5278b53a1342dc5ad839eab29ec
+      sha256: "25cebb79dfe304022550e0c3c893ae051ded07183d2607f7b88473cb3ade33cb"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.5"
+    version: "7.3.0"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
@@ -743,14 +743,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  internet_connection_checker:
+  internet_connection_checker_plus:
     dependency: transitive
     description:
-      name: internet_connection_checker
-      sha256: "1c683e63e89c9ac66a40748b1b20889fd9804980da732bf2b58d6d5456c8e876"
+      name: internet_connection_checker_plus
+      sha256: ef43530f24de6309f99802358f8a543ea1f2babc153effc84a75133751716892
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0+1"
+    version: "2.9.1+2"
   intl:
     dependency: "direct main"
     description:
@@ -1115,10 +1115,10 @@ packages:
     dependency: transitive
     description:
       name: rxdart
-      sha256: "0c7c0cedd93788d996e33041ffecda924cc54389199cde4e6a34b440f50044cb"
+      sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"
       url: "https://pub.dev"
     source: hosted
-    version: "0.27.7"
+    version: "0.28.0"
   share_plus:
     dependency: "direct main"
     description:

@@ -17,6 +17,7 @@
 
 import 'package:applovin_admob_sdk/applovin_admob_sdk.dart';
 import 'package:applovin_admob_sdk/src/utils/ad_preferences.dart';
+import 'package:applovin_admob_sdk/src/vip/_vip_entries_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -27,6 +28,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 const _graceNudgeMessageVi =
     'VIP của bạn sắp hết hạn — gia hạn ngay trước khi quảng cáo quay lại.';
 
+/// In-memory fake so VIP tests don't hit the real (unavailable-in-test)
+/// flutter_secure_storage platform channel — it hangs instead of throwing,
+/// same pattern as packages/ad_sdk/test/vip_manager_robustness_test.dart.
+class _FakeVipEntriesStore extends VipEntriesStore {
+  _FakeVipEntriesStore(super.prefs);
+  String? _raw;
+  @override
+  Future<String?> getRaw() async => _raw;
+  @override
+  Future<void> setRaw(String json) async => _raw = json;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -35,7 +48,11 @@ void main() {
   Future<VipManager> freshVip({required Duration graceNudgeThreshold}) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await AdPreferences.getInstance();
-    final m = VipManager(prefs, graceNudgeThreshold: graceNudgeThreshold);
+    final m = VipManager(
+      prefs,
+      graceNudgeThreshold: graceNudgeThreshold,
+      vipEntriesStore: _FakeVipEntriesStore(prefs),
+    );
     await m.revokeAll();
     await m.load();
     return m;

@@ -25,7 +25,7 @@ dependencies:
   # Network & Performance
   dio: ^5.9.0
   network_info_plus: ^6.0.2
-  connectivity_plus: ^6.1.1
+  connectivity_plus: ^7.0.0
 
   # UI Components - minimal set
   fl_chart: ^1.1.1
@@ -45,10 +45,10 @@ dependencies:
   # PDF export (history reports)
   pdf: ^3.11.1
 
-# Hosted — 1.1.0 on pub.dev (ACTIVE). Local path override below is commented
+# Hosted — 1.2.0 on pub.dev (ACTIVE). Local path override below is commented
 # out; uncomment it (and comment the hosted line) to dev/test in-repo SDK
 # changes before they're published.
-  applovin_admob_sdk: ^1.1.0
+  applovin_admob_sdk: ^1.2.0
   # Local path override — for dev/test only:
 #  applovin_admob_sdk:
 #    path: packages/ad_sdk
@@ -60,7 +60,7 @@ dependencies:
   vibration: ^3.1.5
   flutter_easyloading: ^3.0.5
   # Celebration animation on VIP activation success (Q18A).
-  confetti: ^0.7.0
+  confetti: ^0.8.0
 
 #  dart run rename_app:main all="My App Name"
 #  rename_app: ^1.6.2
