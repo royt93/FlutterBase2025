@@ -55,12 +55,18 @@ jobs:
       # output and no uploaded logs — the signature of the Linux OOM killer,
       # not a real test failure (ubuntu-latest has 7GB RAM and no swap by
       # default; emulator + KVM + `flutter test` across 20 integration_test/
-      # files can exceed that). Add swap and shrink the emulator's own RAM/
-      # heap footprint so there's headroom left for the Flutter test process.
+      # files can exceed that). Free up disk (unused dotnet/haskell/boost
+      # toolchains) before adding swap — the AVD's userdata partition alone
+      # needs ~7.4GB, so an oversized swapfile can starve emulator creation.
+      - name: Free disk space (headroom for swap + emulator userdata partition)
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost
+          docker image prune -af || true
+          df -h /
       - name: Add swap space (avoids OOM-killed emulator on GitHub-hosted runners)
         run: |
           sudo swapoff -a
-          sudo fallocate -l 8G /swapfile
+          sudo fallocate -l 3G /swapfile
           sudo chmod 600 /swapfile
           sudo mkswap /swapfile
           sudo swapon /swapfile
@@ -72,9 +78,8 @@ jobs:
           arch: x86_64
           ram-size: 2048M
           heap-size: 256M
-          disk-size: 4096M
           disable-animations: true
-          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           working-directory: packages/ad_sdk/example
           script: flutter test integration_test
 
