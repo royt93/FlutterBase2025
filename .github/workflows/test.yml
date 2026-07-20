@@ -70,18 +70,34 @@ jobs:
           sudo chmod 600 /swapfile
           sudo mkswap /swapfile
           sudo swapon /swapfile
+      # Every test was failing identically at "SDK must finish initialising on
+      # device" (30s timeout) once the OOM/disk issues above were fixed — a
+      # bare `google_apis` image lacks the full Play Services stack AppLovin's
+      # native SDK init depends on. `google_apis_playstore` ships the real GMS
+      # Play Store stack. `adb logcat` is captured unconditionally so a repeat
+      # failure shows the native SDK's own init errors, not just Dart-side logs.
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
-          target: google_apis
+          target: google_apis_playstore
           arch: x86_64
           ram-size: 2048M
           heap-size: 256M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           working-directory: packages/ad_sdk/example
-          script: flutter test integration_test
+          script: |
+            adb logcat -c
+            adb logcat > /tmp/logcat.txt &
+            flutter test integration_test
+      - name: Upload logcat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-emulator-logcat
+          path: /tmp/logcat.txt
+          if-no-files-found: ignore
 
   # N5 — the Android emulator job above never caught iOS-only regressions
   # (e.g. the ATT/UMP no-timeout wedge, App-Open auto-redirect on iOS
