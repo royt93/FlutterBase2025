@@ -51,12 +51,30 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      # Flaky since ~2026-07-19: job gets killed mid-run with no test-failure
+      # output and no uploaded logs — the signature of the Linux OOM killer,
+      # not a real test failure (ubuntu-latest has 7GB RAM and no swap by
+      # default; emulator + KVM + `flutter test` across 20 integration_test/
+      # files can exceed that). Add swap and shrink the emulator's own RAM/
+      # heap footprint so there's headroom left for the Flutter test process.
+      - name: Add swap space (avoids OOM-killed emulator on GitHub-hosted runners)
+        run: |
+          sudo swapoff -a
+          sudo fallocate -l 8G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           target: google_apis
           arch: x86_64
+          ram-size: 2048M
+          heap-size: 256M
+          disk-size: 4096M
+          disable-animations: true
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           working-directory: packages/ad_sdk/example
           script: flutter test integration_test
 
