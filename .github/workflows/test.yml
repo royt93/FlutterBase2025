@@ -89,7 +89,7 @@ jobs:
   # Runs the same integration_test suite on an iOS Simulator.
   sdk-integration-ios:
     name: ad_sdk example — integration tests (iOS Simulator)
-    runs-on: macos-14
+    runs-on: macos-15
     defaults:
       run:
         working-directory: packages/ad_sdk/example
@@ -99,6 +99,11 @@ jobs:
         with:
           flutter-version: '3.35.1'
           channel: 'stable'
+      # connectivity_plus 7.3.0 (transitive via internet_connection_checker_plus)
+      # uses NWPath.isUltraConstrained, only in the iOS 26 SDK — the macos-15
+      # image ships Xcode 26.1.1 but doesn't default to it.
+      - name: Select Xcode 26.1.1
+        run: sudo xcode-select -s /Applications/Xcode_26.1.1.app
       - name: Install dependencies
         run: flutter pub get
       - name: Install CocoaPods dependencies
