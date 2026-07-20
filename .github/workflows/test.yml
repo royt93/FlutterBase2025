@@ -60,6 +60,40 @@ jobs:
           working-directory: packages/ad_sdk/example
           script: flutter test integration_test
 
+  # N5 — the Android emulator job above never caught iOS-only regressions
+  # (e.g. the ATT/UMP no-timeout wedge, App-Open auto-redirect on iOS
+  # Simulator — see SKIP_ATT/SKIP_UMP/SKIP_SPLASH_AD dart-defines below).
+  # Runs the same integration_test suite on an iOS Simulator.
+  sdk-integration-ios:
+    name: ad_sdk example — integration tests (iOS Simulator)
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: packages/ad_sdk/example
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.1'
+          channel: 'stable'
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Install CocoaPods dependencies
+        working-directory: packages/ad_sdk/example/ios
+        run: pod install
+      - name: Boot iOS Simulator
+        run: |
+          UDID=$(xcrun simctl list devices available | grep -m1 'iPhone 15' | grep -oE '[0-9A-F-]{36}')
+          echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID"
+      - name: Run integration tests
+        run: |
+          flutter test integration_test \
+            -d "$SIMULATOR_UDID" \
+            --dart-define=SKIP_SPLASH_AD=true \
+            --dart-define=SKIP_ATT=true \
+            --dart-define=SKIP_UMP=true
+
   # The host app is mostly UI-only (gated on static analysis) but now ships a
   # small test/ dir for screens with real logic (e.g. VipScreen stacking). It
   # consumes the SDK via the in-repo path override, so no publish is needed.
