@@ -78,6 +78,12 @@ jobs:
       # switches to Google's public AdMob test ad-unit IDs, which need no
       # secret and always init. (google_apis_playstore vs google_apis made no
       # difference to this — reverted to the plain image.)
+      #
+      # app_open/interstitial/rewarded_ad_test.dart are excluded below: their
+      # own header comments say a HUMAN must manually tap the ad's close/X
+      # button for the test to pass — there's no unattended way to dismiss a
+      # real ad creative in headless CI, so they always time out here by
+      # design, not from a regression. Run them by hand on a real device/sim.
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -92,7 +98,7 @@ jobs:
           script: |
             adb logcat -c
             adb logcat > /tmp/logcat.txt &
-            flutter test integration_test --dart-define=AD_PROVIDER_ADMOB=true
+            flutter test $(ls integration_test/*_test.dart | grep -Ev '/(app_open|interstitial|rewarded)_ad_test\.dart$') --dart-define=AD_PROVIDER_ADMOB=true
       - name: Upload logcat
         if: always()
         uses: actions/upload-artifact@v4
@@ -139,9 +145,12 @@ jobs:
       # invalid placeholder AppLovin key (see Android job comment above) can
       # never provide — same AD_PROVIDER_ADMOB switch to Google's public
       # AdMob test ad-unit IDs fixes it here too.
+      # app_open/interstitial/rewarded_ad_test.dart need a human to manually
+      # tap the ad's close/X button (see their header comments) — excluded
+      # below, same reason as the Android job above.
       - name: Run integration tests
         run: |
-          flutter test integration_test \
+          flutter test $(ls integration_test/*_test.dart | grep -Ev '/(app_open|interstitial|rewarded)_ad_test\.dart$') \
             -d "$SIMULATOR_UDID" \
             --dart-define=SKIP_SPLASH_AD=true \
             --dart-define=SKIP_ATT=true \
