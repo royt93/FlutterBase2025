@@ -71,16 +71,18 @@ jobs:
           sudo mkswap /swapfile
           sudo swapon /swapfile
       # Every test was failing identically at "SDK must finish initialising on
-      # device" (30s timeout) once the OOM/disk issues above were fixed — a
-      # bare `google_apis` image lacks the full Play Services stack AppLovin's
-      # native SDK init depends on. `google_apis_playstore` ships the real GMS
-      # Play Store stack. `adb logcat` is captured unconditionally so a repeat
-      # failure shows the native SDK's own init errors, not just Dart-side logs.
+      # device" (30s timeout) — logcat (captured below) showed the real cause:
+      # "SDK key provided is invalid (YOUR_86_CHAR_SDK_KEY_FROM_APPLOVIN_DASHBOARD)".
+      # No real AppLovin credentials are committed (see main.dart T41 comment)
+      # so the default AppLovin path can never init in CI. AD_PROVIDER_ADMOB
+      # switches to Google's public AdMob test ad-unit IDs, which need no
+      # secret and always init. (google_apis_playstore vs google_apis made no
+      # difference to this — reverted to the plain image.)
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
-          target: google_apis_playstore
+          target: google_apis
           arch: x86_64
           ram-size: 2048M
           heap-size: 256M
@@ -90,7 +92,7 @@ jobs:
           script: |
             adb logcat -c
             adb logcat > /tmp/logcat.txt &
-            flutter test integration_test
+            flutter test integration_test --dart-define=AD_PROVIDER_ADMOB=true
       - name: Upload logcat
         if: always()
         uses: actions/upload-artifact@v4
@@ -133,13 +135,18 @@ jobs:
           UDID=$(xcrun simctl list devices available | grep -m1 'iPhone 16' | grep -oE '[0-9A-F-]{36}')
           echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
           xcrun simctl boot "$UDID"
+      # interstitial/rewarded show+dismiss need a real ad fill, which the
+      # invalid placeholder AppLovin key (see Android job comment above) can
+      # never provide — same AD_PROVIDER_ADMOB switch to Google's public
+      # AdMob test ad-unit IDs fixes it here too.
       - name: Run integration tests
         run: |
           flutter test integration_test \
             -d "$SIMULATOR_UDID" \
             --dart-define=SKIP_SPLASH_AD=true \
             --dart-define=SKIP_ATT=true \
-            --dart-define=SKIP_UMP=true
+            --dart-define=SKIP_UMP=true \
+            --dart-define=AD_PROVIDER_ADMOB=true
 
   # The host app is mostly UI-only (gated on static analysis) but now ships a
   # small test/ dir for screens with real logic (e.g. VipScreen stacking). It
