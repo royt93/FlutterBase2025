@@ -75,7 +75,14 @@ void main() {
     await tester.enterText(countryField, 'DE');
     await tester.pump();
 
+    // Entering text just opened the real software keyboard (iOS Simulator
+    // always shows one; the Android CI emulator has it disabled, which is why
+    // this only broke there). The Scaffold resizes for viewInsets.bottom,
+    // which can push "Set" out of the region we already scrolled into view
+    // for countryField — re-scroll it back before tapping.
     final setButton = find.widgetWithText(FilledButton, 'Set');
+    await tester.scrollUntilVisible(setButton, 200,
+        scrollable: find.byType(Scrollable).first);
     await tester.tap(setButton);
     await tester.pump(const Duration(milliseconds: 300));
 
